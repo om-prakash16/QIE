@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/context/auth-context"
 import { motion, AnimatePresence } from "framer-motion"
 import dynamic from "next/dynamic"
+import { Sidebar } from "@/components/layout/sidebar"
 
 const WalletMultiButton = dynamic(
   async () => (await import("@solana/wallet-adapter-react-ui")).WalletMultiButton,
@@ -55,6 +56,22 @@ export function Navbar() {
             )}
         >
             <div className="container mx-auto flex items-center justify-between h-16 px-4">
+                {/* Mobile Dash Menu Trigger (Dashboard only) */}
+                {isDashboard && (
+                    <div className="lg:hidden mr-2">
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-9 w-9">
+                                    <Menu className="w-5 h-5" />
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 w-64">
+                                <Sidebar role={pathname?.startsWith("/company") ? "company" : pathname?.startsWith("/admin") ? "admin" : "user"} />
+                            </SheetContent>
+                        </Sheet>
+                    </div>
+                )}
+
                 {/* Logo - Hide on Dashboard as Sidebar has logo */}
                 {!isDashboard && (
                     <Link href="/" className="flex items-center gap-2">

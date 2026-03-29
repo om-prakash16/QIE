@@ -13,22 +13,94 @@ import { GithubTab } from "@/components/features/user/profile/tabs/github-tab"
 import { LeetcodeTab } from "@/components/features/user/profile/tabs/leetcode-tab"
 import { ApplicationsTab } from "@/components/features/user/profile/tabs/applications-tab"
 import { SettingsTab } from "@/components/features/user/profile/tabs/settings-tab"
-import { USER_PROFILE, UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile } from "@/lib/mock-api/user-profile"
 import { Loader2, Edit, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { supabase } from "@/lib/supabaseClient"
+import { useAuth } from "@/context/auth-context"
+import { toast } from "sonner"
 
-// Mock fetch function
-const fetchUserProfile = async (): Promise<UserProfile> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800))
-    return USER_PROFILE
+// Fetch user profile from Supabase
+const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
+    const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle()
+
+    if (error) throw error
+
+    // If no profile exists yet (shouldn't happen with our register logic), 
+    // or if we're just getting started, return a skeleton
+    if (!data) {
+        return {
+            id: userId,
+            basic: { 
+                firstName: "New", 
+                lastName: "User", 
+                email: "", 
+                phone: "",
+                bio: "Add your bio...", 
+                location: "Remote", 
+                title: "Developer", 
+                avatar: "",
+                completion: 0,
+                experienceLevel: "Entry Level",
+                jobType: "Full-time",
+                languages: [],
+                joinDate: new Date().toLocaleDateString()
+            },
+            skills: [],
+            experience: [],
+            education: [],
+            projects: [],
+            github: { username: "", repos: [] },
+            leetcode: { username: "", totalSolved: 0, easy: 0, medium: 0, hard: 0, ranking: 0 },
+            applications: [],
+            settings: { notifications: true, visibility: "Public", theme: "system" }
+        }
+    }
+
+    const nameParts = (data.full_name || "New User").split(" ")
+    const firstName = nameParts[0]
+    const lastName = nameParts.slice(1).join(" ") || ""
+
+    // Map DB schema to Profile structure
+    return {
+        id: data.id,
+        basic: {
+            firstName,
+            lastName,
+            email: data.email || "",
+            phone: data.phone || "",
+            bio: data.bio || "Add your bio...",
+            location: data.location || "Remote",
+            title: data.role || "Developer",
+            avatar: data.avatar_url || "",
+            completion: data.completion_percent || 0,
+            experienceLevel: data.experience_level || "Junior",
+            jobType: data.job_type || "Full-time",
+            languages: data.languages || [],
+            joinDate: new Date(data.created_at).toLocaleDateString()
+        },
+        skills: data.skills || [], 
+        experience: data.experience || [],
+        education: data.education || [],
+        projects: data.projects || [],
+        github: { username: data.github_handle || "", repos: [] },
+        leetcode: { username: "", totalSolved: 0, easy: 0, medium: 0, hard: 0, ranking: 0 },
+        applications: [],
+        settings: { notifications: true, visibility: "Public", theme: "system" }
+    }
 }
 
 export default function ProfilePage() {
+    const { user } = useAuth()
     const { data: userProfile, isLoading } = useQuery({
-        queryKey: ["userProfile"],
-        queryFn: fetchUserProfile
+        queryKey: ["userProfile", user?.id],
+        queryFn: () => user?.id ? fetchUserProfile(user.id) : Promise.reject("No user ID"),
+        enabled: !!user?.id
     })
 
     const [profileData, setProfileData] = useState<UserProfile | null>(null)
@@ -39,10 +111,35 @@ export default function ProfilePage() {
         setProfileData(userProfile)
     }
 
-    const handleSave = () => {
-        // Here you would trigger a mutation to save 'profileData'
-        console.log("Saving profile:", profileData)
-        setIsEditing(false)
+    const handleSave = async () => {
+        if (!user || !profileData) return
+        
+        setIsSaving(true)
+        try {
+            const { error } = await supabase
+                .from('users')
+                .update({
+                    full_name: `${profileData.basic.firstName} ${profileData.basic.lastName}`,
+                    bio: profileData.basic.bio,
+                    location: profileData.basic.location,
+                    avatar_url: profileData.basic.avatar,
+                    skills: profileData.skills,
+                    experience: profileData.experience,
+                    education: profileData.education,
+                    projects: profileData.projects,
+                    github_handle: profileData.github.username,
+                    role: profileData.basic.title,
+                })
+                .eq('id', user.id)
+
+            if (error) throw error
+            toast.success("Profile saved successfully!")
+            setIsEditing(false)
+        } catch (error: any) {
+            toast.error(`Error saving profile: ${error.message}`)
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     // --- Handlers for Skills ---
@@ -197,6 +294,8 @@ export default function ProfilePage() {
         })
     }
 
+    const [isSaving, setIsSaving] = useState(false)
+
     const EditAction = () => (
         !isEditing ? (
             <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="bg-background">
@@ -205,11 +304,20 @@ export default function ProfilePage() {
             </Button>
         ) : (
             <div className="flex gap-2">
-                <Button onClick={handleSave} variant="default" size="sm">
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
+                <Button onClick={handleSave} variant="default" size="sm" disabled={isSaving}>
+                    {isSaving ? (
+                        <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                        </>
+                    ) : (
+                        <>
+                            <Save className="w-4 h-4 mr-2" />
+                            Save
+                        </>
+                    )}
                 </Button>
-                <Button onClick={() => setIsEditing(false)} variant="ghost" size="sm">
+                <Button onClick={() => setIsEditing(false)} variant="ghost" size="sm" disabled={isSaving}>
                     <X className="w-4 h-4 mr-2" />
                     Cancel
                 </Button>

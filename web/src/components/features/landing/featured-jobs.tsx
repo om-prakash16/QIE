@@ -1,13 +1,47 @@
 "use client"
 
-import { JOBS } from "@/lib/mock-data"
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabaseClient"
 import { JobCard } from "@/components/shared/job-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 
 export function FeaturedJobs() {
+    const [jobs, setJobs] = useState<any[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchJobs = async () => {
+            const { data, error } = await supabase
+                .from('jobs')
+                .select('*')
+                .eq('is_active', true)
+                .order('created_at', { ascending: false })
+                .limit(4)
+
+            if (!error && data) {
+                // Map DB schema to JobCard props
+                const mappedJobs = data.map(job => ({
+                    id: job.id,
+                    title: job.title,
+                    company: job.company_name || "Skillsutra Partner",
+                    location: job.location || "Remote",
+                    type: job.job_type || "Full-time",
+                    salary: job.salary_range || "Competitive",
+                    postedAt: new Date(job.created_at).toLocaleDateString(),
+                    tags: job.required_skills || [],
+                    description: job.description
+                }))
+                setJobs(mappedJobs)
+            }
+            setLoading(false)
+        }
+
+        fetchJobs()
+    }, [])
+
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -57,19 +91,25 @@ export function FeaturedJobs() {
                     </motion.div>
                 </div>
 
-                <motion.div 
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-8"
-                    variants={containerVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, margin: "-100px" }}
-                >
-                    {JOBS.slice(0, 4).map(job => (
-                        <motion.div key={job.id} variants={itemVariants}>
-                            <JobCard job={job} />
-                        </motion.div>
-                    ))}
-                </motion.div>
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <Loader2 className="w-10 h-10 animate-spin text-primary opacity-50" />
+                    </div>
+                ) : (
+                    <motion.div 
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, margin: "-100px" }}
+                    >
+                        {jobs.map(job => (
+                            <motion.div key={job.id} variants={itemVariants}>
+                                <JobCard job={job} />
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                )}
             </div>
         </section>
     )

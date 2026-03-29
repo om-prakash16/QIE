@@ -16,7 +16,7 @@ export default function UserLayout({
 
     return (
         <div className="flex min-h-screen bg-muted/20">
-            <Sidebar role="user" />
+            <Sidebar role="user" className="hidden lg:flex" />
             <main className="flex-1 w-full pt-16">
                 <div className="container mx-auto p-8 max-w-6xl min-h-[calc(100vh-200px)]">
                     {children}

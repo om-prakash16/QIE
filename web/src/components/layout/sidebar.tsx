@@ -18,9 +18,10 @@ import { useAuth } from "@/context/auth-context"
 
 interface SidebarProps {
     role: "user" | "company" | "admin"
+    className?: string
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, className }: SidebarProps) {
     const pathname = usePathname()
     const { logout } = useAuth()
 
@@ -47,7 +48,7 @@ export function Sidebar({ role }: SidebarProps) {
     const links = role === "company" ? companyLinks : role === "admin" ? adminLinks : userLinks
 
     return (
-        <aside className="w-64 bg-background border-r flex flex-col h-screen sticky top-0">
+        <aside className={cn("w-64 bg-background border-r flex flex-col h-screen sticky top-0 shrink-0", className)}>
             <div className="p-6 border-b">
                 <Link href="/" className="flex items-center gap-2">
                     <div className="bg-primary/10 p-2 rounded-lg">

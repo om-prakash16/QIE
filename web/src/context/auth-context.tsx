@@ -112,13 +112,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (data.user) {
+            // Also create a profile in the 'users' table
+            try {
+                const { error: profileError } = await supabase
+                    .from('users')
+                    .insert({
+                        id: data.user.id,
+                        full_name: name,
+                        email: email,
+                        role: role,
+                        location: "Remote",
+                        bio: `Hi, I am ${name}. Welcome to my profile!`,
+                        avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(/\s/g, '')}`,
+                        skills: [],
+                        experience: [],
+                        education: [],
+                        projects: [],
+                        wallet_address: `pending-${data.user.id.substring(0, 8)}`
+                    })
+                if (profileError) console.warn("Profile creation warning:", profileError.message)
+            } catch (e) {
+                console.error("Failed to create profile record:", e)
+            }
+
             setUser({
                 id: data.user.id,
                 name,
                 email,
                 role,
             })
-            toast.success("Account created successfully! Check your email to confirm.")
+            toast.success("Account created successfully!")
 
             if (role === "company") router.push("/company/dashboard")
             else router.push("/user/dashboard")
