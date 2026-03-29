@@ -61,7 +61,7 @@ export function Navbar() {
                         <div className="bg-primary/10 p-2 rounded-lg">
                             <Briefcase className="w-6 h-6 text-primary" />
                         </div>
-                        <span className="text-xl font-bold font-heading tracking-tight">NextGen<span className="text-primary">Career</span></span>
+                        <span className="text-xl font-bold font-heading tracking-tight">Skill<span className="text-primary">sutra</span></span>
                     </Link>
                 )}
 

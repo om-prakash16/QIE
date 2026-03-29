@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import { Scroll, Info, AlertOctagon, Scale, ShieldCheck } from "lucide-react"
 
 export const metadata = {
-    title: "Terms & Conditions | NextGen Careers",
+    title: "Terms & Conditions | Skillsutra",
     description: "Read our Terms & Conditions to understand the rules and guidelines for using our platform.",
 }
 
@@ -33,7 +33,7 @@ export default function TermsPage() {
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold font-heading">Terms & Conditions</h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Please read these terms carefully before using our platform. By accessing NextGen Careers, you agree to be bound by these terms.
+                        Please read these terms carefully before using our platform. By accessing Skillsutra, you agree to be bound by these terms.
                     </p>
                     <p className="text-sm font-medium text-muted-foreground pt-2">
                         Last Updated: December 18, 2024
@@ -43,7 +43,7 @@ export default function TermsPage() {
                 <div className="space-y-2">
                     <Section title="1. Introduction">
                         <p>
-                            Welcome to NextGen Careers. These Terms and Conditions ("Terms") govern your use of our website, services, and applications (collectively, the "Platform"). By creating an account or using the Platform, you agree to comply with these Terms and our Privacy Policy.
+                            Welcome to Skillsutra. These Terms and Conditions ("Terms") govern your use of our website, services, and applications (collectively, the "Platform"). By creating an account or using the Platform, you agree to comply with these Terms and our Privacy Policy.
                         </p>
                         <p>
                             If you do not agree with any part of these Terms, you must not use our services.
@@ -52,7 +52,7 @@ export default function TermsPage() {
 
                     <Section title="2. Definitions" icon={Info}>
                         <ul className="list-disc pl-6 space-y-2">
-                            <li><strong>"Platform"</strong> refers to the NextGen Careers website and associated services.</li>
+                            <li><strong>"Platform"</strong> refers to the Skillsutra website and associated services.</li>
                             <li><strong>"User"</strong> refers to any individual or entity accessing the Platform.</li>
                             <li><strong>"Job Seeker"</strong> refers to Users searching for employment opportunities.</li>
                             <li><strong>"Employer"</strong>/<strong>"Recruiter"</strong> refers to Users posting job opportunities.</li>
@@ -83,7 +83,7 @@ export default function TermsPage() {
 
                     <Section title="5. Job Listings & Employer Obligations">
                         <p>
-                            Employers solely are responsible for the content of their job postings. NextGen Careers does not guarantee the validity of a job offer or the identity of an employer.
+                            Employers solely are responsible for the content of their job postings. Skillsutra does not guarantee the validity of a job offer or the identity of an employer.
                         </p>
                         <p>
                             We reserve the right to remove any job listing that violates these Terms, is discriminatory, or is deemed inappropriate at our sole discretion, without refund.
@@ -92,14 +92,14 @@ export default function TermsPage() {
 
                     <Section title="6. Intellectual Property">
                         <p>
-                            The Platform and its original content, features, and functionality are owned by NextGen Careers and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+                            The Platform and its original content, features, and functionality are owned by Skillsutra and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
                         </p>
                     </Section>
 
                     <Section title="7. Limitation of Liability" icon={AlertOctagon}>
                         <p className="uppercase text-xs font-bold text-muted-foreground tracking-wider mb-2">Read Carefully</p>
                         <p>
-                            To the fullest extent permitted by law, NextGen Careers shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
+                            To the fullest extent permitted by law, Skillsutra shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from:
                         </p>
                         <ul className="list-disc pl-6 space-y-2 mt-2">
                             <li>Your access to or use of or inability to access or use the Platform.</li>
@@ -124,8 +124,8 @@ export default function TermsPage() {
                     <Section title="10. Contact Us">
                         <p>If you have any questions about these Terms, please contact us:</p>
                         <address className="not-italic mt-2 p-4 bg-muted rounded-lg border">
-                            <strong>NextGen Careers Legal Team</strong><br />
-                            Email: legal@nextgencareers.com<br />
+                            <strong>Skillsutra Legal Team</strong><br />
+                            Email: legal@skillsutra.com<br />
                             Phone: +91 80 1234 5678
                         </address>
                     </Section>

@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
-  title: "NextGen Careers | Find Your Dream Job",
+  title: "Skillsutra | Web3 Talent Marketplace",
   description: "The premium job portal for connecting top talent with world-class companies.",
 };
 

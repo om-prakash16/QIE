@@ -53,7 +53,7 @@ export function Sidebar({ role }: SidebarProps) {
                     <div className="bg-primary/10 p-2 rounded-lg">
                         <Briefcase className="w-6 h-6 text-primary" />
                     </div>
-                    <span className="text-xl font-bold font-heading">NextGen</span>
+                    <span className="text-xl font-bold font-heading">Skillsutra</span>
                 </Link>
             </div>
 

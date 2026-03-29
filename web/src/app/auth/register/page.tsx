@@ -31,7 +31,9 @@ export default function RegisterPage() {
     async function onSubmit(data: RegisterValues) {
         setIsLoading(true)
         try {
-            await register(data.name, data.email, data.role)
+            await register(data.name, data.email, data.password, data.role)
+        } catch {
+            // Error toast is already shown by auth-context
         } finally {
             setIsLoading(false)
         }

@@ -13,7 +13,7 @@ import {
 } from "lucide-react"
 
 export const metadata: Metadata = {
-    title: "About | NextGen Career",
+    title: "About | Skillsutra",
     description: "A modern approach to hiring and career clarity.",
 }
 
@@ -37,7 +37,7 @@ export default function AboutPage() {
                     <h2 className="text-2xl font-bold font-heading tracking-tight">Platform Overview</h2>
                     <div className="prose prose-neutral dark:prose-invert max-w-none text-muted-foreground leading-7">
                         <p>
-                            NextGen Career is a specialized platform designed to bridge the gap between engineering talent and forward-thinking companies. By integrating direct data sources like GitHub, we move beyond static resumes to offer a dynamic, proof-based representation of technical skill.
+                            Skillsutra is a specialized platform designed to bridge the gap between engineering talent and forward-thinking companies. By integrating direct data sources like GitHub, we move beyond static resumes to offer a dynamic, proof-based representation of technical skill.
                         </p>
                         <p>
                             We provide a dual-sided ecosystem: developers gain visibility based on their actual code and contributions, while companies access a signal-rich talent pool. The platform emphasizes salary transparency, role fit, and technical proficiency to facilitate meaningful professional connections.
@@ -199,7 +199,7 @@ export default function AboutPage() {
                         <div className="flex gap-4 items-start">
                             <Shield className="w-5 h-5 text-primary shrink-0 mt-0.5" />
                             <p className="text-sm text-muted-foreground leading-relaxed">
-                                <span className="font-semibold text-foreground">Commitment to Quality:</span> NextGen Career is built with a professional intent: to make the hiring ecosystem more efficient, fair, and data-driven. We are committed to continuous improvement, refining our tools to serve the evolving needs of the technical industry.
+                                <span className="font-semibold text-foreground">Commitment to Quality:</span> Skillsutra is built with a professional intent: to make the hiring ecosystem more efficient, fair, and data-driven. We are committed to continuous improvement, refining our tools to serve the evolving needs of the technical industry.
                             </p>
                         </div>
                     </div>

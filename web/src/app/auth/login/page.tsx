@@ -29,11 +29,9 @@ export default function LoginPage() {
     async function onSubmit(data: LoginValues) {
         setIsLoading(true)
         try {
-            // Mock role determination or just default to user for now. 
-            // In real app, value comes from backend.
-            // For demo, if email contains "company", log in as company.
-            const role = data.email.includes("company") ? "company" : data.email.includes("admin") ? "admin" : "user"
-            await login(data.email, role)
+            await login(data.email, data.password)
+        } catch {
+            // Error toast is already shown by auth-context
         } finally {
             setIsLoading(false)
         }

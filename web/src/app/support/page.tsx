@@ -34,7 +34,7 @@ const FAQS = [
         answer: "Once an application is submitted, it cannot be edited. However, you can update your profile usage data, and recruiters will see the latest version when they view your profile."
     },
     {
-        question: "Is NextGen Careers free for job seekers?",
+        question: "Is Skillsutra free for job seekers?",
         answer: "Yes! Creating a profile, searching for jobs, and applying is 100% free for all candidates. We only charge companies for premium hiring tools."
     },
     {
@@ -43,7 +43,7 @@ const FAQS = [
     },
     {
         question: "How can I contact support?",
-        answer: "You can reach us via the contact form on this page, or email us directly at support@nextgencareers.com. Our typical response time is 24 hours."
+        answer: "You can reach us via the contact form on this page, or email us directly at support@skillsutra.com. Our typical response time is 24 hours."
     },
 ]
 

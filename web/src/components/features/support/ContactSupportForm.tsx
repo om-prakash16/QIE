@@ -69,7 +69,7 @@ export function ContactSupportForm() {
                         <div className="space-y-4 pt-6">
                             <div className="flex items-center gap-3">
                                 <Mail className="w-5 h-5 text-primary" />
-                                <span>support@nextgencareers.com</span>
+                                <span>support@skillsutra.com</span>
                             </div>
                             <div className="flex items-center gap-3">
                                 <Phone className="w-5 h-5 text-primary" />
