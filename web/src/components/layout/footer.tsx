@@ -19,7 +19,7 @@ export function Footer({ forceVisible }: { forceVisible?: boolean }) {
                             <div className="bg-primary/10 p-2 rounded-lg">
                                 <Briefcase className="w-5 h-5 text-primary" />
                             </div>
-                            <span className="text-lg font-bold font-heading">Skill<span className="text-primary">sutra</span></span>
+                            <span className="text-lg font-bold font-heading">Skill<span className="text-primary">Proof AI</span></span>
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             Connecting top talent with world-class companies. Find your dream job or hire the best professionals today.
@@ -58,7 +58,7 @@ export function Footer({ forceVisible }: { forceVisible?: boolean }) {
 
                 <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-sm text-muted-foreground">
-                        © {new Date().getFullYear()} Skillsutra. All rights reserved.
+                        © {new Date().getFullYear()} SkillProof AI. All rights reserved.
                     </p>
                     <div className="flex gap-4">
                         <Link href="#" className="text-muted-foreground hover:text-primary"><Facebook className="w-5 h-5" /></Link>

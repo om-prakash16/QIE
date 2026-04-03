@@ -22,9 +22,11 @@ class JobCreate(BaseModel):
 
 class UserProfile(BaseModel):
     wallet_address: str
-    full_name: str
+    full_name: Optional[str] = None
     bio: Optional[str] = None
     github_handle: Optional[str] = None
+    profile_data: Optional[dict] = None
+
 
 class ProjectEntry(BaseModel):
     user_wallet: str
@@ -87,8 +89,20 @@ async def upsert_user(profile: UserProfile):
     if not db:
         return {"status": "mock", "data": profile.model_dump()}
     
-    response = db.table("users").upsert(profile.model_dump()).execute()
+    data = {k: v for k, v in profile.model_dump().items() if v is not None}
+    response = db.table("users").upsert(data).execute()
     return {"status": "success", "data": response.data}
+
+@router.patch("/users/{wallet}/profile")
+async def update_dynamic_profile(wallet: str, profile_data: dict):
+    """Update only the dynamic JSONB profile data."""
+    db = get_supabase()
+    if not db:
+        return {"status": "mock", "wallet": wallet, "profile_data": profile_data}
+    
+    response = db.table("users").update({"profile_data": profile_data}).eq("wallet_address", wallet).execute()
+    return {"status": "success", "data": response.data}
+
 
 # ─── Project Ledger Endpoints ────────────────────────────────────────
 @router.get("/ledger/{wallet}")

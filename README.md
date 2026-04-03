@@ -27,20 +27,19 @@
 
 ## 🏆 Hackathon-Winning Features
 
-### 🧠 Advanced AI Agentic Engine
-- **Intelligent Job Matching:** Vector embeddings via LangChain score candidate profiles against job postings instantly (e.g., "94% Match").
-- **Resume Parser:** FastAPI + OpenAI pipeline effortlessly converts messy PDF resumes into cleanly structured JSON metadata.
-- **AI Mentor Routing:** An embeddings-based recommendation engine connects candidates with senior Web3 mentors based on real-time skill gaps.
+### 🚀 Solana Blinks / Actions (Twitter-Native Hiring) ⭐⭐⭐
+- **Direct Apply from Socials:** Recruiter shares a job on X (Twitter), and candidates apply directly via the tweet using Solana Actions. No extra clicks.
+- **Spec-Compliant Backend:** Full metadata support for Solana Action discovery and transaction serialization.
 
-### ⛓️ Solana Blockchain Integration
-- **Dynamic Skill NFTs:** SBTs (Soulbound Tokens) whose IPFS metadata evolves and updates on-chain as the candidate completes micro-jobs and expands their GitHub repository.
-- **On-Chain Project Ledger:** Immutable proof-of-work hashes securely tying candidates to confirmed git commits.
-- **Zero-Friction Smart Contracts:** Anchor-based escrow system for micro-jobs, enabling companies to lock USDC bounties and algorithmically disburse them upon task completion.
+### 🎭 Dynamic Profile Engine & Templates ⭐⭐⭐
+- **Admin-Managed Schema:** Administrators can inject new profile fields (e.g., "LeetCode URL") in real-time without writing code.
+- **Industry Templates:** Switch between Developer, Designer, and Student profile blueprints instantly to suit the candidate's career track.
+- **NFT Integrity:** `updateProfileCID()` mechanism updates the underlying on-chain profile metadata (IPFS hash) while keeping the same static SBT.
 
-### 📊 Modern Web3 SaaS Architecture
-- **Dual-State Storage:** Immutable cryptographic verification permanently locked on Solana; intensive UI rendering and candidate data flawlessly scaled on Supabase PostgreSQL.
-- **Micro-Job Marketplace:** Complete hiring pipeline bridging standard full-time roles with modular, bounty-driven freelance gigs.
-- **Proof-of-Work Ranking:** Cumulative scoring algorithms calculating GitHub traction, peer referrals, and Web3 interactions.
+### 🧠 AI Career Evolution Engine
+- **Intelligent Job Matching:** Vector embeddings via LangChain score profiles against job descriptions instantly.
+- **Career Path Simulator:** AI-driven roadmap predicting the candidate's next 3 professional milestones based on verified on-chain skill NFTs.
+- **Skill Timeline:** A holographic, interactive visualization of the developer's growth from intern to senior engineer.
 
 ---
 

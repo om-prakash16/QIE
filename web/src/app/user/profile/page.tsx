@@ -13,8 +13,11 @@ import { GithubTab } from "@/components/features/user/profile/tabs/github-tab"
 import { LeetcodeTab } from "@/components/features/user/profile/tabs/leetcode-tab"
 import { ApplicationsTab } from "@/components/features/user/profile/tabs/applications-tab"
 import { SettingsTab } from "@/components/features/user/profile/tabs/settings-tab"
+import { DynamicProfileForm } from "@/components/features/profile/DynamicProfileForm"
 import { UserProfile } from "@/lib/mock-api/user-profile"
-import { Loader2, Edit, Save, X } from "lucide-react"
+
+import { Loader2, Edit, Save, X, Sparkles } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { supabase } from "@/lib/supabaseClient"
@@ -97,14 +100,13 @@ const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
 
 export default function ProfilePage() {
     const { user } = useAuth()
-    const { data: userProfile, isLoading } = useQuery({
+    const [profileData, setProfileData] = useState<UserProfile | null>(null)
+    const [isEditing, setIsEditing] = useState(false)
+    const { data: userProfile, isLoading, refetch } = useQuery({
         queryKey: ["userProfile", user?.id],
         queryFn: () => user?.id ? fetchUserProfile(user.id) : Promise.reject("No user ID"),
         enabled: !!user?.id
     })
-
-    const [profileData, setProfileData] = useState<UserProfile | null>(null)
-    const [isEditing, setIsEditing] = useState(false)
 
     // Sync query data to local state for editing
     if (userProfile && !profileData && !isLoading) {
@@ -135,6 +137,7 @@ export default function ProfilePage() {
             if (error) throw error
             toast.success("Profile saved successfully!")
             setIsEditing(false)
+            refetch() // Refresh data from server
         } catch (error: any) {
             toast.error(`Error saving profile: ${error.message}`)
         } finally {
@@ -364,7 +367,12 @@ export default function ProfilePage() {
                         <TabsTrigger value="projects" className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none border border-transparent data-[state=active]:border-primary">Projects</TabsTrigger>
                         <TabsTrigger value="github" className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none border border-transparent data-[state=active]:border-primary">GitHub</TabsTrigger>
                         <TabsTrigger value="applications" className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none border border-transparent data-[state=active]:border-primary">Applications</TabsTrigger>
+                        <TabsTrigger value="matrix" className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none border border-transparent data-[state=active]:border-primary flex items-center gap-2">
+                            <Sparkles className="w-3 h-3" />
+                            Matrix Profile
+                        </TabsTrigger>
                         <TabsTrigger value="settings" className="rounded-full px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground shadow-none border border-transparent data-[state=active]:border-primary">Settings</TabsTrigger>
+
                     </TabsList>
                 </div>
 
@@ -419,9 +427,15 @@ export default function ProfilePage() {
                 <TabsContent value="applications" className="animate-in fade-in-50 duration-300">
                     <ApplicationsTab data={activeData} />
                 </TabsContent>
+                <TabsContent value="matrix" className="animate-in fade-in-50 duration-300">
+                    <div className="bg-background/20 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 md:p-12 shadow-2xl">
+                         <DynamicProfileForm />
+                    </div>
+                </TabsContent>
                 <TabsContent value="settings" className="animate-in fade-in-50 duration-300">
                     <SettingsTab data={activeData} />
                 </TabsContent>
+
             </Tabs>
         </div>
     )

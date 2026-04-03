@@ -57,26 +57,27 @@ export function HeroSection() {
 
                 {/* Search Bar */}
                 <motion.div
-                    className="bg-background/50 backdrop-blur-md border p-2 rounded-full shadow-2xl max-w-3xl mx-auto flex flex-col md:flex-row gap-2 relative z-10"
+                    className="bg-background/50 backdrop-blur-md border p-2 rounded-[2rem] md:rounded-full shadow-2xl max-w-3xl mx-auto flex flex-col md:flex-row gap-2 relative z-10"
                     variants={itemVariants}
                     whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 >
                     <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground hidden md:block" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <Input
                             placeholder="Job title, keywords, or company"
-                            className="pl-4 md:pl-12 border-0 shadow-none bg-transparent focus-visible:ring-0 text-lg py-7"
+                            className="pl-12 border-0 shadow-none bg-transparent focus-visible:ring-0 text-base md:text-lg py-6 md:py-7"
                         />
                     </div>
                     <div className="hidden md:block w-px bg-border my-2" />
+                    <div className="w-full h-px bg-border md:hidden" />
                     <div className="relative flex-1">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground hidden md:block" />
+                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                         <Input
                             placeholder="City, state, or remote"
-                            className="pl-4 md:pl-12 border-0 shadow-none bg-transparent focus-visible:ring-0 text-lg py-7"
+                            className="pl-12 border-0 shadow-none bg-transparent focus-visible:ring-0 text-base md:text-lg py-6 md:py-7"
                         />
                     </div>
-                    <Button size="lg" className="rounded-full px-10 py-7 text-lg font-bold shadow-lg hover:shadow-primary/20 transition-all duration-300">
+                    <Button size="lg" className="rounded-full w-full md:w-auto px-10 py-6 md:py-7 text-base md:text-lg font-bold shadow-lg hover:shadow-primary/20 transition-all duration-300 mt-2 md:mt-0">
                         Search Jobs
                     </Button>
                 </motion.div>

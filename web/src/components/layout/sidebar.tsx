@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 import {
     LayoutDashboard,
     User,
@@ -12,8 +13,13 @@ import {
     Settings,
     LogOut,
     Building2,
-    Users
+    Users,
+    Zap,
+    Code,
+    Brain,
+    Boxes
 } from "lucide-react"
+
 import { useAuth } from "@/context/auth-context"
 
 interface SidebarProps {
@@ -43,49 +49,111 @@ export function Sidebar({ role, className }: SidebarProps) {
         { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/admin/users", label: "Manage Users", icon: Users },
         { href: "/admin/jobs", label: "Manage Jobs", icon: Briefcase },
+        { href: "/admin/schema", label: "Schema Builder", icon: Code },
+        { href: "/admin/ai-config", label: "AI & Reputation", icon: Brain },
+        { href: "/admin/features", label: "Feature Flags", icon: Boxes },
     ]
+
 
     const links = role === "company" ? companyLinks : role === "admin" ? adminLinks : userLinks
 
     return (
-        <aside className={cn("w-64 bg-background border-r flex flex-col h-screen sticky top-0 shrink-0", className)}>
-            <div className="p-6 border-b">
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                        <Briefcase className="w-6 h-6 text-primary" />
+        <aside className={cn(
+            "w-64 bg-background/60 backdrop-blur-xl border-r border-white/10 flex flex-col h-screen sticky top-0 shrink-0 z-50",
+            "before:absolute before:inset-0 before:bg-gradient-to-b before:from-primary/5 before:to-transparent before:pointer-events-none",
+            className
+        )}>
+            {/* Ambient Background Glows */}
+            <div className="absolute top-0 -left-20 w-40 h-40 bg-primary/10 blur-[100px] pointer-events-none" />
+            <div className="absolute bottom-20 -right-20 w-40 h-40 bg-primary/5 blur-[80px] pointer-events-none" />
+
+            <div className="p-8 relative">
+                <Link href="/" className="flex items-center gap-3 group">
+                    <div className="relative">
+                        <motion.div 
+                            className="absolute -inset-2 bg-primary/25 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                            animate={{ scale: [1, 1.2, 1] }}
+                            transition={{ duration: 4, repeat: Infinity }}
+                        />
+                        <div className="bg-gradient-to-br from-primary/20 to-primary/5 p-2.5 rounded-xl border border-primary/30 backdrop-blur-md relative shadow-lg shadow-primary/5">
+                            <Zap className="w-6 h-6 text-primary fill-primary/10 group-hover:fill-primary/20 transition-colors" />
+                        </div>
                     </div>
-                    <span className="text-xl font-bold font-heading">Skillsutra</span>
+                    <div className="flex flex-col">
+                        <span className="text-xl font-bold font-heading tracking-tight block bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/80 transition-all duration-500">
+                            Skillsutra
+                        </span>
+                        <span className="text-[9px] uppercase tracking-[0.3em] text-primary/60 font-bold">Talent Engine</span>
+                    </div>
                 </Link>
             </div>
 
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                {links.map((link) => (
-                    <Link key={link.href} href={link.href}>
-                        <Button
-                            variant={pathname === link.href ? "secondary" : "ghost"}
-                            className={cn(
-                                "w-full justify-start gap-3 mb-1",
-                                pathname === link.href && "bg-secondary font-medium"
-                            )}
-                        >
-                            <link.icon className="w-4 h-4" />
-                            {link.label}
-                        </Button>
-                    </Link>
-                ))}
+            <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar relative">
+                {links.map((link) => {
+                    const isActive = pathname === link.href
+                    return (
+                        <Link key={link.href} href={link.href} className="block relative group/item">
+                            <Button
+                                variant="ghost"
+                                className={cn(
+                                    "w-full justify-start gap-4 relative z-10 transition-all duration-500 rounded-xl overflow-hidden px-4 h-14",
+                                    isActive 
+                                        ? "text-primary bg-primary/5 border border-primary/10 shadow-sm" 
+                                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                                )}
+                            >
+                                <div className={cn(
+                                    "p-2 rounded-lg transition-all duration-500",
+                                    isActive ? "bg-primary/10" : "bg-transparent group-hover/item:bg-white/5"
+                                )}>
+                                    <link.icon className={cn(
+                                        "w-5 h-5 transition-all duration-500 group-hover/item:scale-110",
+                                        isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground"
+                                    )} />
+                                </div>
+                                
+                                <span className={cn(
+                                    "text-sm font-medium tracking-wide transition-colors",
+                                    isActive ? "font-semibold" : "font-normal"
+                                )}>
+                                    {link.label}
+                                </span>
+                                
+                                {isActive && (
+                                    <>
+                                        <motion.div
+                                            layoutId="sidebar-active-glow"
+                                            className="absolute left-0 top-1/4 bottom-1/4 w-1 bg-primary rounded-full blur-[2px]"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                        <motion.div
+                                            layoutId="sidebar-active-bg"
+                                            className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent pointer-events-none"
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ duration: 0.5 }}
+                                        />
+                                    </>
+                                )}
+                            </Button>
+                        </Link>
+                    )
+                })}
             </nav>
 
-            <div className="p-4 border-t space-y-2">
-                <Link href="/settings">
-                    <Button variant="ghost" className="w-full justify-start gap-3">
-                        <Settings className="w-4 h-4" />
-                        Settings
+            <div className="p-6 mt-auto border-t border-white/5 space-y-4 bg-gradient-to-b from-transparent to-primary/5 backdrop-blur-md">
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
+                    <Button 
+                        variant="ghost" 
+                        className="w-full justify-start gap-3 text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-all h-11 px-4 rounded-xl group" 
+                        onClick={logout}
+                    >
+                        <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                        <span className="text-sm">Sign Out</span>
                     </Button>
-                </Link>
-                <Button variant="ghost" className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={logout}>
-                    <LogOut className="w-4 h-4" />
-                    Log Out
-                </Button>
+                </div>
             </div>
         </aside>
     )

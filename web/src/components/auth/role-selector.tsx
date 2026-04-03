@@ -1,6 +1,6 @@
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { User, Building2 } from "lucide-react"
+import { User, Building2, Zap } from "lucide-react"
 
 interface RoleSelectorProps {
     value: string
@@ -28,6 +28,16 @@ export function RoleSelector({ value, onChange }: RoleSelectorProps) {
                 >
                     <Building2 className="mb-3 h-6 w-6" />
                     Company
+                </Label>
+            </div>
+            <div className="col-span-2">
+                <RadioGroupItem value="admin" id="admin" className="peer sr-only" />
+                <Label
+                    htmlFor="admin"
+                    className="flex flex-row items-center justify-center gap-3 rounded-md border-2 border-dashed border-primary/20 bg-primary/5 p-4 hover:bg-primary/10 hover:border-primary/40 peer-data-[state=checked]:border-primary transition-all cursor-pointer"
+                >
+                    <Zap className="h-5 w-5 text-primary" />
+                    <span className="font-bold text-xs uppercase tracking-widest text-primary/80">Dev: System Admin</span>
                 </Label>
             </div>
         </RadioGroup>

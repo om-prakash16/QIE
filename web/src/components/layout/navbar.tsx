@@ -34,6 +34,7 @@ export function Navbar() {
     const pathname = usePathname()
 
     const navLinks = [
+        { href: "/verify", label: "Verify Resume" },
         { href: "/jobs", label: "Find Jobs" },
         { href: "/companies", label: "Companies" },
         { href: "/talent", label: "Talent" },
@@ -78,7 +79,7 @@ export function Navbar() {
                         <div className="bg-primary/10 p-2 rounded-lg">
                             <Briefcase className="w-6 h-6 text-primary" />
                         </div>
-                        <span className="text-xl font-bold font-heading tracking-tight">Skill<span className="text-primary">sutra</span></span>
+                        <span className="text-xl font-bold font-heading tracking-tight">Skill<span className="text-primary">Proof AI</span></span>
                     </Link>
                 )}
 
@@ -145,46 +146,51 @@ export function Navbar() {
                             </Link>
                         </>
                     ) : (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
-                                        <AvatarFallback>{user.name[0]}</AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end" forceMount>
-                                <DropdownMenuLabel className="font-normal">
-                                    <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">{user.name}</p>
-                                        <p className="text-xs leading-none text-muted-foreground">
-                                            {user.email}
-                                        </p>
-                                    </div>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuGroup>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/user/dashboard">
-                                            Dashboard
-                                        </Link>
+                        <div className="flex items-center gap-4">
+                            <Link href="/user/profile" className="hidden lg:block">
+                                <Button variant="ghost" size="sm">My Profile</Button>
+                            </Link>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="relative h-9 w-9 rounded-full border border-primary/20 p-0 overflow-hidden">
+                                        <Avatar className="h-full w-full">
+                                            <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`} alt={user.name} />
+                                            <AvatarFallback className="bg-primary/10 text-primary">{user.name[0]}</AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-56" align="end" forceMount>
+                                    <DropdownMenuLabel className="font-normal">
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-medium leading-none">{user.name}</p>
+                                            <p className="text-xs leading-none text-muted-foreground">
+                                                {user.email}
+                                            </p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuGroup>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/user/dashboard">
+                                                Dashboard
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/user/profile">
+                                                Profile Builder
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            Settings
+                                        </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive cursor-pointer font-medium">
+                                        Log out
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                        <Link href="/user/profile">
-                                            My Profile
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Settings
-                                    </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">
-                                    Log out
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     )}
                 </div>
 

@@ -2,6 +2,9 @@ fastapi
 uvicorn
 pydantic
 langchain
-openai<1.0.0
+langchain-openai
+openai
 supabase
 python-dotenv
+python-multipart
+PyPDF2

@@ -11,11 +11,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { RoleSelector } from "@/components/auth/role-selector"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
+import { Briefcase, Loader2, Eye, EyeOff } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+
 
 export default function RegisterPage() {
     const { register } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
     const form = useForm<RegisterValues>({
         resolver: zodResolver(registerSchema),
@@ -98,7 +102,37 @@ export default function RegisterPage() {
                                 <FormItem>
                                     <FormLabel>Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} />
+                                        <div className="relative">
+                                            <Input 
+                                                type={showPassword ? "text" : "password"} 
+                                                className="pr-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 h-12 transition-all"
+                                                {...field} 
+                                            />
+                                            <motion.button
+                                                type="button"
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground/60 hover:text-primary transition-colors bg-white/5 rounded-lg border border-white/5 hover:border-primary/20"
+                                            >
+                                                <AnimatePresence mode="wait">
+                                                    <motion.div
+                                                        key={showPassword ? "eye-off" : "eye"}
+                                                        initial={{ opacity: 0, rotate: -30 }}
+                                                        animate={{ opacity: 1, rotate: 0 }}
+                                                        exit={{ opacity: 0, rotate: 30 }}
+                                                        transition={{ duration: 0.15 }}
+                                                    >
+                                                        {showPassword ? (
+                                                            <EyeOff className="h-4 w-4" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
+                                                    </motion.div>
+                                                </AnimatePresence>
+                                            </motion.button>
+
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -112,7 +146,37 @@ export default function RegisterPage() {
                                 <FormItem>
                                     <FormLabel>Confirm Password</FormLabel>
                                     <FormControl>
-                                        <Input type="password" {...field} />
+                                        <div className="relative">
+                                            <Input 
+                                                type={showConfirmPassword ? "text" : "password"} 
+                                                className="pr-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20 h-12 transition-all"
+                                                {...field} 
+                                            />
+                                            <motion.button
+                                                type="button"
+                                                whileHover={{ scale: 1.1 }}
+                                                whileTap={{ scale: 0.9 }}
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center text-muted-foreground/60 hover:text-primary transition-colors bg-white/5 rounded-lg border border-white/5 hover:border-primary/20"
+                                            >
+                                                <AnimatePresence mode="wait">
+                                                    <motion.div
+                                                        key={showConfirmPassword ? "eye-off" : "eye"}
+                                                        initial={{ opacity: 0, rotate: -30 }}
+                                                        animate={{ opacity: 1, rotate: 0 }}
+                                                        exit={{ opacity: 0, rotate: 30 }}
+                                                        transition={{ duration: 0.15 }}
+                                                    >
+                                                        {showConfirmPassword ? (
+                                                            <EyeOff className="h-4 w-4" />
+                                                        ) : (
+                                                            <Eye className="h-4 w-4" />
+                                                        )}
+                                                    </motion.div>
+                                                </AnimatePresence>
+                                            </motion.button>
+
+                                        </div>
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
