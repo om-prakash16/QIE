@@ -1,0 +1,8 @@
+{
+  "name": "skillproof-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
