@@ -19,8 +19,7 @@ export default function SchemaBuilder() {
   const [isSaving, setIsSaving] = useState(false);
   
   const [newField, setNewField] = useState({
-    field_name: "", // Will map to 'key' in server depending on schema definition
-    field_label: "",
+    field_name: "", 
     field_type: "text",
     section: "Professional Info",
     required: false,
@@ -36,7 +35,7 @@ export default function SchemaBuilder() {
     try {
       const data = await api.admin.getSchema();
       if(!data.detail) {
-          setFields(data);
+          setFields(data || []);
       }
     } catch (err) {
       console.error("Schema fetch error:", err);
@@ -46,25 +45,34 @@ export default function SchemaBuilder() {
   };
 
   const handleAddField = async () => {
-    if (!newField.field_name || !newField.field_label) return;
+    if (!newField.field_name) return;
     
     setIsSaving(true);
     try {
-      // Map frontend model to backend model (dependent on Phase 1 adjustments)
       const payload = {
-          label: newField.field_label,
-          key: newField.field_name,
-          type: newField.field_type,
+          field_name: newField.field_name,
+          field_type: newField.field_type,
+          section: newField.section,
           required: newField.required,
           display_order: newField.display_order || fields.length + 1
       };
       await api.admin.createSchema(payload);
       await fetchSchema();
-      setNewField({ field_name: "", field_label: "", field_type: "text", section: "Professional Info", required: false, display_order: 0 });
+      setNewField({ field_name: "", field_type: "text", section: "Professional Info", required: false, display_order: 0 });
     } catch (err) {
       console.error("Schema add error:", err);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleDeleteField = async (id: string) => {
+    if (!confirm("Are you sure you want to purge this parameter from the registry?")) return;
+    try {
+      await api.admin.deleteSchema(id);
+      await fetchSchema();
+    } catch (err) {
+      console.error("Schema delete error:", err);
     }
   };
 
@@ -105,22 +113,27 @@ export default function SchemaBuilder() {
                 </CardHeader>
                 <CardContent className="space-y-5 relative z-10">
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest font-black text-white/50">Field Label (Visible)</label>
+                        <label className="text-xs uppercase tracking-widest font-black text-white/50">Field Name (Label & Key)</label>
                         <Input 
                             placeholder="e.g. GitHub URL" 
                             className="bg-black/40 border-white/10 text-white focus-visible:ring-blue-500/50"
-                            value={newField.field_label}
-                            onChange={e => setNewField({...newField, field_label: e.target.value})}
+                            value={newField.field_name}
+                            onChange={e => setNewField({...newField, field_name: e.target.value})}
                         />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs uppercase tracking-widest font-black text-white/50">System Key (Database)</label>
-                        <Input 
-                            placeholder="e.g. github_url" 
-                            className="bg-black/40 border-white/10 text-white font-mono focus-visible:ring-blue-500/50"
-                            value={newField.field_name}
-                            onChange={e => setNewField({...newField, field_name: e.target.value.toLowerCase().replace(/\\s+/g, '_')})}
-                        />
+                        <label className="text-xs uppercase tracking-widest font-black text-white/50">Section</label>
+                        <Select value={newField.section} onValueChange={(v) => setNewField({...newField, section: v})}>
+                            <SelectTrigger className="bg-black/40 border-white/10 text-white focus-visible:ring-blue-500/50">
+                                <SelectValue placeholder="Section" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-[#030712] border-white/10 text-white">
+                                <SelectItem value="Professional Info">Professional Info</SelectItem>
+                                <SelectItem value="Web3 Heritage">Web3 Heritage</SelectItem>
+                                <SelectItem value="Personality Analytics">Personality Analytics</SelectItem>
+                                <SelectItem value="Verification Logic">Verification Logic</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="space-y-2">
                         <label className="text-xs uppercase tracking-widest font-black text-white/50">Data Type</label>
@@ -141,7 +154,7 @@ export default function SchemaBuilder() {
                     
                     <Button 
                         onClick={handleAddField} 
-                        disabled={isSaving || !newField.field_name || !newField.field_label} 
+                        disabled={isSaving || !newField.field_name} 
                         className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black tracking-widest uppercase mt-4 shadow-[0_0_20px_rgba(37,99,235,0.4)]"
                     >
                         {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : "Deploy Parameter"}
@@ -169,9 +182,9 @@ export default function SchemaBuilder() {
                     <Table>
                     <TableHeader className="bg-white/5 border-b border-white/10">
                         <TableRow className="hover:bg-transparent">
-                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-10 px-6">Label / Type</TableHead>
-                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-10">System Key</TableHead>
-                            <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white/40 h-10 px-6">Overrides</TableHead>
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-10 px-6">Name / Section</TableHead>
+                            <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-10">Type</TableHead>
+                            <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white/40 h-10 px-6">Registry Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -184,7 +197,7 @@ export default function SchemaBuilder() {
                             </TableRow>
                         ) : fields.map(field => (
                             <motion.tr 
-                                key={field.id || field.key} 
+                                key={field.id} 
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 10 }}
@@ -192,22 +205,24 @@ export default function SchemaBuilder() {
                             >
                             <TableCell className="px-6 py-4">
                                 <div className="flex flex-col">
-                                    <span className="font-bold text-white/90">{field.field_label || field.label}</span>
+                                    <span className="font-bold text-white/90">{field.field_name}</span>
                                     <span className="text-[10px] font-black uppercase tracking-widest text-blue-500 mt-1 flex items-center gap-1">
-                                        <GitCommit className="w-3 h-3" /> {field.field_type || field.type}
+                                        <GitCommit className="w-3 h-3" /> {field.section}
                                     </span>
                                 </div>
                             </TableCell>
                             <TableCell>
-                                <code className="text-xs bg-black/50 border border-white/10 px-2.5 py-1 rounded-md text-white/70 font-mono shadow-inner shadow-black/50">
-                                    {field.field_name || field.key}
+                                <code className="text-xs bg-black/50 border border-white/10 px-2.5 py-1 rounded-md text-white/70 font-mono shadow-inner shadow-black/50 uppercase">
+                                    {field.field_type}
                                 </code>
                             </TableCell>
                             <TableCell className="text-right px-6">
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-white hover:bg-white/10 transition-colors mr-1">
-                                    <Edit className="w-4 h-4" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/40 hover:text-rose-500 hover:bg-rose-500/10 transition-colors">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 text-white/40 hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                                    onClick={() => handleDeleteField(field.id)}
+                                >
                                     <Trash2 className="w-4 h-4" />
                                 </Button>
                             </TableCell>

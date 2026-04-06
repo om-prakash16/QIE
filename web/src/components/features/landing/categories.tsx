@@ -10,13 +10,7 @@ import {
   Smartphone,
   Bitcoin,
   Briefcase,
-  Search,
-  Code2, 
-  Cpu, 
-  Globe2, 
-  BarChart4, 
-  ShieldCheck, 
-  Bitcoin
+  Search
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCMS } from '@/context/cms-context';
@@ -69,7 +63,7 @@ export function Categories() {
                                 <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">{cat.count && cat.count.toLocaleString()} Active Roles</span>
                             </div>
                             <div className="space-y-1">
-                                <h3 className="text-lg font-bold tracking-tight">{cat.name}</h3>
+                                <h3 className="text-lg font-black tracking-tighter uppercase">{cat.name}</h3>
                                 <div className="h-1 w-8 bg-primary rounded-full" />
                             </div>
                         </Card>

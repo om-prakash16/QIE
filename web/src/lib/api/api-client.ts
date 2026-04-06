@@ -93,6 +93,7 @@ export const api = {
         getSchema: () => fetchWithAuth("/admin/schema"),
         createSchema: (data: any) => fetchWithAuth("/admin/schema", { method: "POST", body: JSON.stringify(data) }),
         updateSchema: (id: string, data: any) => fetchWithAuth(`/admin/schema/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+        deleteSchema: (id: string) => fetchWithAuth(`/admin/schema/${id}`, { method: "DELETE" }),
         getFeatures: () => fetchWithAuth("/admin/features"),
         updateFeature: (data: any) => fetchWithAuth("/admin/features/update", { method: "POST", body: JSON.stringify(data) }),
         getSettings: () => fetchWithAuth("/admin/settings"),

@@ -49,7 +49,7 @@ export function JobCard({ job }: JobCardProps) {
                     </div>
                     <div>
                         <Link href={createSlug(job.title, job.company, job.id)} className="hover:underline">
-                            <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{job.title}</h3>
+                            <h3 className="font-bold text-lg tracking-tight group-hover:text-primary transition-colors">{job.title}</h3>
                         </Link>
                         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mt-1">
                             <span className="font-medium text-foreground">{job.company}</span>

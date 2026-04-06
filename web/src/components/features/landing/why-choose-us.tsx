@@ -39,7 +39,7 @@ export function WhyChooseUs() {
                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                             <Icon className="w-6 h-6 text-primary" />
                         </div>
-                        <h3 className="text-xl font-bold tracking-tight">{feature.title}</h3>
+                        <h3 className="text-xl font-black tracking-tighter">{feature.title}</h3>
                         <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                     </div>
                 );

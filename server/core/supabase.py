@@ -19,11 +19,11 @@ try:
         print("[SUCCESS] Supabase connected successfully!")
     else:
         supabase = None
-        print("⚠️  Supabase keys not found in .env — running in mock mode")
+        print("[WARNING] Supabase keys not found in .env - running in mock mode")
         
 except ImportError:
     supabase = None
-    print("⚠️  supabase-py not installed — running in mock mode")
+    print("[WARNING] supabase-py not installed - running in mock mode")
 
 
 def get_supabase() -> "Client | None":

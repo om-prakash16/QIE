@@ -8,9 +8,9 @@ router = APIRouter()
 
 class SchemaFieldCreate(BaseModel):
     id: Optional[str] = None
-    label: str
-    key: str
-    type: str # text, number, select, etc.
+    field_name: str
+    field_type: str # text, number, select, etc.
+    section: str = "General"
     required: bool = False
     validation_rules: Optional[Dict[str, Any]] = None
     display_order: int = 0
