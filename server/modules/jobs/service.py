@@ -13,6 +13,8 @@ class JobService:
         SECTION 2: Create a job post.
         """
         db = get_supabase()
+        if not db:
+            raise Exception("Database service unavailable")
         response = db.table("jobs").insert({
             "company_id": data.get("company_id"),
             "title": data.get("title"),
@@ -35,10 +37,17 @@ class JobService:
         SECTION 4: Public job board with AI match score preview.
         """
         db = get_supabase()
+        if not db: return []
         
         # 1. Fetch active jobs
-        jobs_resp = db.table("jobs").select("*, companies(name)").eq("is_active", True).execute()
-        jobs = jobs_resp.data if jobs_resp.data else []
+        try:
+            jobs_resp = db.table("jobs").select("*, companies(name)").eq("is_active", True).execute()
+            jobs = jobs_resp.data if jobs_resp.data else []
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch jobs with company join: {str(e)}")
+            # Fallback to fetching jobs without the join if it fails
+            jobs_resp = db.table("jobs").select("*").eq("is_active", True).execute()
+            jobs = jobs_resp.data if jobs_resp.data else []
         
         if not user_id or not jobs:
             return jobs
@@ -63,8 +72,14 @@ class JobService:
         SECTION 10: Fetch job details with company info.
         """
         db = get_supabase()
-        response = db.table("jobs").select("*, companies(name)").eq("id", job_id).single().execute()
-        return response.data
+        if not db: return {}
+        try:
+            response = db.table("jobs").select("*, companies(name)").eq("id", job_id).single().execute()
+            return response.data
+        except Exception as e:
+            print(f"[ERROR] Failed to fetch job details: {str(e)}")
+            response = db.table("jobs").select("*").eq("id", job_id).single().execute()
+            return response.data
 
     async def apply_to_job(self, job_id: str, candidate_id: str) -> Dict[str, Any]:
         """

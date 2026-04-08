@@ -1,7 +1,7 @@
 version: '3.8'
 services:
-  skillsutra-web:
-    container_name: skillsutra_web
+  hiring-tool-web:
+    container_name: hiring_tool_web
     build:
       context: ./web
       dockerfile: Dockerfile
@@ -12,16 +12,16 @@ services:
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       - NEXT_PUBLIC_API_URL=http://localhost:8011/api/v1
     depends_on:
-      - skillsutra-server
+      - hiring-tool-server
     volumes:
       - ./web:/app
       - /app/node_modules
       - /app/.next
     networks:
-      - skillsutra_network
+      - hiring_tool_network
 
-  skillsutra-server:
-    container_name: skillsutra_server
+  hiring-tool-server:
+    container_name: hiring_tool_server
     build:
       context: ./server
       dockerfile: Dockerfile
@@ -34,8 +34,8 @@ services:
     volumes:
       - ./server:/app
     networks:
-      - skillsutra_network
+      - hiring_tool_network
 
 networks:
-  skillsutra_network:
-    name: skillsutra_talent_network
+  hiring_tool_network:
+    name: hiring_tool_talent_network

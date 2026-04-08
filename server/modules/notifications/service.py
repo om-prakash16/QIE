@@ -16,6 +16,7 @@ class NotificationService:
         SECTION 1: Create a new persistent notification in the database.
         """
         db = get_supabase()
+        if not db: return None
         notification_data = {
             "user_id": str(user_id),
             "type": type,
@@ -41,6 +42,7 @@ class NotificationService:
         SECTION 3 & 4: Record a system or user activity log.
         """
         db = get_supabase()
+        if not db: return None
         log_data = {
             "user_id": str(user_id) if user_id else None,
             "action_type": action_type,
@@ -59,6 +61,7 @@ class NotificationService:
         SECTION 5: Fetch notifications for a specific user.
         """
         db = get_supabase()
+        if not db: return []
         response = db.table("notifications") \
             .select("*") \
             .eq("user_id", str(user_id)) \
@@ -73,6 +76,7 @@ class NotificationService:
         SECTION 5: Mark a notification as read.
         """
         db = get_supabase()
+        if not db: return
         db.table("notifications") \
             .update({"status": "read"}) \
             .eq("id", str(notification_id)) \

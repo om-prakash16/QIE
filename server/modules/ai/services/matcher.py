@@ -26,12 +26,24 @@ class JobMatcher:
         if not profile_data or not job_list:
             return [{"job_id": j.get("id"), "title": j.get("title"), "match_score": 0.0} for j in job_list]
 
-        profile_text = f"{profile_data.get('full_name', '')} {profile_data.get('bio', '')} {profile_data.get('skills', '')}"
+        # Extract and clean profile text
+        profile_parts = [
+            str(profile_data.get('full_name', '')),
+            str(profile_data.get('bio', '')),
+            ", ".join(profile_data.get('skills', [])) if isinstance(profile_data.get('skills'), list) else str(profile_data.get('skills', ''))
+        ]
+        profile_text = " ".join([p for p in profile_parts if p.strip()]).strip() or "General Candidate"
         profile_vec = await self.get_embedding(profile_text)
         
         results = []
         for job in job_list:
-            job_text = f"{job.get('title', '')} {job.get('description', '')} {job.get('skills_required', '')}"
+            # Extract and clean job text
+            job_parts = [
+                str(job.get('title', '')),
+                str(job.get('description', '')),
+                ", ".join(job.get('skills_required', [])) if isinstance(job.get('skills_required'), list) else str(job.get('skills_required', ''))
+            ]
+            job_text = " ".join([p for p in job_parts if p.strip()]).strip() or "General Job"
             job_vec = await self.get_embedding(job_text)
             
             # 2. Using sklearn for cosine similarity with error handling

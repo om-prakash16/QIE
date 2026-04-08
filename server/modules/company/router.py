@@ -16,7 +16,7 @@ async def create_company(req: CompanyCreate, user = Depends(get_current_user)):
 
     # 1. Create Company
     company_resp = db.table("companies").insert({
-        "company_name": req.name,
+        "name": req.name,
         "created_by_user_id": user_id
     }).execute()
 

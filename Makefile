@@ -1,4 +1,4 @@
-# Skillsutra Project Makefile
+# 'this best hiring tool' Project Makefile
 
 # Install all dependencies
 install:

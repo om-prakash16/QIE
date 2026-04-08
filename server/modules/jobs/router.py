@@ -46,10 +46,37 @@ async def create_job(job: JobCreate, user = Depends(get_current_user)):
 @router.post("/apply", response_model=ApplicationResponse)
 async def apply_to_job(data: ApplicationCreate, user = Depends(get_current_user)):
     """
-    SECTION 10: Application submission + AI match scoring.
+    Submits an application and triggers high-fidelity AI matching.
     """
     result = await job_service.apply_to_job(data.job_id, data.candidate_id)
-    return ApplicationResponse(id=result["id"], **result)
+    
+    # Notify Candidate
+    try:
+        await NotificationService.create_event_notification(
+            user_id=user.get("id"),
+            type="job_apply",
+            title="Application Submitted",
+            message=f"You successfully applied for the job. AI Match Score: {result.get('ai_match_score', 0)}%"
+        )
+        
+        # Log Activity
+        await NotificationService.log_activity(
+            user_id=user.get("id"),
+            action_type="apply_to_job",
+            entity_type="job",
+            entity_id=data.job_id,
+            description=f"Applied with score {result.get('ai_match_score', 0)}%"
+        )
+    except Exception:
+        pass # Best effort for notifications
+
+    return ApplicationResponse(
+        id=result["id"], 
+        status=result.get("status", "applied"), 
+        ai_match_score=result.get("ai_match_score", 0), 
+        **data.model_dump()
+    )
+
 
 @router.get("/user")
 async def get_user_applications(user_id: str):
@@ -57,6 +84,7 @@ async def get_user_applications(user_id: str):
     SECTION 10: Candidate's application tracking.
     """
     db = get_supabase()
+    if not db: return []
     response = db.table("applications") \
         .select("*, jobs(title, companies(name))") \
         .eq("candidate_id", user_id) \
@@ -69,34 +97,6 @@ async def get_company_applications(company_id: str):
     SECTION 10: Recruiter's applicant list.
     """
     return await job_service.get_company_applications(company_id)
-
-# --- Job Application Endpoints ---
-
-@router.post("/apply", response_model=ApplicationResponse)
-async def apply_to_job(data: ApplicationCreate, user = Depends(get_current_user)):
-    """
-    Submits an application and triggers high-fidelity AI matching.
-    """
-    result = await job_service.apply_to_job(data.job_id, data.candidate_wallet)
-    
-    # Notify Candidate
-    await NotificationService.create_event_notification(
-        user_id=user.get("id"),
-        type="job_apply",
-        title="Application Submitted",
-        message=f"You successfully applied for the job. AI Match Score: {result['ai_match_score']}%"
-    )
-    
-    # Log Activity
-    await NotificationService.log_activity(
-        user_id=user.get("id"),
-        action_type="apply_to_job",
-        entity_type="job",
-        entity_id=data.job_id,
-        description=f"Applied with score {result['ai_match_score']}%"
-    )
-    
-    return ApplicationResponse(id=result["id"], status=result["status"], ai_match_score=result["ai_match_score"], **data.model_dump())
 
 
 @router.patch("/{app_id}/status")
