@@ -5,84 +5,92 @@ from core.supabase import get_supabase
 
 router = APIRouter()
 
+
 @router.post("/create")
 async def create_company(req: CompanyCreate, user = Depends(get_current_user)):
     """
-    Company Account Creation.
-    Creates a new company workspace and assigns the user as OWNER.
+    Set up a new company workspace.
+
+    The requesting user is automatically assigned the OWNER role within the
+    company and their global platform role is elevated to COMPANY so they
+    gain access to the recruiter dashboard.
     """
     db = get_supabase()
     user_id = user.get("sub")
 
-    # 1. Create Company
     company_resp = db.table("companies").insert({
         "name": req.name,
-        "created_by_user_id": user_id
+        "created_by_user_id": user_id,
     }).execute()
 
     if not company_resp.data:
         raise HTTPException(status_code=500, detail="Failed to create company")
-    
+
     company = company_resp.data[0]
 
-    # 2. Assign user as OWNER in company_members
+    # Owner membership record
     db.table("company_members").insert({
         "company_id": company["id"],
         "user_id": user_id,
-        "company_role": "OWNER"
+        "company_role": "OWNER",
     }).execute()
 
-    # 3. Update user global role to COMPANY
-    role_resp = db.table("roles").select("id").eq("role_name", "COMPANY").single().execute()
-    if role_resp.data:
-        db.table("user_roles").insert({"user_id": user_id, "role_id": role_resp.data["id"]}).execute()
+    # Elevate the user's global role so they route to the correct dashboard.
+    role_row = db.table("roles").select("id").eq("role_name", "COMPANY").single().execute()
+    if role_row.data:
+        db.table("user_roles").insert({
+            "user_id": user_id,
+            "role_id": role_row.data["id"],
+        }).execute()
 
     return {"status": "success", "company_id": company["id"]}
+
 
 @router.post("/invite-member")
 async def invite_member(req: CompanyInvite, user = Depends(get_current_user)):
     """
-    Team Member Invitations.
+    Invite an existing user to join a company.
+
+    The target user must have logged in at least once so their wallet is
+    already registered. Only OWNER-level members can send invitations.
     """
     db = get_supabase()
     user_id = user.get("sub")
 
-    # 1. Verify invitation sender is OWNER of the company
-    member_check = db.table("company_members").select("*") \
+    ownership = db.table("company_members").select("*") \
         .eq("company_id", req.company_id) \
         .eq("user_id", user_id) \
         .eq("company_role", "OWNER") \
         .execute()
-    
-    if not member_check.data:
+
+    if not ownership.data:
         raise HTTPException(status_code=403, detail="Only company owners can invite members")
 
-    # 2. Get target user_id from wallet address
-    target_resp = db.table("users").select("id").eq("wallet_address", req.wallet_address).execute()
-    if not target_resp.data:
-        raise HTTPException(status_code=404, detail="Target user not found. They must login once first.")
-    
-    target_id = target_resp.data[0]["id"]
+    target = db.table("users").select("id").eq("wallet_address", req.wallet_address).execute()
+    if not target.data:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found. They need to connect their wallet at least once first."
+        )
 
-    # 3. Add to company_members
-    invite_resp = db.table("company_members").insert({
+    result = db.table("company_members").insert({
         "company_id": req.company_id,
-        "user_id": target_id,
-        "company_role": req.role
+        "user_id": target.data[0]["id"],
+        "company_role": req.role,
     }).execute()
 
-    if not invite_resp.data:
-        raise HTTPException(status_code=500, detail="Failed to invite member")
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Failed to send invitation")
 
     return {"status": "success"}
 
+
 @router.get("/team")
 async def get_team(company_id: str, user = Depends(get_current_user)):
-    """
-    Returns list of all members in a company.
-    """
+    """Return all members of a company with their wallet addresses."""
     db = get_supabase()
-    response = db.table("company_members").select("*, users(wallet_address)") \
+    response = db.table("company_members") \
+        .select("*, users(wallet_address)") \
         .eq("company_id", company_id) \
         .execute()
     return response.data
