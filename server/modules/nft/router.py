@@ -9,7 +9,7 @@ import os
 router = APIRouter()
 nft_service = NFTService()
 
-# --- Models ---
+# Models
 class MintProfileRequest(BaseModel):
     user_id: str
     attributes: List[Dict[str, Any]]
@@ -23,7 +23,7 @@ class UpdateMetadataRequest(BaseModel):
     mint_address: str
     attributes: List[Dict[str, Any]]
 
-# --- API Endpoints ---
+# API Endpoints
 
 @router.post("/mint-profile")
 async def mint_profile(data: MintProfileRequest):
@@ -44,7 +44,7 @@ async def mint_profile(data: MintProfileRequest):
 @router.post("/mint-skill")
 async def mint_skill(data: MintSkillRequest):
     """
-    SECTION 6 & 8: Verify skill and generate certificate metadata.
+    Verify skill and generate certificate metadata.
     """
     verification = await nft_service.check_skill_verification(data.user_id, data.skill_name)
     if not verification:
@@ -68,7 +68,7 @@ async def mint_skill(data: MintSkillRequest):
 @router.post("/update-metadata")
 async def update_metadata(data: UpdateMetadataRequest):
     """
-    SECTION 5 & 8: Handle metadata versioning and new CID generation.
+    Handle metadata versioning and new CID generation.
     """
     metadata = await nft_service.generate_profile_metadata(data.user_id, data.attributes)
     cid = await nft_service.upload_to_ipfs(metadata)

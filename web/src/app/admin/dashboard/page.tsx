@@ -179,7 +179,7 @@ export default function AdminDashboard() {
                             <Users className="w-5 h-5 text-primary" />
                             <CardTitle className="text-2xl font-black font-heading tracking-tighter">Identity Management</CardTitle>
                         </div>
-                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-8">Advanced protocol orchestration</p>
+                        <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-8">Advanced configuration</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="relative group/search">

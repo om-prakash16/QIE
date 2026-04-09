@@ -46,7 +46,7 @@ export default function CandidateInsights() {
              AI CAREER ANALYTICS
            </Badge>
            <h1 className="text-6xl font-black font-heading tracking-tighter italic">Career Insights.</h1>
-           <p className="text-muted-foreground max-w-xl italic">Visualizing your trajectory from verified skills to on-chain reputation. Powered by high-assurance AI matching.</p>
+           <p className="text-muted-foreground max-w-xl italic">Visualizing your trajectory from verified skills to on-chain reputation. Powered by AI matching.</p>
         </div>
       </div>
 

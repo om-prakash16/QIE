@@ -14,19 +14,19 @@ class GitHubEvaluator:
         """
         async with httpx.AsyncClient(headers=self.headers) as client:
             try:
-                # 1. Fetch repos
+                # Fetch repos
                 repos_resp = await client.get(f"{self.base_url}/users/{username}/repos?per_page=100")
                 if repos_resp.status_code != 200:
                     return {"error": "User not found", "score": 0}
                 
                 repos = repos_resp.json()
                 
-                # 2. Analyze complexity
+                # Analyze complexity
                 total_stars = sum(r.get("stargazers_count", 0) for r in repos)
                 total_forks = sum(r.get("forks_count", 0) for r in repos)
                 unique_langs = len(set(r.get("language") for r in repos if r.get("language")))
                 
-                # 3. Commit frequency (Approximate)
+                # Commit frequency (Approximate)
                 activity_score = len(repos) * 2 # Placeholder logic
                 
                 # Formula: (Complexity * 0.4) + (Popularity * 0.3) + (Variety * 0.3)

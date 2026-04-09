@@ -12,7 +12,7 @@ class FeatureUpdateReq(BaseModel):
     feature_name: str
     is_enabled: bool
 
-# --- API Endpoints ---
+# API Endpoints
 
 @router.get("/list")
 async def get_all_features(
@@ -29,7 +29,7 @@ async def update_feature_status(
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
-    SECTION 7 & 9: Secure update of feature status for administrators.
+    Secure update of feature status for administrators.
     """
     # In a real app: check if current_user role is 'admin' or 'superadmin'
     await feature_service.update_feature(

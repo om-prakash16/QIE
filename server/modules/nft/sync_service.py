@@ -21,17 +21,17 @@ class DataSyncService:
         if not self.db:
             return {"error": "Database not connected"}
 
-        # 1. Fetch user data
+        # Fetch user data
         user_resp = self.db.table("users").select("*").eq("id", user_id).single().execute()
         user_data = user_resp.data if user_resp.data else {}
         
-        # 2. Generate Metadata & CID
+        # Generate Metadata & CID
         # Note: In a real app, attributes would be dynamic
         attributes = [{"trait_type": "Identity", "value": "AI-Verified"}]
         metadata = self.nft_service.generate_profile_metadata(user_data, attributes)
         cid = await self.nft_service.upload_to_ipfs(metadata)
 
-        # 3. Get latest version number
+        # Get latest version number
         version_resp = self.db.table("metadata_versions") \
             .select("version_number") \
             .eq("user_id", user_id) \
@@ -41,7 +41,7 @@ class DataSyncService:
         
         next_version = (version_resp.data[0]["version_number"] + 1) if version_resp.data else 1
 
-        # 4. Record new version
+        # Record new version
         self.db.table("metadata_versions").insert({
             "user_id": user_id,
             "entity_type": entity_type,
@@ -50,7 +50,7 @@ class DataSyncService:
             "metadata_json": metadata
         }).execute()
 
-        # 5. Update sync status
+        # Update sync status
         sync_data = {
             "user_id": user_id,
             "entity_type": entity_type,

@@ -59,7 +59,7 @@ export function ContactSupportForm() {
       
       <div className="text-center mb-10">
         <h2 className="text-3xl font-black tracking-tight mb-2">Send us a message</h2>
-        <p className="text-muted-foreground font-medium">Have a specific question? Our elite tech team is ready to assist.</p>
+        <p className="text-muted-foreground font-medium">Have a specific question? Our support team is ready to assist.</p>
       </div>
 
       <Form {...form}>

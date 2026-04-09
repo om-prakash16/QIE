@@ -15,11 +15,12 @@ A full-stack, enterprise-grade hiring platform built for the modern Web3 talent 
 │       ├── app/                # Route segments (pages & layouts)
 │       │   ├── auth/           # Login & registration flows
 │       │   ├── dashboard/      # Role-scoped dashboards
-│       │   │   ├── candidate/  # Job seeker profile, skills, portfolio
-│       │   │   └── company/    # Company creation, team, applicants
-│       │   └── admin/          # Admin panel: users, companies, jobs, CMS
+│       │   │   ├── candidate/  # Profile, skills, activity timeline
+│       │   │   └── company/    # Recruiter dashboard, applicants, hiring activity
+│       │   └── admin/          # Admin panel: forensics, activity logs, CMS
 │       ├── components/         # Shared UI component library (shadcn/ui + custom)
 │       │   ├── auth/           # Role selector, wallet connection
+│       │   ├── activity/       # Role-aware timeline components
 │       │   ├── features/       # Landing page sections (hero, jobs, stats)
 │       │   ├── layout/         # Navbar, sidebar, footer
 │       │   └── ui/             # Atomic UI: Button, Card, Input, Badge, Table...
@@ -43,13 +44,13 @@ A full-stack, enterprise-grade hiring platform built for the modern Web3 talent 
 │       ├── applications/       # Apply, status tracking
 │       ├── admin/              # User moderation, company verification
 │       ├── ai/                 # Resume scoring, skill recommendation
-│       ├── analytics/          # User & company metrics
+│       ├── analytics/          # Real-time metrics engine (DB driven)
+│       ├── activity/           # Multi-actor event stream & audit logs
 │       ├── cms/                # Dynamic content management (landing page)
 │       ├── notifications/      # In-app notification delivery
 │       ├── search/             # Full-text candidate & job search
 │       ├── sync/               # Profile sync & data reconciliation
 │       ├── nft/                # On-chain credential minting (Solana)
-│       └── activity/           # Audit log
 │
 ├── packages/
 │   └── database/
@@ -57,6 +58,7 @@ A full-stack, enterprise-grade hiring platform built for the modern Web3 talent 
 │           ├── 01_base_schema.sql
 │           ├── 06_company_panel.sql
 │           ├── 23_job_marketplace_system.sql
+│           ├── 30_activity_events.sql
 │           └── 99_master_schema_parity.sql
 │
 ├── contracts/                  # Solana programs (Anchor framework)
@@ -114,6 +116,9 @@ Newly created companies are initialized with `verified = false`. An admin must e
 
 ### 5. Supabase Compatibility Layer
 While migrating from a custom Postgres client, a `MockConnection` bridge in `core/postgres.py` proxies calls to Supabase. This allowed legacy routes to keep working without immediate refactoring, while new routes connect directly via the Supabase client singleton.
+
+### 6. Real-Time Activity Intelligence
+The platform tracks every lifecycle event (job posting, application, profile view, verification) in a central `activity_events` table. This data is surfaced through specialized timelines for each role. A 15-30s polling cycle ensures dashboards feel alive, providing companies with candidate engagement forensics and admins with a global system audit trail.
 
 ---
 

@@ -47,7 +47,7 @@ export const COMPANIES: Company[] = [
   {
     id: "2",
     name: "NeuralFlow AI",
-    description: "Enterprise-grade LLM orchestration and vector-base intelligence for modern SaaS.",
+    description: "Enterprise-grade LLM infrastructure and vector-base intelligence for modern SaaS.",
     industry: "AI & Machine Learning",
     size: "200-500",
     location: "San Francisco, CA",

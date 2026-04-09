@@ -117,7 +117,7 @@ export default function AdminFeatureControl() {
           <ShieldAlert className="w-12 h-12 text-rose-500 shrink-0" />
           <div className="space-y-1 flex-1">
               <h4 className="text-lg font-black italic uppercase italic">Experimental Flag Warning</h4>
-              <p className="text-xs text-rose-500/70 font-medium italic">Enabling flags in the 'Advanced' or 'Experiment' categories may trigger high-assurance AI pipelines (RAG) which impact compute overhead. Monitor analytics during rollout.</p>
+              <p className="text-xs text-rose-500/70 font-medium italic">Enabling flags in the 'Advanced' or 'Experiment' categories may trigger AI pipelines (RAG) which impact compute overhead. Monitor analytics during rollout.</p>
           </div>
           <Button variant="outline" className="h-12 px-8 border-rose-500/20 text-rose-500 hover:bg-rose-500/10 font-bold uppercase tracking-widest italic text-[10px]">
               LEARN MORE

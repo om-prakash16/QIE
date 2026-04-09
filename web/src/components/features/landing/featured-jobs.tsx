@@ -15,7 +15,7 @@ export function FeaturedJobs() {
                 Featured <span className="text-primary italic">Requisitions</span>
             </h2>
             <p className="text-muted-foreground uppercase tracking-widest text-[10px] font-bold">
-                Elite roles at verified Web3 and AI organizations
+                Top roles at verified Web3 and AI organizations
             </p>
         </div>
 

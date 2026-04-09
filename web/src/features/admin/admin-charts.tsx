@@ -45,7 +45,7 @@ export function PlatformActivityChart() {
                             Platform Vitality
                             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground font-medium">Real-time talent vs opportunity orchestration</p>
+                        <p className="text-sm text-muted-foreground font-medium">Talent supply vs open roles</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 items-center gap-2">

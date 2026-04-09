@@ -34,7 +34,7 @@ class FeatureFlagService:
     @staticmethod
     async def update_feature(feature_name: str, is_enabled: bool, admin_id: uuid.UUID):
         """
-        SECTION 6 & 9: Update feature status with audit logging.
+        Update feature status with audit logging.
         """
         global _FEATURE_CACHE
         db = get_supabase()

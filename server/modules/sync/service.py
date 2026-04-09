@@ -14,7 +14,7 @@ class SyncService:
         """
         db = get_supabase()
         
-        # 1. Fetch current data for metadata generation
+        # Fetch current data for metadata generation
         if entity_type == 'profile':
             user_data = db.table("users").select("*").eq("id", str(user_id)).single().execute().data
             # In a real app: format resume/skills into Metaplex JSON
@@ -23,10 +23,10 @@ class SyncService:
             # Handle other entity types (skill, project)
             metadata = {}
 
-        # 2. Upload to IPFS
+        # Upload to IPFS
         cid = await self.nft_service.upload_to_ipfs(metadata)
         
-        # 3. Store in metadata_versions (trigger handles version_number)
+        # Store in metadata_versions (trigger handles version_number)
         db.table("metadata_versions").insert({
             "user_id": str(user_id),
             "entity_type": entity_type,
@@ -35,7 +35,7 @@ class SyncService:
             "metadata_json": metadata
         }).execute()
         
-        # 4. Mark Sync Status as PENDING
+        # Mark Sync Status as PENDING
         db.table("sync_status").upsert({
             "user_id": str(user_id),
             "entity_type": entity_type,
@@ -49,7 +49,7 @@ class SyncService:
 
     async def finalize_blockchain_sync(self, user_id: uuid.UUID, entity_type: str, tx_hash: str):
         """
-        SECTION 3 & 7: Transition to SYNCED state after Solana transaction confirmation.
+        Transition to SYNCED state after Solana transaction confirmation.
         """
         db = get_supabase()
         

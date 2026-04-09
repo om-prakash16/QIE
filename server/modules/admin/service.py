@@ -9,7 +9,7 @@ class AdminService:
     def __init__(self):
         pass
 
-    # --- Dynamic Schema Management ---
+    # Dynamic Schema Management
 
     async def update_schema_field(self, field_data: Dict[str, Any]) -> bool:
         """
@@ -47,7 +47,7 @@ class AdminService:
         db.table("profile_schema").update({"is_active": False}).eq("id", field_id).execute()
         return True
 
-    # --- AI & Platform Configuration ---
+    # AI & Platform Configuration
 
     async def set_platform_config(self, group: str, key: str, value: Any, staff_wallet: str) -> bool:
         """
@@ -80,7 +80,7 @@ class AdminService:
         response = db.table("platform_settings").select("*").eq("config_group", group).execute()
         return {item['key']: item['value'] for item in response.data}
 
-    # --- Analytics & Audit ---
+    # Analytics & Audit
 
     async def get_global_stats(self) -> Dict[str, Any]:
         """

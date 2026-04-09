@@ -15,7 +15,7 @@ class SyncConfirmReq(BaseModel):
     tx_hash: str
     entity_type: str
 
-# --- API Endpoints ---
+# API Endpoints
 
 @router.post("/profile")
 async def trigger_profile_sync(
@@ -34,7 +34,7 @@ async def get_sync_status(
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
-    SECTION 8 & 9: Fetch current synchronization status for UI indicators.
+    Fetch current synchronization status for UI indicators.
     """
     db = get_supabase()
     response = db.table("sync_status") \
@@ -63,7 +63,7 @@ async def retry_failed_sync(
     current_user: Dict[str, Any] = Depends(get_current_user)
 ):
     """
-    SECTION 7 & 8: Re-attempt a failed metadata sync.
+    Re-attempt a failed metadata sync.
     """
     return await sync_service.trigger_metadata_sync(
         user_id=uuid.UUID(current_user["id"]),

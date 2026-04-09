@@ -60,7 +60,7 @@ export default function CompanyModeration() {
         <div>
             <h1 className="text-4xl md:text-5xl font-black font-heading tracking-tight flex items-center gap-4 text-white">
               <Building2 className="w-10 h-10 text-primary drop-shadow-[0_0_15px_rgba(var(--primary),0.8)]" /> 
-              Partner Orchestration
+              Partner Network
             </h1>
             <p className="text-muted-foreground text-lg mt-3">
               Absolute governance over hiring entities. Moderation, verification, and lifecycle management for multi-tenant organizations.

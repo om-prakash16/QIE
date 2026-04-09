@@ -11,7 +11,7 @@ class SearchService:
                                 location: Optional[str] = None,
                                 query: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        SECTION 1 & 4: Candidate Search with AI Ranking.
+        Candidate Search with AI Ranking.
         """
         db = get_supabase()
         # Start building the search query
@@ -42,7 +42,7 @@ class SearchService:
                           min_salary: Optional[float] = None,
                           query: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        SECTION 2 & 4: Job Search with Filtering.
+        Job Search with Filtering.
         """
         db = get_supabase()
         sb = db.table("search_jobs").select("*")

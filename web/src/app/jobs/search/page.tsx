@@ -27,7 +27,7 @@ export default function JobSearchPage() {
           <div className="flex justify-between items-end mb-4">
             <div>
               <h1 className="text-3xl font-extrabold tracking-tight">Job Board</h1>
-              <p className="text-muted-foreground mt-1">Found {MOCK_JOBS.length} elite opportunities with AI matching enabled.</p>
+              <p className="text-muted-foreground mt-1">Found {MOCK_JOBS.length} top opportunities with AI matching enabled.</p>
             </div>
             <div className="flex gap-2">
               <Badge variant="outline" className="border-primary/30 text-primary">AI Match: Top 1%</Badge>

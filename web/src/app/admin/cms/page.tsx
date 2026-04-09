@@ -151,7 +151,7 @@ export default function CMSEditor() {
               Content Orchestrator
             </h1>
             <p className="text-muted-foreground text-lg mt-3">
-              Dynamic mutation of public-facing text, SEO parameters, and brand assets. Changes propagate instantly to the Elite Gateway.
+              Dynamic mutation of public-facing text, SEO parameters, and brand assets. Changes propagate instantly to the landing page.
             </p>
         </div>
         <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ export default function CMSEditor() {
           </div>
           <div className="space-y-2 relative z-10">
               <h3 className="text-xl font-black italic uppercase tracking-tighter">Omnichannel Deployment</h3>
-              <p className="text-sm text-white/50 max-w-md">Content updates made here are synchronized across Desktop, Mobile, and high-assurance AI summary generators in real-time.</p>
+              <p className="text-sm text-white/50 max-w-md">Content updates made here are synchronized across Desktop, Mobile, and AI summary generators in real-time.</p>
           </div>
       </div>
     </div>

@@ -39,7 +39,7 @@ class NotificationService:
         tx_hash: Optional[str] = None
     ):
         """
-        SECTION 3 & 4: Record a system or user activity log.
+        Record a system or user activity log.
         """
         db = get_supabase()
         if not db: return None

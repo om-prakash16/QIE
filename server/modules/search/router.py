@@ -7,7 +7,7 @@ from modules.notifications.service import NotificationService
 router = APIRouter()
 search_service = SearchService()
 
-# --- API Endpoints ---
+# API Endpoints
 
 @router.get("/candidates")
 async def search_candidates(

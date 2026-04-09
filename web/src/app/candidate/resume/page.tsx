@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileCheck, ShieldAlert, Sparkles } from 'lucide-react';
 
-export default function ResumeOrchestrationPage() {
+export default function ResumePage() {
   return (
     <div className="min-h-screen bg-muted/5 py-24 px-4 overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/5 to-transparent pointer-none" />

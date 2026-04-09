@@ -13,7 +13,7 @@ from core.supabase import get_supabase
 router = APIRouter()
 admin_service = AdminService()
 
-# --- Top Level Dash Analytics ---
+# Top Level Dash Analytics
 
 @router.get("/analytics", response_model=AnalyticsStatsResponse)
 async def get_admin_analytics(user = Depends(require_permission("view_analytics"))):
@@ -21,7 +21,7 @@ async def get_admin_analytics(user = Depends(require_permission("view_analytics"
     stats = await admin_service.get_global_stats()
     return AnalyticsStatsResponse(**stats)
 
-# --- User & Job Moderation ---
+# User & Job Moderation
 
 @router.get("/users")
 async def list_all_users(user = Depends(require_permission("user.promote"))):
@@ -40,7 +40,7 @@ async def update_user(wallet: str, update: UserUpdate, user = Depends(require_pe
     return {"status": "success", "data": response.data}
 
 
-# --- SECTION 10 API Endpoints ---
+# SECTION 10 API Endpoints
 
 # Profile Schema Endpoints
 @router.get("/schema")

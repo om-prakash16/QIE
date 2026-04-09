@@ -22,7 +22,7 @@ class JobMatcher:
         """
         Ranks jobs by semantic similarity to the user profile.
         """
-        # 1. Handle empty profile or jobs
+        # Handle empty profile or jobs
         if not profile_data or not job_list:
             return [{"job_id": j.get("id"), "title": j.get("title"), "match_score": 0.0} for j in job_list]
 
@@ -46,7 +46,7 @@ class JobMatcher:
             job_text = " ".join([p for p in job_parts if p.strip()]).strip() or "General Job"
             job_vec = await self.get_embedding(job_text)
             
-            # 2. Using sklearn for cosine similarity with error handling
+            # Using sklearn for cosine similarity with error handling
             try:
                 similarity = cosine_similarity(
                     [profile_vec], 
@@ -61,5 +61,5 @@ class JobMatcher:
                 "match_score": round(float(similarity) * 100, 2)
             })
             
-        # 3. Sort by match score descending
+        # Sort by match score descending
         return sorted(results, key=lambda x: x["match_score"], reverse=True)

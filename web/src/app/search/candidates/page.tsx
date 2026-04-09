@@ -39,7 +39,7 @@ export default function CandidateDiscovery() {
            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-4 py-1 uppercase tracking-tighter font-black italic">
              RECRUITER DISCOVERY ENGINE
            </Badge>
-           <h1 className="text-6xl font-black font-heading tracking-tighter italic">Discover Elite Talent.</h1>
+           <h1 className="text-6xl font-black font-heading tracking-tighter italic">Discover Top Talent.</h1>
            <p className="text-muted-foreground max-w-2xl italic">Real-time candidate discovery powered by AI Proof Scores and verified technical credentials.</p>
         </div>
 

@@ -15,12 +15,12 @@ class SkillRecommendationResponse(BaseModel):
     recommended_skills: List[str]
     reasoning: str
 
-# --- AI Reasoning Engine ---
+# AI Reasoning Engine
 
 @router.post("/analyze-profile")
 async def analyze_profile_insights(req: ProfileAnalysisRequest, current_user = Depends(get_current_user)):
     """
-    High-fidelity resume and profile analysis via Gemini 1.5.
+    resume and profile analysis via Gemini 1.5.
     """
     return await ai_service.analyze_resume(req.profile_data)
 
@@ -39,7 +39,7 @@ async def recommend_skills(current_user = Depends(get_current_user)):
     """
     return await ai_service.generate_skill_suggestions(current_user["id"])
 
-# --- Assessment & Quizzes ---
+# Assessment & Quizzes
 
 @router.get("/quizzes")
 async def get_assessment_quizzes(skill_id: Optional[str] = None):
@@ -51,6 +51,6 @@ async def get_assessment_quizzes(skill_id: Optional[str] = None):
 @router.post("/quizzes/submit")
 async def submit_quiz_result(quiz_id: str, results: Dict[str, Any], current_user = Depends(get_current_user)):
     """
-    Submit quiz results and trigger high-assurance score updates.
+    Submit quiz results and trigger score updates.
     """
     return await ai_service.evaluate_quiz(current_user["id"], quiz_id, results)

@@ -18,7 +18,7 @@ from modules.activity.service import record_event
 router = APIRouter()
 job_service = JobService()
 
-# --- Company Endpoints ---
+# Company Endpoints
 
 @router.get("/list")
 async def list_jobs(user_id: Optional[str] = None):
@@ -34,7 +34,7 @@ async def get_job_details(job_id: str):
     """
     return await job_service.get_job_details(job_id)
 
-# --- Job Posting Endpoints ---
+# Job Posting Endpoints
 
 @router.post("/create", response_model=JobResponse)
 async def create_job(job: JobCreate, user = Depends(get_current_user)):
@@ -58,7 +58,7 @@ async def create_job(job: JobCreate, user = Depends(get_current_user)):
 @router.post("/apply", response_model=ApplicationResponse)
 async def apply_to_job(data: ApplicationCreate, user = Depends(get_current_user)):
     """
-    Submits an application and triggers high-fidelity AI matching.
+    Submits an application and triggers AI matching.
     """
     result = await job_service.apply_to_job(data.job_id, data.candidate_id)
     

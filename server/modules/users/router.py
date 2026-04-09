@@ -6,7 +6,7 @@ import uuid
 
 router = APIRouter()
 
-# --- Profile Endpoints ---
+# Profile Endpoints
 
 @router.get("/schema")
 async def get_profile_schema():
@@ -51,7 +51,7 @@ async def upload_profile_file(file: UploadFile = File(...), current_user = Depen
         "url": f"https://this-best-hiring-tool.ai/storage/profiles/{current_user['id']}/{file.filename}"
     }
 
-# --- Portfolio Endpoints ---
+# Portfolio Endpoints
 
 @router.get("/portfolio")
 async def get_portfolio(user_id: Optional[str] = None, current_user = Depends(get_current_user)):

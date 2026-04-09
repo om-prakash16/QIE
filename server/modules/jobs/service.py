@@ -39,7 +39,7 @@ class JobService:
         db = get_supabase()
         if not db: return []
         
-        # 1. Fetch active jobs
+        # Fetch active jobs
         try:
             jobs_resp = db.table("jobs").select("*, companies(name)").eq("is_active", True).execute()
             jobs = jobs_resp.data if jobs_resp.data else []
@@ -52,15 +52,15 @@ class JobService:
         if not user_id or not jobs:
             return jobs
 
-        # 2. Fetch user profile
+        # Fetch user profile
         user_resp = db.table("users").select("profile_data").eq("id", user_id).single().execute()
         user_data = user_resp.data if user_resp.data else {}
         profile = user_data.get("profile_data", {})
 
-        # 3. Batch Match
+        # Batch Match
         matches = await self.matcher.match(profile, jobs)
         
-        # 4. Merge scores into jobs
+        # Merge scores into jobs
         match_map = {m["job_id"]: m["match_score"] for m in matches}
         for job in jobs:
             job["ai_match_percentage"] = match_map.get(job["id"], 0)
@@ -83,13 +83,13 @@ class JobService:
 
     async def apply_to_job(self, job_id: str, candidate_id: str) -> Dict[str, Any]:
         """
-        SECTION 5 & 7: Application Flow + AI Match Score.
+        Application Flow + AI Match Score.
         """
         db = get_supabase()
         if not db:
             raise Exception("Database service unavailable")
         
-        # 1. Fetch Job and Candidate Skills
+        # Fetch Job and Candidate Skills
         job_resp = db.table("jobs").select("title, skills_required").eq("id", job_id).single().execute()
         user_resp = db.table("users").select("profile_data").eq("id", candidate_id).single().execute()
         
@@ -99,7 +99,7 @@ class JobService:
         if not job or not user:
             raise Exception("Job or Candidate not found")
 
-        # 2. Calculate AI Match Score
+        # Calculate AI Match Score
         job_skills = set(job.get("skills_required", []))
         user_skills = set(user.get("profile_data", {}).get("skills", []))
         
@@ -110,7 +110,7 @@ class JobService:
         
         match_score = round(match_score, 2)
 
-        # 3. Store Application
+        # Store Application
         response = db.table("applications").insert({
             "job_id": job_id,
             "candidate_id": candidate_id,

@@ -60,7 +60,7 @@ class NFTService:
 
     async def save_metadata_version(self, user_id: str, nft_type: str, metadata: Dict[str, Any]):
         """
-        SECTION 5 & 7: Store version history in database.
+        Store version history in database.
         """
         db = get_supabase()
         # Mock CID before pinning
@@ -84,7 +84,7 @@ class NFTService:
 
     async def register_nft(self, user_id: str, mint: str, nft_type: str, cid: str):
         """
-        SECTION 4 & 7: Stores the minted NFT record.
+        Stores the minted NFT record.
         """
         db = get_supabase()
         db.table("nft_records").insert({
@@ -94,7 +94,7 @@ class NFTService:
             "metadata_cid": cid
         }).execute()
         
-        # SECTION 1 & 4: Notify & Log
+        # Notify & Log
         await NotificationService.create_event_notification(
             user_id=uuid.UUID(user_id),
             type="nft_mint",

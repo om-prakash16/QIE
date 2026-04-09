@@ -8,7 +8,7 @@ from core.supabase import get_supabase
 router = APIRouter()
 notification_service = NotificationService()
 
-# --- API Endpoints ---
+# API Endpoints
 
 @router.get("/list")
 async def get_notifications(
@@ -54,7 +54,7 @@ async def get_global_activity_logs(
     limit: int = 100
 ):
     """
-    SECTION 5 & 8: High-assurance audit trail for administrators.
+    audit trail for administrators.
     """
     # In a real app: check if current_user has 'admin' permissions
     db = get_supabase()
