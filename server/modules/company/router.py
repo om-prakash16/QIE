@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from modules.auth.service import get_current_user
 from modules.auth.models import CompanyCreate, CompanyInvite
 from core.supabase import get_supabase
+from modules.activity.service import record_event
 
 router = APIRouter()
 
@@ -42,6 +43,15 @@ async def create_company(req: CompanyCreate, user = Depends(get_current_user)):
             "user_id": user_id,
             "role_id": role_row.data["id"],
         }).execute()
+
+    await record_event(
+        actor_id=user_id,
+        actor_role="company",
+        event_type="created_company",
+        description=f"Created company workspace: {req.name}",
+        entity_type="company",
+        entity_id=company["id"],
+    )
 
     return {"status": "success", "company_id": company["id"]}
 

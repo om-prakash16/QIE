@@ -3,6 +3,7 @@ from typing import Dict, Any, Optional
 from modules.auth.service import require_permission
 from core.supabase import get_supabase
 from pydantic import BaseModel
+from modules.activity.service import record_event
 
 router = APIRouter()
 
@@ -166,6 +167,16 @@ async def admin_verify_company(company_id: str, user = Depends(require_permissio
     """
     db = get_supabase()
     result = db.table("companies").update({"verified": True}).eq("id", company_id).execute()
+
+    await record_event(
+        actor_id=user.get("sub", ""),
+        actor_role="admin",
+        event_type="verified_company",
+        description="Verified a company entity",
+        entity_type="company",
+        entity_id=company_id,
+    )
+
     return {"status": "verified", "data": result.data}
 
 

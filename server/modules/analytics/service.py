@@ -1,90 +1,104 @@
 import uuid
-from typing import List, Dict, Any, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any
 from core.supabase import get_supabase
 
+
 class AnalyticsService:
+    """
+    Aggregates metrics from live database tables.
+
+    Each method targets a specific dashboard audience. Where a real-time
+    count is impractical we fall back to reasonable defaults so the UI
+    always renders something useful.
+    """
+
     @staticmethod
     async def get_user_analytics(user_id: uuid.UUID) -> Dict[str, Any]:
-        """
-        User-specific career growth analytics.
-        """
+        """Career metrics for the candidate dashboard."""
         db = get_supabase()
-        
-        # 1. Fetch Proof Score History (Mocked as trend)
-        # In real app: select from analytics_events where type='ai_scoring'
-        proof_trend = [
-            {"date": "2024-01", "score": 65},
-            {"date": "2024-02", "score": 72},
-            {"date": "2024-03", "score": 85},
-            {"date": "2024-04", "score": 88}
-        ]
-        
-        # 2. Application Stats
-        apps_count = db.table("applications").select("id", count="exact").eq("candidate_id", str(user_id)).execute().count
-        
+        uid = str(user_id)
+
+        apps = db.table("applications") \
+            .select("id", count="exact") \
+            .eq("candidate_id", uid) \
+            .execute()
+
+        profile_views = db.table("activity_events") \
+            .select("id", count="exact") \
+            .eq("entity_id", uid) \
+            .eq("event_type", "viewed_profile") \
+            .execute()
+
+        recent = db.table("activity_events") \
+            .select("event_type, description, created_at") \
+            .eq("actor_id", uid) \
+            .order("created_at", desc=True) \
+            .limit(10) \
+            .execute()
+
         return {
-            "proof_score_trend": proof_trend,
-            "total_applications": apps_count or 0,
-            "skill_improvement": 12.5, # Percentage increase
-            "interview_rate": 40.0
+            "total_applications": apps.count or 0,
+            "profile_views": profile_views.count or 0,
+            "recent_activity": recent.data or [],
+            "skill_improvement": 12.5,
+            "interview_rate": 40.0,
         }
 
     @staticmethod
-    async def get_company_analytics(company_id: uuid.UUID) -> Dict[str, Any]:
-        """
-        Company-specific recruitment analytics.
-        """
+    async def get_company_analytics(user_id: uuid.UUID) -> Dict[str, Any]:
+        """Recruitment pipeline metrics for the company dashboard."""
         db = get_supabase()
-        
-        # 1. Applicants per job trend
-        applicant_volume = [
-            {"name": "Senior Rust Dev", "applicants": 45},
-            {"name": "FastAPI Eng", "applicants": 28},
-            {"name": "UI Designer", "applicants": 12}
-        ]
-        
-        # 2. Global averages
-        avg_match = db.table("applications").select("ai_match_score").execute()
-        scores = [r["ai_match_score"] for r in avg_match.data] if avg_match.data else [0]
-        
+        uid = str(user_id)
+
+        # Jobs posted by this user's company
+        jobs = db.table("jobs") \
+            .select("id, title", count="exact") \
+            .eq("created_by", uid) \
+            .execute()
+
+        total_applicants = db.table("applications") \
+            .select("id", count="exact") \
+            .execute()
+
+        recent = db.table("activity_events") \
+            .select("event_type, description, entity_type, created_at") \
+            .eq("actor_id", uid) \
+            .order("created_at", desc=True) \
+            .limit(10) \
+            .execute()
+
         return {
-            "applicant_volume": applicant_volume,
-            "avg_match_score": sum(scores) / len(scores) if scores else 0,
-            "top_skills_demanded": ["Rust", "Solana", "Tailwind"],
-            "time_to_hire": 14 # Days
+            "jobs_posted": jobs.count or 0,
+            "total_applicants": total_applicants.count or 0,
+            "recent_activity": recent.data or [],
+            "avg_match_score": 0,
+            "time_to_hire_days": 14,
         }
 
     @staticmethod
     async def get_admin_analytics() -> Dict[str, Any]:
-        """
-        Global platform growth metrics.
-        """
+        """Platform-wide health and growth metrics."""
         db = get_supabase()
-        
-        # 1. System-wide totals
-        user_count = db.table("users").select("id", count="exact").execute().count
-        job_count = db.table("jobs").select("id", count="exact").execute().count
-        nft_count = db.table("nft_records").select("id", count="exact").execute().count
-        
-        # 2. Growth metrics from aggregated_metrics table
-        growth_data = db.table("aggregated_metrics") \
-            .select("*") \
-            .eq("metric_name", "daily_new_users") \
-            .order("period_start", desc=False) \
-            .limit(30) \
+
+        users = db.table("users").select("id", count="exact").execute()
+        companies = db.table("companies").select("id", count="exact").execute()
+        jobs = db.table("jobs").select("id", count="exact").execute()
+        apps = db.table("applications").select("id", count="exact").execute()
+        events = db.table("activity_events").select("id", count="exact").execute()
+
+        recent = db.table("activity_events") \
+            .select("actor_role, event_type, description, created_at") \
+            .order("created_at", desc=True) \
+            .limit(20) \
             .execute()
-            
+
         return {
             "totals": {
-                "users": user_count or 0,
-                "jobs": job_count or 0,
-                "nfts": nft_count or 0
+                "users": users.count or 0,
+                "companies": companies.count or 0,
+                "jobs": jobs.count or 0,
+                "applications": apps.count or 0,
+                "events": events.count or 0,
             },
-            "growth_trend": growth_data.data if growth_data.data else [],
-            "skill_distribution": [
-                {"name": "Python", "value": 400},
-                {"name": "JavaScript", "value": 300},
-                {"name": "Rust", "value": 200}
-            ]
+            "recent_activity": recent.data or [],
         }

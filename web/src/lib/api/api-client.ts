@@ -74,12 +74,20 @@ export const api = {
         read: (id: string) => fetchWithAuth(`/notifications/read?id=${id}`, { method: "PATCH" })
     },
     activity: {
-        logs: (params?: string) => fetchWithAuth(`/activity${params ? `?${params}` : ""}`)
+        user: (limit = 20) => fetchWithAuth(`/activity/user?limit=${limit}`),
+        company: (limit = 20) => fetchWithAuth(`/activity/company?limit=${limit}`),
+        admin: (limit = 50) => fetchWithAuth(`/activity/admin?limit=${limit}`),
+        record: (data: any) => fetchWithAuth("/activity/record", { method: "POST", body: JSON.stringify(data) }),
     },
     analytics: {
         user: () => fetchWithAuth("/analytics/user"),
         company: () => fetchWithAuth("/analytics/company"),
-        admin: () => fetchWithAuth("/analytics/admin")
+        admin: () => fetchWithAuth("/analytics/admin"),
+    },
+    insights: {
+        user: () => fetchWithAuth("/analytics/insights/user"),
+        company: () => fetchWithAuth("/analytics/insights/company"),
+        admin: () => fetchWithAuth("/analytics/insights/admin"),
     },
     sync: {
         profile: () => fetchWithAuth("/sync/profile", { method: "POST" }),

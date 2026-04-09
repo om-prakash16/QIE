@@ -1,42 +1,48 @@
-from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Dict, Any, Optional
+from fastapi import APIRouter, Depends
+from typing import Dict, Any
 from modules.analytics.service import AnalyticsService
-from modules.admin.feature_service import FeatureFlagService
-from modules.nft.service import NFTService
-from modules.auth.service import get_current_user
-from core.supabase import get_supabase
+from modules.auth.service import get_current_user, require_permission
 import uuid
 
 router = APIRouter()
-analytics_service = AnalyticsService()
+svc = AnalyticsService()
 
-# --- API Endpoints ---
+
+# -- Role-scoped analytics --
 
 @router.get("/user")
-async def get_user_analytics(
-    current_user: Dict[str, Any] = Depends(get_current_user)
-):
-    """
-    Personal career growth metrics and AI score trends.
-    """
-    return await analytics_service.get_user_analytics(uuid.UUID(current_user["id"]))
+async def user_analytics(user: Dict[str, Any] = Depends(get_current_user)):
+    """Career growth metrics for the authenticated candidate."""
+    return await svc.get_user_analytics(uuid.UUID(user["sub"]))
+
 
 @router.get("/company")
-async def get_company_analytics(
-    current_user: Dict[str, Any] = Depends(get_current_user)
-):
-    """
-    Recruitment pipeline and job performance metrics.
-    """
-    # In a real app: verify user belongs to a company
-    return await analytics_service.get_company_analytics(uuid.UUID(current_user["id"]))
+async def company_analytics(user: Dict[str, Any] = Depends(get_current_user)):
+    """Recruitment pipeline metrics for the authenticated recruiter."""
+    return await svc.get_company_analytics(uuid.UUID(user["sub"]))
+
 
 @router.get("/admin")
-async def get_admin_analytics(
-    current_user: Dict[str, Any] = Depends(get_current_user)
-):
-    """
-    Global SaaS health and system-wide growth metrics.
-    """
-    # In a real app: check for 'admin' role
-    return await analytics_service.get_admin_analytics()
+async def admin_analytics(user: Dict[str, Any] = Depends(require_permission("admin.access"))):
+    """Platform-wide health and growth dashboard data."""
+    return await svc.get_admin_analytics()
+
+
+# -- Insights endpoints (same data, aliased for frontend clarity) --
+
+@router.get("/insights/user")
+async def user_insights(user: Dict[str, Any] = Depends(get_current_user)):
+    """Alias for /analytics/user — used by the insights dashboard."""
+    return await svc.get_user_analytics(uuid.UUID(user["sub"]))
+
+
+@router.get("/insights/company")
+async def company_insights(user: Dict[str, Any] = Depends(get_current_user)):
+    """Alias for /analytics/company — used by the insights dashboard."""
+    return await svc.get_company_analytics(uuid.UUID(user["sub"]))
+
+
+@router.get("/insights/admin")
+async def admin_insights(user: Dict[str, Any] = Depends(require_permission("admin.access"))):
+    """Alias for /analytics/admin — used by the insights dashboard."""
+    return await svc.get_admin_analytics()

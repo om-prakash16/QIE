@@ -13,6 +13,7 @@ from modules.jobs.models import (
 from core.supabase import get_supabase
 from core.postgres import get_db_connection
 from modules.notifications.service import NotificationService
+from modules.activity.service import record_event
 
 router = APIRouter()
 job_service = JobService()
@@ -41,6 +42,17 @@ async def create_job(job: JobCreate, user = Depends(get_current_user)):
     Create a job post. 
     """
     result = await job_service.create_job(job.model_dump())
+
+    # Log the event for the activity feed
+    await record_event(
+        actor_id=user.get("sub", ""),
+        actor_role="company",
+        event_type="created_job",
+        description=f"Posted a new job: {job.title}",
+        entity_type="job",
+        entity_id=result.get("id"),
+    )
+
     return JobResponse(id=result["id"], **result)
 
 @router.post("/apply", response_model=ApplicationResponse)
