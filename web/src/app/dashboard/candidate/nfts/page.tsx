@@ -11,7 +11,7 @@ import { useState } from "react"
 const mockNFTs = [
     {
         type: "profile",
-        name: "this best hiring tool — Profile",
+        name: "Best Hiring Tool — Profile",
         symbol: "PROOF",
         image: "🪪",
         level: "Verified",
@@ -20,12 +20,12 @@ const mockNFTs = [
             { trait_type: "Category", value: "profile" },
             { trait_type: "Version", value: "3" },
             { trait_type: "Soulbound", value: "true" },
-            { trait_type: "Issuer", value: "this best hiring tool" },
+            { trait_type: "Issuer", value: "Best Hiring Tool" },
         ]
     },
     {
         type: "skill",
-        name: "this best hiring tool — Rust Developer",
+        name: "Best Hiring Tool — Rust Developer",
         symbol: "SKILL",
         image: "🦀",
         level: "Silver",
@@ -39,7 +39,7 @@ const mockNFTs = [
     },
     {
         type: "skill",
-        name: "this best hiring tool — Solana Expert",
+        name: "Best Hiring Tool — Solana Expert",
         symbol: "SKILL",
         image: "⚡",
         level: "Gold",
@@ -53,7 +53,7 @@ const mockNFTs = [
     },
     {
         type: "skill",
-        name: "this best hiring tool — TypeScript Pro",
+        name: "Best Hiring Tool — TypeScript Pro",
         symbol: "SKILL",
         image: "💎",
         level: "Silver",
@@ -67,7 +67,7 @@ const mockNFTs = [
     },
     {
         type: "skill",
-        name: "this best hiring tool — Python Dev",
+        name: "Best Hiring Tool — Python Dev",
         symbol: "SKILL",
         image: "🐍",
         level: "Gold",

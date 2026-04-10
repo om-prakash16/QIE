@@ -26,7 +26,7 @@ export function FeaturedJobs() {
                 const mappedJobs = data.map(job => ({
                     id: job.id,
                     title: job.title,
-                    company: job.company_name || "this best hiring tool Partner",
+                    company: job.company_name || "Best Hiring Tool Partner",
                     location: job.location || "Remote",
                     type: job.job_type || "Full-time",
                     salary: job.salary_range || "Competitive",

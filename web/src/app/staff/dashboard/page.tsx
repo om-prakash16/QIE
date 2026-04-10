@@ -39,7 +39,7 @@ export default function StaffDashboardPage() {
             {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold tracking-tight text-white">Operations Dashboard</h1>
-                <p className="text-slate-400 mt-1">Your daily moderation overview — this best hiring tool Staff Panel</p>
+                <p className="text-slate-400 mt-1">Your daily moderation overview — Best Hiring Tool Staff Panel</p>
             </div>
 
             {/* Stats Grid */}

@@ -2,7 +2,7 @@ import { Separator } from "@/components/ui/separator"
 import { Shield, Lock, Eye, FileText, Mail } from "lucide-react"
 
 export const metadata = {
-    title: "Privacy Policy | this best hiring tool",
+    title: "Privacy Policy | Best Hiring Tool",
     description: "Read our Privacy Policy to understand how we collect, use, and protect your data.",
 }
 
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
                     </div>
                     <h1 className="text-3xl md:text-4xl font-bold font-heading">Privacy Policy</h1>
                     <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                        Your privacy is important to us. This policy outlines how this best hiring tool collects, uses, and protects your personal information.
+                        Your privacy is important to us. This policy outlines how Best Hiring Tool collects, uses, and protects your personal information.
                     </p>
                     <p className="text-sm font-medium text-muted-foreground pt-2">
                         Last Updated: December 18, 2024
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
                 <div className="space-y-2">
                     <Section title="1. Introduction">
                         <p>
-                            Welcome to this best hiring tool. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at privacy@the-best-hiring-tool.com.
+                            Welcome to Best Hiring Tool. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at privacy@the-best-hiring-tool.com.
                         </p>
                         <p>
                             When you visit our website and use our services, you trust us with your personal information. We take your privacy very seriously. In this privacy policy, we describe our privacy policy. We seek to explain to you in the clearest way possible what information we collect, how we use it, and what rights you have in relation to it.
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
                     <Section title="7. Contact Us" icon={Mail}>
                         <p>If you have questions or comments about this policy, you may email us at privacy@the-best-hiring-tool.com or by post to:</p>
                         <address className="not-italic mt-2 p-4 bg-muted rounded-lg border">
-                            <strong>this best hiring tool Inc.</strong><br />
+                            <strong>Best Hiring Tool Inc.</strong><br />
                             123 Tech Park, Cyber City<br />
                             Bangalore, Karnataka 560100<br />
                             India

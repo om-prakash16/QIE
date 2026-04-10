@@ -202,3 +202,53 @@ async def admin_get_all_applications(user = Depends(require_permission("admin.ac
     """Return all applications platform-wide with job title and applicant wallet."""
     db = get_supabase()
     return db.table("applications").select("*, jobs(title), users(wallet_address)").execute().data
+# -- Skill Verification Moderation --
+
+@router.get("/verification-queue")
+async def get_verification_queue(user = Depends(require_permission("admin.access"))):
+    """List all pending verification requests."""
+    db = get_supabase()
+    return db.table("moderation_queue").select("*").eq("status", "pending").execute().data
+
+@router.patch("/verification/{entry_id}/approve")
+async def approve_verification(entry_id: str, user = Depends(require_permission("admin.access"))):
+    """
+    Approve a verification request from the moderation queue.
+    Updates the target entity (e.g., skill) as verified.
+    """
+    db = get_supabase()
+    
+    # 1. Fetch moderation entry
+    entry = db.table("moderation_queue").select("*").eq("id", entry_id).single().execute()
+    if not entry.data:
+        raise HTTPException(status_code=404, detail="Moderation entry not found")
+        
+    entity_id = entry.data["entity_id"]
+    entity_type = entry.data["entity_type"]
+    
+    # 2. Update the target entity
+    if entity_type == "skill":
+        db.table("user_skills").update({"is_verified": True}).eq("id", entity_id).execute()
+        
+        # Add to skill_verification_flags for audit
+        db.table("skill_verification_flags").insert({
+            "user_id": db.table("user_skills").select("user_id").eq("id", entity_id).single().execute().data["user_id"],
+            "skill_key": db.table("user_skills").select("skill_name").eq("id", entity_id).single().execute().data["skill_name"],
+            "verified_by": user.get("sub", ""),
+            "verification_method": "manual_review",
+            "is_verified": True
+        }).execute()
+    
+    # 3. Mark moderation entry as resolved
+    db.table("moderation_queue").update({"status": "approved"}).eq("id", entry_id).execute()
+    
+    await record_event(
+        actor_id=user.get("sub", ""),
+        actor_role="admin",
+        event_type="approved_verification",
+        description=f"Approved {entity_type} verification",
+        entity_type=entity_type,
+        entity_id=entity_id,
+    )
+    
+    return {"status": "success", "message": "Verification approved"}

@@ -10,7 +10,7 @@ import { api } from '@/lib/api/api-client';
 export function HeroSection() {
   const [content, setContent] = useState<any>({
     title: 'Verify Skills. Hire Intelligence.',
-    subtitle: 'this best hiring tool uses Gemini 1.5 and Solana to verify professional expertise with on-chain precision. no more resume inflation.',
+    subtitle: 'Best Hiring Tool uses Gemini 1.5 and Solana to verify professional expertise with on-chain precision. no more resume inflation.',
     badge: 'The Future of Web3 Talent is Here'
   });
 

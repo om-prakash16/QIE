@@ -1,12 +1,12 @@
-# SkillProof AI - System Architecture Overview
+# Best Hiring Tool - System Architecture Overview
 
-This document provides a complete blueprint for the SkillProof AI platform, unifying the AI services, dynamic schema system, NFT verification layer, and job marketplace into a single cohesive architecture.
+This document provides a complete blueprint for the Best Hiring Tool platform, unifying the AI services, dynamic schema system, NFT verification layer, and job marketplace into a single cohesive architecture.
 
 ---
 
 ## SECTION 1 — High-Level Architecture
 
-The SkillProof AI platform utilizes a "Dual-State Architecture" combining high-performance Web2 technologies with verifiable Web3 infrastructure.
+The Best Hiring Tool platform utilizes a "Dual-State Architecture" combining high-performance Web2 technologies with verifiable Web3 infrastructure.
 
 *   **Frontend Layer**: Built with **Next.js 14**, Tailwind CSS, and shadcn/ui. Responsible for delivering a premium, highly responsive user interface, managing local state, initiating wallet connections, and orchestrating user interactions.
 *   **API Layer**: Built with **FastAPI (Python)** and Pydantic. Acts as the central nervous system, handling request routing, data validation, business logic execution, and communication with external sub-systems.

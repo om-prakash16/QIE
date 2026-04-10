@@ -12,7 +12,7 @@ export function Footer({ forceVisible }: { forceVisible?: boolean }) {
 
     if (isDashboard && !forceVisible) return null
 
-    const siteName = getVal("global", "site_name", "this best hiring tool")
+    const siteName = getVal("global", "site_name", "Best Hiring Tool")
     const copyright = getVal("global", "copyright", `© ${new Date().getFullYear()} ${siteName}. All rights reserved.`)
     const columns = getJson("footer", "columns") || []
     const socialLinks = getJson("footer", "social_links") || []
@@ -26,7 +26,7 @@ export function Footer({ forceVisible }: { forceVisible?: boolean }) {
                             <div className="bg-primary/10 p-2 rounded-lg">
                                 <Briefcase className="w-5 h-5 text-primary" />
                             </div>
-                            <span className="text-lg font-bold font-heading">Skill<span className="text-primary">{siteName.split("Skill")[1] || "Proof AI"}</span></span>
+                            <span className="text-lg font-bold font-heading">{siteName}</span>
                         </Link>
                         <p className="text-sm text-muted-foreground leading-relaxed">
                             {getVal("hero", "subtitle", "Connecting top talent with world-class companies.")}

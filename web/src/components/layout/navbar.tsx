@@ -43,8 +43,7 @@ export function Navbar() {
         { href: "/talent", label: "Talent" },
     ]
 
-    const siteName = getVal("global", "site_name", "this best hiring tool")
-    const logoLabel = siteName.split("Skill")
+    const siteName = getVal("global", "site_name", "Best Hiring Tool")
 
     const isDashboard = pathname?.startsWith("/user") || pathname?.startsWith("/company") || pathname?.startsWith("/admin")
 
@@ -55,25 +54,10 @@ export function Navbar() {
                 scrolled
                     ? "bg-background/80 backdrop-blur-md border-b shadow-sm"
                     : "bg-transparent",
-                isDashboard ? "left-0 md:left-64" : "left-0"
+                isDashboard ? "left-0 lg:left-64" : "left-0"
             )}
         >
-            <div className="container mx-auto flex items-center justify-between h-16 px-4">
-                {/* Mobile Dash Menu Trigger (Dashboard only) */}
-                {isDashboard && (
-                    <div className="lg:hidden mr-2">
-                        <Sheet>
-                            <SheetTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-9 w-9">
-                                    <Menu className="w-5 h-5" />
-                                </Button>
-                            </SheetTrigger>
-                            <SheetContent side="left" className="p-0 w-64">
-                                <Sidebar role={pathname?.startsWith("/company") ? "company" : pathname?.startsWith("/admin") ? "admin" : "user"} />
-                            </SheetContent>
-                        </Sheet>
-                    </div>
-                )}
+            <div className="container mx-auto flex items-center justify-between h-16 px-4 md:px-6">
 
                 {/* Logo - Hide on Dashboard as Sidebar has logo */}
                 {!isDashboard && (
@@ -81,7 +65,7 @@ export function Navbar() {
                         <div className="bg-primary/10 p-2 rounded-lg">
                             <Briefcase className="w-6 h-6 text-primary" />
                         </div>
-                        <span className="text-xl font-bold font-heading tracking-tight">Skill<span className="text-primary">{logoLabel[1] || "Proof AI"}</span></span>
+                        <span className="text-xl font-bold font-heading tracking-tight">{siteName}</span>
                     </Link>
                 )}
 
@@ -208,26 +192,52 @@ export function Navbar() {
                                 <Menu className="w-5 h-5" />
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="right">
-                            <div className="flex flex-col gap-6 mt-10">
-                                {navLinks.map((link) => (
-                                    <Link
-                                        key={link.href}
-                                        href={link.href}
-                                        className="text-lg font-medium"
-                                    >
-                                        {link.label}
-                                    </Link>
-                                ))}
+                        <SheetContent side="right" className="w-[300px] sm:w-[350px] px-6">
+                            <div className="flex flex-col gap-8 mt-10">
+                                {/* Dashboard Links (if applicable) */}
+                                {isDashboard && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-2">Dashboard</p>
+                                        <Sidebar 
+                                            variant="mobile"
+                                            role={pathname?.startsWith("/company") ? "company" : pathname?.startsWith("/admin") ? "admin" : "user"} 
+                                        />
+                                        <div className="h-px bg-border my-4" />
+                                    </div>
+                                )}
+
+                                {/* Site Links */}
+                                <div className="flex flex-col gap-4">
+                                    <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-2">Platform</p>
+                                    {navLinks.map((link) => (
+                                        <Link
+                                            key={link.href}
+                                            href={link.href}
+                                            className={cn(
+                                                "text-lg font-semibold transition-colors hover:text-primary",
+                                                pathname === link.href ? "text-primary" : "text-foreground"
+                                            )}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    ))}
+                                </div>
+
                                 {!user ? (
-                                    <div className="flex flex-col gap-2 mt-4">
-                                        <Link href="/auth/login"><Button className="w-full" variant="outline">Log In</Button></Link>
-                                        <Link href="/auth/register"><Button className="w-full">Register</Button></Link>
+                                    <div className="flex flex-col gap-3 mt-4">
+                                        <Link href="/auth/login" className="w-full">
+                                            <Button className="w-full" variant="outline">Log In</Button>
+                                        </Link>
+                                        <Link href="/auth/register" className="w-full">
+                                            <Button className="w-full">Register</Button>
+                                        </Link>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col gap-2 mt-4">
-                                        <Link href="/user/profile"><Button className="w-full" variant="outline">My Profile</Button></Link>
-                                        <Button className="w-full" onClick={logout}>Log Out</Button>
+                                    <div className="flex flex-col gap-3 mt-4">
+                                        <Link href="/user/profile" className="w-full">
+                                            <Button className="w-full" variant="outline">My Profile</Button>
+                                        </Link>
+                                        <Button className="w-full" variant="destructive" onClick={logout}>Sign Out</Button>
                                     </div>
                                 )}
                             </div>

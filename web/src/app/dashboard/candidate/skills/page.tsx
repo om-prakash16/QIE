@@ -1,256 +1,255 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Shield, Play, CheckCircle2, XCircle, Clock, Trophy, Loader2, ArrowRight } from "lucide-react"
+import { 
+    Award, 
+    Plus, 
+    Search, 
+    CheckCircle2, 
+    Clock, 
+    AlertCircle, 
+    BarChart3, 
+    Trash2,
+    ShieldCheck
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
+import { 
+    Card, 
+    CardContent, 
+    CardDescription, 
+    CardHeader, 
+    CardTitle 
+} from "@/components/ui/card"
 import { toast } from "sonner"
 import { useAuth } from "@/context/auth-context"
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+interface Skill {
+    id: string
+    skill_name: string
+    proficiency_level: number
+    is_verified: boolean
+}
 
-const availableSkills = [
-    { name: "Rust", category: "Systems", color: "from-orange-500/20 to-orange-600/5" },
-    { name: "Solana", category: "Blockchain", color: "from-purple-500/20 to-purple-600/5" },
-    { name: "TypeScript", category: "Frontend", color: "from-blue-500/20 to-blue-600/5" },
-    { name: "Python", category: "Backend", color: "from-green-500/20 to-green-600/5" },
-    { name: "Next.js", category: "Frontend", color: "from-gray-500/20 to-gray-600/5" },
-    { name: "FastAPI", category: "Backend", color: "from-teal-500/20 to-teal-600/5" },
-    { name: "LangChain", category: "AI", color: "from-emerald-500/20 to-emerald-600/5" },
-    { name: "Anchor", category: "Blockchain", color: "from-indigo-500/20 to-indigo-600/5" },
-]
-
-const pastQuizzes = [
-    { skill: "Rust", score: 88, level: "Silver", passed: true, date: "Apr 1, 2026" },
-    { skill: "Solana", score: 92, level: "Gold", passed: true, date: "Mar 28, 2026" },
-    { skill: "TypeScript", score: 65, level: "—", passed: false, date: "Mar 25, 2026" },
-]
-
-type Phase = "select" | "quiz" | "result"
-
-export default function SkillVerificationPage() {
+export default function SkillsPage() {
     const { user } = useAuth()
-    const [phase, setPhase] = useState<Phase>("select")
-    const [selectedSkill, setSelectedSkill] = useState("")
-    const [questions, setQuestions] = useState<any[]>([])
-    const [currentQ, setCurrentQ] = useState(0)
-    const [answers, setAnswers] = useState<Record<string, string>>({})
-    const [result, setResult] = useState<any>(null)
-    const [loading, setLoading] = useState(false)
-    const [timeLeft, setTimeLeft] = useState(900)
+    const [skills, setSkills] = useState<Skill[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+    const [newSkillName, setNewSkillName] = useState("")
+    const [proficiency, setProficiency] = useState(50)
 
-    const startQuiz = async (skill: string) => {
-        setLoading(true)
-        setSelectedSkill(skill)
+    useEffect(() => {
+        fetchSkills()
+    }, [])
+
+    const fetchSkills = async () => {
         try {
-            const res = await fetch(`${API}/quiz/generate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ skill, difficulty: "intermediate", question_count: 5, wallet_address: user?.wallet_address || "demo" })
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/skills`, {
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("sp_token")}`
+                }
             })
             const data = await res.json()
-            setQuestions(data.questions || [])
-            setCurrentQ(0)
-            setAnswers({})
-            setPhase("quiz")
-        } catch {
-            // Use mock questions
-            setQuestions([
-                { id: "q1", text: `What is a key feature of ${skill}?`, options: ["A) Speed", "B) Safety", "C) Both A and B", "D) None"] },
-                { id: "q2", text: `Which ecosystem uses ${skill}?`, options: ["A) Ethereum", "B) Solana", "C) Both", "D) Neither"] },
-                { id: "q3", text: `What is the primary use case?`, options: ["A) Frontend", "B) Backend", "C) Smart Contracts", "D) All"] },
-            ])
-            setCurrentQ(0)
-            setAnswers({})
-            setPhase("quiz")
+            setSkills(data)
+        } catch (err) {
+            toast.error("Failed to load skills")
+        } finally {
+            setIsLoading(false)
         }
-        setLoading(false)
     }
 
-    const selectAnswer = (questionId: string, answer: string) => {
-        setAnswers(prev => ({ ...prev, [questionId]: answer }))
-    }
-
-    const submitQuiz = async () => {
-        setLoading(true)
+    const handleAddSkill = async () => {
+        if (!newSkillName.trim()) return
+        
         try {
-            const res = await fetch(`${API}/quiz/evaluate`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/skills`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ quiz_id: "local", answers, wallet_address: user?.wallet_address || "demo" })
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("sp_token")}`
+                },
+                body: JSON.stringify({
+                    skill_name: newSkillName,
+                    proficiency_level: Math.round(proficiency / 10)
+                })
             })
-            const data = await res.json()
-            setResult(data)
-        } catch {
-            const correct = Object.keys(answers).length - 1
-            const total = questions.length
-            const score = Math.round((correct / total) * 100)
-            setResult({ score, correct, total, passed: score >= 75, level: score >= 85 ? "Gold" : score >= 75 ? "Silver" : "Bronze", nft_ready: score >= 75 })
+            
+            if (res.ok) {
+                toast.success("Skill added successfully")
+                setNewSkillName("")
+                fetchSkills()
+            }
+        } catch (err) {
+            toast.error("Failed to add skill")
         }
-        setPhase("result")
-        setLoading(false)
+    }
+
+    const handleRequestVerification = async (skillId: string) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/skills/${skillId}/verify`, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${localStorage.getItem("sp_token")}`
+                }
+            })
+            
+            if (res.ok) {
+                toast.success("Verification request submitted")
+                fetchSkills()
+            }
+        } catch (err) {
+            toast.error("Failed to submit verification request")
+        }
     }
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 max-w-5xl mx-auto py-10 px-4">
             {/* Header */}
-            <div className="space-y-2">
-                <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-black font-heading tracking-tight flex items-center gap-3">
-                    <Shield className="w-8 h-8 text-primary" />
-                    Skill Verification Center
-                </motion.h1>
-                <p className="text-muted-foreground text-sm">Pass AI quizzes to earn Soulbound Skill NFTs on Solana.</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-2">
+                    <h1 className="text-3xl font-black font-heading tracking-tight flex items-center gap-3">
+                        <Award className="w-8 h-8 text-primary" />
+                        Skills & Verification
+                    </h1>
+                    <p className="text-muted-foreground text-sm">Manage your professional skills and request on-chain verification.</p>
+                </div>
+                <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-500 px-4 py-2 rounded-full border border-emerald-500/20 text-xs font-bold">
+                    <ShieldCheck className="w-4 h-4" />
+                    {skills.filter(s => s.is_verified).length} Verified Skills
+                </div>
             </div>
 
-            <AnimatePresence mode="wait">
-                {/* PHASE: Skill Selection */}
-                {phase === "select" && (
-                    <motion.div key="select" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-8">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {availableSkills.map((skill, i) => (
-                                <motion.div
-                                    key={skill.name}
-                                    initial={{ opacity: 0, y: 16 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: i * 0.05 }}
-                                >
-                                    <button
-                                        onClick={() => startQuiz(skill.name)}
-                                        disabled={loading}
-                                        className={cn(
-                                            "w-full p-6 rounded-2xl border border-white/10 bg-gradient-to-br text-left transition-all hover:border-white/20 hover:shadow-lg group",
-                                            skill.color
-                                        )}
-                                    >
-                                        <Badge variant="secondary" className="text-[9px] mb-3">{skill.category}</Badge>
-                                        <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{skill.name}</h3>
-                                        <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-                                            <Play className="w-3.5 h-3.5" />Start Quiz
-                                        </div>
-                                    </button>
-                                </motion.div>
-                            ))}
+            {/* Add Skill Section */}
+            <Card className="border-primary/20 bg-primary/5 shadow-inner">
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-sm uppercase tracking-widest font-black flex items-center gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add New Skill
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex-1">
+                            <Input 
+                                placeholder="E.g. Rust, Solidity, Project Management..." 
+                                value={newSkillName}
+                                onChange={(e) => setNewSkillName(e.target.value)}
+                                className="h-12 bg-background border-primary/20 focus:ring-primary"
+                            />
                         </div>
-
-                        {/* Past Quiz History */}
-                        {pastQuizzes.length > 0 && (
-                            <div className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] space-y-4">
-                                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Quiz History</h2>
-                                <div className="space-y-3">
-                                    {pastQuizzes.map((q, i) => (
-                                        <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
-                                            {q.passed ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <XCircle className="w-5 h-5 text-red-500 shrink-0" />}
-                                            <div className="flex-1">
-                                                <span className="font-bold text-sm">{q.skill}</span>
-                                                <span className="text-xs text-muted-foreground ml-2">· {q.date}</span>
-                                            </div>
-                                            <span className="text-sm font-bold">{q.score}%</span>
-                                            {q.passed && <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] font-bold">{q.level}</Badge>}
-                                        </div>
-                                    ))}
-                                </div>
+                        <div className="w-full md:w-64 space-y-2">
+                            <div className="flex justify-between text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                                <span>Proficiency</span>
+                                <span>{Math.round(proficiency / 10)} / 10</span>
                             </div>
-                        )}
-                    </motion.div>
-                )}
-
-                {/* PHASE: Quiz */}
-                {phase === "quiz" && questions.length > 0 && (
-                    <motion.div key="quiz" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-6 max-w-3xl">
-                        <div className="flex items-center justify-between">
-                            <Badge className="bg-primary/10 text-primary border-primary/20 text-xs font-bold">{selectedSkill} Quiz</Badge>
-                            <span className="text-sm text-muted-foreground">Question {currentQ + 1} / {questions.length}</span>
+                            <input 
+                                type="range" 
+                                min="10" 
+                                max="100" 
+                                step="10"
+                                value={proficiency}
+                                onChange={(e) => setProficiency(parseInt(e.target.value))}
+                                className="w-full h-2 bg-primary/20 rounded-lg appearance-none cursor-pointer accent-primary"
+                            />
                         </div>
-
-                        <Progress value={((currentQ + 1) / questions.length) * 100} className="h-1" />
-
-                        <div className="p-8 rounded-2xl border border-white/10 bg-white/[0.02] space-y-6">
-                            <h2 className="text-xl font-bold">{questions[currentQ]?.text}</h2>
-                            <div className="space-y-3">
-                                {questions[currentQ]?.options?.map((opt: string) => {
-                                    const letter = opt.charAt(0)
-                                    const isSelected = answers[questions[currentQ].id] === letter
-                                    return (
-                                        <button
-                                            key={opt}
-                                            onClick={() => selectAnswer(questions[currentQ].id, letter)}
-                                            className={cn(
-                                                "w-full text-left p-4 rounded-xl border transition-all text-sm font-medium",
-                                                isSelected ? "border-primary bg-primary/10 text-primary" : "border-white/10 hover:border-white/20 hover:bg-white/5"
-                                            )}
-                                        >
-                                            {opt}
-                                        </button>
-                                    )
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <Button variant="outline" onClick={() => setCurrentQ(Math.max(0, currentQ - 1))} disabled={currentQ === 0} className="rounded-xl border-white/10">Previous</Button>
-                            {currentQ < questions.length - 1 ? (
-                                <Button onClick={() => setCurrentQ(currentQ + 1)} disabled={!answers[questions[currentQ]?.id]} className="rounded-xl gap-2">
-                                    Next <ArrowRight className="w-4 h-4" />
-                                </Button>
-                            ) : (
-                                <Button onClick={submitQuiz} disabled={loading || Object.keys(answers).length < questions.length} className="rounded-xl bg-emerald-600 hover:bg-emerald-700 gap-2">
-                                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                                    Submit Quiz
-                                </Button>
-                            )}
-                        </div>
-                    </motion.div>
-                )}
-
-                {/* PHASE: Result */}
-                {phase === "result" && result && (
-                    <motion.div key="result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-lg mx-auto text-center space-y-8">
-                        <div className={cn(
-                            "w-32 h-32 rounded-full mx-auto flex items-center justify-center border-4",
-                            result.passed ? "border-emerald-500 bg-emerald-500/10" : "border-red-500 bg-red-500/10"
-                        )}>
-                            <div>
-                                <div className={cn("text-4xl font-black", result.passed ? "text-emerald-500" : "text-red-500")}>{result.score}%</div>
-                                <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Score</div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <h2 className="text-2xl font-black">{result.passed ? "🎉 Congratulations!" : "Keep Practicing!"}</h2>
-                            <p className="text-muted-foreground text-sm">
-                                {result.passed
-                                    ? `You earned a ${result.level} level ${selectedSkill} NFT!`
-                                    : "You need 75% to pass. Try again when ready."
-                                }
-                            </p>
-                        </div>
-
-                        {result.passed && (
-                            <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
-                                <Trophy className="w-6 h-6 text-emerald-500 mx-auto" />
-                                <p className="text-sm font-bold text-emerald-500">Soulbound NFT Ready to Mint</p>
-                                <p className="text-[10px] text-muted-foreground">Level: {result.level} · Skill: {selectedSkill}</p>
-                                <Button className="mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700" onClick={() => toast.success("Skill NFT minting initiated on Solana!")}>
-                                    Mint Skill NFT
-                                </Button>
-                            </div>
-                        )}
-
-                        <Button variant="outline" onClick={() => { setPhase("select"); setResult(null) }} className="rounded-xl border-white/10">
-                            Back to Skills
+                        <Button 
+                            onClick={handleAddSkill}
+                            className="h-12 px-8 font-bold"
+                            disabled={!newSkillName.trim()}
+                        >
+                            Add Skill
                         </Button>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    </div>
+                </CardContent>
+            </Card>
 
-            {loading && phase === "select" && (
-                <div className="flex items-center justify-center py-16">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-            )}
+            {/* Skills List */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <AnimatePresence mode="popLayout">
+                    {isLoading ? (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="h-32 rounded-2xl bg-muted/50 animate-pulse" />
+                        ))
+                    ) : skills.length === 0 ? (
+                        <div className="col-span-full py-20 text-center space-y-4">
+                            <div className="bg-muted p-4 rounded-full w-16 h-16 mx-auto flex items-center justify-center">
+                                <Search className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                            <p className="text-muted-foreground">No skills added yet. Start by adding your core competencies.</p>
+                        </div>
+                    ) : (
+                        skills.map((skill) => (
+                            <motion.div
+                                key={skill.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                            >
+                                <Card className={cn(
+                                    "group relative overflow-hidden transition-all hover:shadow-lg border-border/50",
+                                    skill.is_verified && "border-emerald-500/30 bg-emerald-500/[0.02]"
+                                )}>
+                                    <CardContent className="p-6 space-y-4">
+                                        <div className="flex items-start justify-between">
+                                            <div className="space-y-1">
+                                                <h3 className="font-bold text-lg">{skill.skill_name}</h3>
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="text-[10px] font-bold">
+                                                        Level {skill.proficiency_level}
+                                                    </Badge>
+                                                    {skill.is_verified ? (
+                                                        <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px] font-bold gap-1">
+                                                            <CheckCircle2 className="w-3 h-3" /> Verified
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="secondary" className="text-[10px] font-bold gap-1">
+                                                            <Clock className="w-3 h-3" /> Pending
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive transition-colors">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                                <span>Proficiency</span>
+                                                <span>{skill.proficiency_level * 10}%</span>
+                                            </div>
+                                            <Progress value={skill.proficiency_level * 10} className="h-1.5" />
+                                        </div>
+
+                                        {!skill.is_verified && (
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="w-full text-xs font-bold border-primary/20 hover:bg-primary/5 gap-2"
+                                                onClick={() => handleRequestVerification(skill.id)}
+                                            >
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                                Request Verification
+                                            </Button>
+                                        )}
+                                    </CardContent>
+                                    
+                                    {/* Decorative background icon */}
+                                    <Award className="absolute -bottom-4 -right-4 w-24 h-24 text-primary/[0.03] rotate-12 group-hover:rotate-0 transition-transform duration-500" />
+                                </Card>
+                            </motion.div>
+                        ))
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     )
+}
+
+function cn(...classes: any[]) {
+    return classes.filter(Boolean).join(" ")
 }

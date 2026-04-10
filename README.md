@@ -8,7 +8,7 @@
   <br />
   <br />
 
-  <h1>🚀 this best hiring tool</h1>
+  <h1>🚀 Best Hiring Tool</h1>
   <h3>The Ultimate AI-Powered Web3 Talent Marketplace</h3>
   
   <p align="center">
@@ -21,9 +21,9 @@
 
 ## 🌟 The Vision
 
-**this best hiring tool** bridges the trust gap between elite candidates and world-class companies. By moving resumes from static PDFs into dynamic, AI-verified, on-chain assets, we make the hiring process completely transparent, verifiable, and instantly matched.
+**Best Hiring Tool** bridges the trust gap between elite candidates and world-class companies. By moving resumes from static PDFs into dynamic, AI-verified, on-chain assets, we make the hiring process completely transparent, verifiable, and instantly matched.
 
-> *LinkedIn shows claims. this best hiring tool proves skills.*
+> *LinkedIn shows claims. Best Hiring Tool proves skills.*
 
 ## 🏆 Hackathon-Winning Features
 
@@ -46,7 +46,7 @@
 ## 📁 Professional Monorepo Structure
 
 ```text
-this best hiring tool/
+Best Hiring Tool/
 ├── web/                     # Next.js Frontend (Port: 3000)
 ├── server/                  # FastAPI AI Backend (Port: 8000)
 ├── programs/                # Rust Anchor Smart Contracts
@@ -90,7 +90,7 @@ make docker-up
 
 ## 🛡️ Isolation & Conflict Prevention
 
-To maintain a professional multi-project workflow, this best hiring tool follows these rules:
+To maintain a professional multi-project workflow, Best Hiring Tool follows these rules:
 1. **Port 3000**: Standard Next.js development port.
 2. **Port 8000**: Standard FastAPI/Uvicorn port.
 3. **Container Prefix**: All Docker assets use the `the-best-hiring-tool_` prefix.

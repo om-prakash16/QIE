@@ -18,7 +18,11 @@ import {
     Settings,
     LogOut,
     Zap,
+    Zap,
     Brain,
+    Users,
+    Route,
+    Gamepad2,
 } from "lucide-react"
 import { useAuth } from "@/context/auth-context"
 
@@ -32,6 +36,9 @@ const candidateLinks = [
     { href: "/dashboard/candidate/reputation", label: "Reputation", icon: Trophy },
     { href: "/dashboard/candidate/nfts", label: "NFT Credentials", icon: Gem },
     { href: "/dashboard/candidate/insights", label: "AI Insights", icon: Brain },
+    { href: "/dashboard/candidate/career", label: "Career Roadmap", icon: Route },
+    { href: "/dashboard/candidate/interview", label: "Interview Prep", icon: Gamepad2 },
+    { href: "/dashboard/candidate/community", label: "Community", icon: Users },
     { href: "/dashboard/candidate/settings", label: "Settings", icon: Settings },
 ]
 
@@ -69,7 +76,7 @@ export default function CandidateDashboardLayout({
                         </div>
                         <div className="flex flex-col">
                             <span className="text-xl font-bold font-heading tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/80 transition-all duration-500">
-                                this best hiring tool
+                                Best Hiring Tool
                             </span>
                             <span className="text-[9px] uppercase tracking-[0.3em] text-primary/60 font-bold">User Panel</span>
                         </div>

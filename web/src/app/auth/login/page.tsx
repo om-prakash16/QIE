@@ -15,7 +15,7 @@ import { Briefcase, Eye, EyeOff, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function LoginPage() {
-    const { login } = useAuth()
+    const { demoLogin } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
@@ -128,10 +128,36 @@ export default function LoginPage() {
                                 </FormItem>
                             )}
                         />
-                        <Button className="w-full" type="submit" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Sign In
+                        <Button className="w-full" type="submit" disabled={true}>
+                            Email Login Disabled (Use Demo Mode)
                         </Button>
+                        
+                        <div className="pt-4 space-y-3">
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-background px-4 text-muted-foreground/60">Professional Identity</span></div>
+                            </div>
+                            
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="w-full h-12 border-primary/20 hover:bg-primary/10 hover:border-primary/50 transition-all font-black uppercase text-xs tracking-widest"
+                                onClick={() => demoLogin("USER")}
+                                disabled={isLoading}
+                            >
+                                Demo Login: Job Seeker
+                            </Button>
+
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="w-full h-12 border-primary/20 hover:bg-primary/10 hover:border-primary/50 transition-all font-black uppercase text-xs tracking-widest"
+                                onClick={() => demoLogin("COMPANY")}
+                                disabled={isLoading}
+                            >
+                                Demo Login: Company
+                            </Button>
+                        </div>
                     </form>
                 </Form>
             </CardContent>

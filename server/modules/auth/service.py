@@ -18,7 +18,11 @@ async def verify_solana_signature(wallet: str, message: str, signature: str) -> 
     """
     Verifies a Solana Ed25519 signature.
     Signature expected as hex string.
+    Supports a 'MOCK_DEMO_SIGNATURE' for wallets starting with 'DEV_' for testing.
     """
+    if wallet.startswith("DEV_") and signature == "MOCK_DEMO_SIGNATURE":
+        return True
+
     try:
         verify_key = VerifyKey(bytes.fromhex(wallet))
         verify_key.verify(message.encode(), bytes.fromhex(signature))

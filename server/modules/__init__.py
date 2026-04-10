@@ -1,1 +1,1 @@
-# this best hiring tool Modular Platform Registry
+# Best Hiring Tool Modular Platform Registry

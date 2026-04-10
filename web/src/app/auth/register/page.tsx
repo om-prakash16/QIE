@@ -10,7 +10,7 @@ import { Briefcase, Loader2, ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 
 export default function RegisterPage() {
-    const { walletLogin } = useAuth()
+    const { walletLogin, demoLogin } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [selectedRole, setSelectedRole] = useState("user")
 
@@ -60,8 +60,17 @@ export default function RegisterPage() {
                             </>
                         )}
                     </Button>
+                    
+                    <button 
+                        type="button"
+                        onClick={() => demoLogin(selectedRole)}
+                        className="w-full text-xs font-bold text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest py-2"
+                    >
+                        Demo Mode: Skip Wallet Check
+                    </button>
+
                     <p className="text-[10px] text-center text-muted-foreground/60 px-4">
-                        By registering, you are anchoring your cryptographic identity to this best hiring tool protocols.
+                        By registering, you are anchoring your cryptographic identity to Best Hiring Tool protocols.
                     </p>
                 </div>
             </CardContent>

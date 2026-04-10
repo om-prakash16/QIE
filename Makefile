@@ -1,4 +1,4 @@
-# 'this best hiring tool' Project Makefile
+# 'Best Hiring Tool' Project Makefile
 
 # Install all dependencies
 install:

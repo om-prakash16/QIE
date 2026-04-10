@@ -1,5 +1,5 @@
 """
-this best hiring tool Database Connection Bridge.
+Best Hiring Tool Database Connection Bridge.
 Provides a unified gateway to the database using Supabase.
 Initially, it mocks the psycopg2 cursor interface to allow existing 
 legacy route logic to function without complete refactoring.

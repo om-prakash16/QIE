@@ -30,7 +30,7 @@ class QuizSubmission(BaseModel):
 @router.post("/generate")
 async def generate_quiz(data: QuizRequest):
     """Generate an AI-powered skill assessment quiz."""
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("GOOGLE_API_KEY")
     
     # Mock quiz generation (used when no OpenAI key)
     mock_questions = []
@@ -72,10 +72,10 @@ async def generate_quiz(data: QuizRequest):
     # If we have an API key, use LangChain to generate real questions
     if api_key:
         try:
-            from langchain_openai import ChatOpenAI
+            from langchain_google_genai import ChatGoogleGenerativeAI
             from langchain.prompts import PromptTemplate
 
-            llm = ChatOpenAI(temperature=0.7, api_key=api_key, model="gpt-4o-mini")
+            llm = ChatGoogleGenerativeAI(temperature=0.7, google_api_key=api_key, model="gemini-1.5-flash")
             prompt = PromptTemplate(
                 template="""Generate {count} multiple choice questions to assess {skill} at {difficulty} level.
                 

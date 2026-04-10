@@ -30,3 +30,27 @@ class ParsedResume(BaseModel):
     skill_score: float = Field(description="AI-calculated skill score from 0-100")
     missing_skills: List[str] = Field(description="Top 3 missing skills for the identified role")
     summary: str = Field(description="Executive summary and career recommendations")
+
+# --- Interview Prep System Models ---
+
+class InterviewQuestionBase(BaseModel):
+    question: str
+    options: List[str]
+    correct_answer: str
+    difficulty: str = "Intermediate"
+    source: str = "AI"
+
+class InterviewQuestionCreate(InterviewQuestionBase):
+    user_id: str
+    job_id: str
+
+class InterviewQuestionResponse(InterviewQuestionBase):
+    id: str
+    user_id: str
+    job_id: str
+    created_at: str
+
+class InterviewGenerationRequest(BaseModel):
+    user_id: str
+    job_id: str
+    count: int = 10

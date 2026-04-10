@@ -1,6 +1,6 @@
-# this best hiring tool: Scalable SaaS Architecture
+# Best Hiring Tool: Scalable SaaS Architecture
 
-this best hiring tool is architected as a high-performance, modular monorepo that bridges the gap between traditional SaaS (Supabase/FastAPI) and Web3 (Solana/IPFS).
+Best Hiring Tool is architected as a high-performance, modular monorepo that bridges the gap between traditional SaaS (Supabase/FastAPI) and Web3 (Solana/IPFS).
 
 ## 🏛️ Project Structure
 

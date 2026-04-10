@@ -104,7 +104,7 @@ export default function CredentialsDashboard() {
                     <Shield className="w-12 h-12 text-emerald-500" />
                     <div className="space-y-2">
                         <h3 className="text-xl font-bold italic">Verification Logic</h3>
-                        <p className="text-neutral-500 text-sm italic">All this best hiring tool NFTs are anchored to our Diamond Collection on Solana to prevent spoofing.</p>
+                        <p className="text-neutral-500 text-sm italic">All Best Hiring Tool NFTs are anchored to our Diamond Collection on Solana to prevent spoofing.</p>
                     </div>
                 </div>
             </div>

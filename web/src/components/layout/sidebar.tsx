@@ -25,9 +25,10 @@ import { useAuth } from "@/context/auth-context"
 interface SidebarProps {
     role: "user" | "company" | "admin"
     className?: string
+    variant?: "default" | "mobile"
 }
 
-export function Sidebar({ role, className }: SidebarProps) {
+export function Sidebar({ role, className, variant = "default" }: SidebarProps) {
     const pathname = usePathname()
     const { logout } = useAuth()
 
@@ -59,15 +60,22 @@ export function Sidebar({ role, className }: SidebarProps) {
 
     return (
         <aside className={cn(
-            "w-64 bg-background/60 backdrop-blur-xl border-r border-white/10 flex flex-col h-screen sticky top-0 shrink-0 z-50",
+            variant === "default" 
+                ? "w-64 bg-background/60 backdrop-blur-xl border-r border-white/10 flex flex-col h-screen sticky top-0 shrink-0 z-50"
+                : "w-full flex flex-col h-full bg-transparent border-none",
             "before:absolute before:inset-0 before:bg-gradient-to-b before:from-primary/5 before:to-transparent before:pointer-events-none",
             className
         )}>
-            {/* Ambient Background Glows */}
-            <div className="absolute top-0 -left-20 w-40 h-40 bg-primary/10 blur-[100px] pointer-events-none" />
-            <div className="absolute bottom-20 -right-20 w-40 h-40 bg-primary/5 blur-[80px] pointer-events-none" />
+            {/* Ambient Background Glows - Only in default */}
+            {variant === "default" && (
+                <>
+                    <div className="absolute top-0 -left-20 w-40 h-40 bg-primary/10 blur-[100px] pointer-events-none" />
+                    <div className="absolute bottom-20 -right-20 w-40 h-40 bg-primary/5 blur-[80px] pointer-events-none" />
+                </>
+            )}
 
-            <div className="p-8 relative">
+            {variant === "default" && (
+                <div className="p-8 relative">
                 <Link href="/" className="flex items-center gap-3 group">
                     <div className="relative">
                         <motion.div 
@@ -81,14 +89,18 @@ export function Sidebar({ role, className }: SidebarProps) {
                     </div>
                     <div className="flex flex-col">
                         <span className="text-xl font-bold font-heading tracking-tight block bg-clip-text text-transparent bg-gradient-to-r from-foreground via-foreground to-foreground/70 group-hover:from-primary group-hover:to-primary/80 transition-all duration-500">
-                            this best hiring tool
+                            Best Hiring Tool
                         </span>
                         <span className="text-[9px] uppercase tracking-[0.3em] text-primary/60 font-bold">Talent Engine</span>
                     </div>
                 </Link>
             </div>
+            )}
 
-            <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto custom-scrollbar relative">
+            <nav className={cn(
+                "flex-1 space-y-2 overflow-y-auto custom-scrollbar relative",
+                variant === "default" ? "px-4 py-4" : "px-0 py-2"
+            )}>
                 {links.map((link) => {
                     const isActive = pathname === link.href
                     return (
@@ -143,18 +155,20 @@ export function Sidebar({ role, className }: SidebarProps) {
                 })}
             </nav>
 
-            <div className="p-6 mt-auto border-t border-white/5 space-y-4 bg-gradient-to-b from-transparent to-primary/5 backdrop-blur-md">
-                <div className="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
-                    <Button 
-                        variant="ghost" 
-                        className="w-full justify-start gap-3 text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-all h-11 px-4 rounded-xl group" 
-                        onClick={logout}
-                    >
-                        <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-sm">Sign Out</span>
-                    </Button>
+            {variant === "default" && (
+                <div className="p-6 mt-auto border-t border-white/5 space-y-4 bg-gradient-to-b from-transparent to-primary/5 backdrop-blur-md">
+                    <div className="bg-white/5 rounded-2xl p-4 border border-white/5 shadow-inner">
+                        <Button 
+                            variant="ghost" 
+                            className="w-full justify-start gap-3 text-destructive/80 hover:text-destructive hover:bg-destructive/10 transition-all h-11 px-4 rounded-xl group" 
+                            onClick={logout}
+                        >
+                            <LogOut className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+                            <span className="text-sm">Sign Out</span>
+                        </Button>
+                    </div>
                 </div>
-            </div>
+            )}
         </aside>
     )
 }

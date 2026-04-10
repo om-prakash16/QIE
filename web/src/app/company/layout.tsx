@@ -34,9 +34,9 @@ export default function CompanyLayout({
 
     return (
         <div className="flex min-h-screen bg-muted/20">
-            <Sidebar role="company" />
-            <main className="flex-1 overflow-y-auto h-screen">
-                <div className="container mx-auto p-4 md:p-8 max-w-7xl pt-20 md:pt-8 w-full">
+            <Sidebar role="company" className="hidden lg:flex" />
+            <main className="flex-1 w-full pt-16">
+                <div className="container mx-auto p-4 md:p-8 max-w-7xl w-full">
                     {children}
                 </div>
             </main>

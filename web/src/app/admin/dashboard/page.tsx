@@ -86,7 +86,7 @@ export default function AdminDashboard() {
                         <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
                         <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-500/80">System operational</span>
                         <div className="h-3 w-px bg-white/10 mx-1" />
-                        <span className="text-[11px] font-bold text-muted-foreground/60">Node: 0xthis best hiring tool.Alpha</span>
+                        <span className="text-[11px] font-bold text-muted-foreground/60">Node: 0xBest Hiring Tool.Alpha</span>
                     </div>
                 </motion.div>
 

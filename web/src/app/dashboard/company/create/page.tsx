@@ -50,7 +50,7 @@ export default function CreateCompany() {
             <Building2 className="w-10 h-10 text-primary" />
          </div>
          <h1 className="text-5xl font-black font-heading tracking-tight italic">Scale Your Organization</h1>
-         <p className="text-muted-foreground max-w-xl mx-auto">Initialize an enterprise workspace on this best hiring tool to hire and verify talent with on-chain reputation.</p>
+         <p className="text-muted-foreground max-w-xl mx-auto">Initialize an enterprise workspace on Best Hiring Tool to hire and verify talent with on-chain reputation.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -61,7 +61,7 @@ export default function CreateCompany() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <Input 
-                    placeholder="e.g. this best hiring tool Labs" 
+                    placeholder="e.g. Best Hiring Tool Labs" 
                     value={name}
                     onChange={e => setName(e.target.value)}
                     className="bg-transparent border-white/10 h-14 text-lg font-bold"

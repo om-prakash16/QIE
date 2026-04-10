@@ -85,7 +85,7 @@ export default function BlockchainDashboard() {
             Blockchain <span className="text-blue-500">Observability</span>
           </h2>
           <p className="text-muted-foreground text-sm font-medium">
-            Real-time analytics and transaction verification for this best hiring tool on Solana.
+            Real-time analytics and transaction verification for Best Hiring Tool on Solana.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -126,7 +126,7 @@ export default function BlockchainDashboard() {
                     Transaction Ledger
                 </CardTitle>
                 <CardDescription>
-                  A real-time broadcast of all on-chain interactions orchestrated by this best hiring tool.
+                  A real-time broadcast of all on-chain interactions orchestrated by Best Hiring Tool.
                 </CardDescription>
               </div>
               <div className="flex items-center gap-1 text-[10px] uppercase font-bold text-muted-foreground bg-white/5 px-2 py-1 rounded border border-white/10">

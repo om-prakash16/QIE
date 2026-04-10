@@ -24,6 +24,7 @@ interface AuthContextType {
     user: User | null
     isLoading: boolean
     walletLogin: (role?: string) => Promise<void>
+    demoLogin: (role?: string) => Promise<void>
     logout: () => void
 }
 
@@ -103,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setIsLoading(true)
         try {
             const address = publicKey.toBase58()
-            const message = `Sign in to this best hiring tool\n\nWallet: ${address}\nTime: ${Date.now()}`
+            const message = `Sign in to Best Hiring Tool\n\nWallet: ${address}\nTime: ${Date.now()}`
             const signature = await signMessage(new TextEncoder().encode(message))
             const sigHex = Array.from(signature)
                 .map((b) => b.toString(16).padStart(2, "0"))
@@ -143,6 +144,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     }
 
+    const demoLogin = async (role = "user") => {
+        setIsLoading(true)
+        try {
+            // Check if we have a saved mock wallet, otherwise generate one.
+            let mockWallet = localStorage.getItem("sp_demo_wallet")
+            if (!mockWallet) {
+                const randomId = Math.random().toString(36).substring(2, 10)
+                mockWallet = `DEV_${randomId}`
+                localStorage.setItem("sp_demo_wallet", mockWallet)
+            }
+
+            const message = `Sign in to Best Hiring Tool (DEMO MODE)\n\nWallet: ${mockWallet}\nTime: ${Date.now()}`
+            
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet-login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    wallet_address: mockWallet,
+                    message,
+                    signature: "MOCK_DEMO_SIGNATURE",
+                    requested_role: role,
+                }),
+            })
+
+            const data = await res.json()
+            if (!res.ok) throw new Error(data.detail || "Authentication failed")
+
+            localStorage.setItem("sp_token", data.access_token)
+            setUser({
+                id: "demo-user",
+                name: `Demo User (${mockWallet.slice(4)})`,
+                email: "",
+                role: data.role as UserRole,
+                wallet_address: mockWallet,
+                profile_data: {},
+            })
+
+            toast.success("Signed in (Demo Mode)")
+            router.push("/dashboard")
+        } catch (err: any) {
+            console.error("[auth] demo login failed:", err)
+            toast.error(err.message || "Sign in failed")
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     const logout = async () => {
         localStorage.removeItem("sp_token")
         setUser(null)
@@ -152,7 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, walletLogin, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, walletLogin, demoLogin, logout }}>
             {children}
         </AuthContext.Provider>
     )

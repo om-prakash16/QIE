@@ -20,7 +20,7 @@ class NFTService:
         user_data = db.table("users").select("*").eq("id", user_id).single().execute().data
         
         metadata = {
-            "name": f"this best hiring tool Profile: {user_data.get('full_name')}",
+            "name": f"Best Hiring Tool Profile: {user_data.get('full_name')}",
             "symbol": "SKILL",
             "description": "AI-Verified Professional Identity on Solana",
             "image": user_data.get("avatar_url", "https://ipfs.io/ipfs/placeholder"),
@@ -49,7 +49,7 @@ class NFTService:
                 {"trait_type": "Skill", "value": skill_name},
                 {"trait_type": "Score", "value": score},
                 {"trait_type": "Level", "value": level},
-                {"trait_type": "Verified By", "value": "this best hiring tool"}
+                {"trait_type": "Verified By", "value": "Best Hiring Tool"}
             ]
         }
         

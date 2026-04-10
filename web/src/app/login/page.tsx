@@ -22,7 +22,7 @@ export default function LoginPage() {
            <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-white/5 border border-white/10 mb-4">
               <ShieldCheck className="w-8 h-8 text-primary" />
            </div>
-           <h1 className="text-4xl font-black tracking-tighter text-white">this best hiring tool</h1>
+           <h1 className="text-4xl font-black tracking-tighter text-white">Best Hiring Tool</h1>
            <p className="text-muted-foreground">The future of verified talent on Solana.</p>
         </div>
 

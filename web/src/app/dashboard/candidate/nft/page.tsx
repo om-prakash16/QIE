@@ -18,7 +18,7 @@ export default function DynamicSkillNFTDashboard() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 wallet_address: publicKey ? publicKey.toBase58() : "mock_wallet",
-                github_link: "https://github.com/om-prakash16/this best hiring tool",
+                github_link: "https://github.com/om-prakash16/Best Hiring Tool",
                 quiz_score: 95
             })
         });

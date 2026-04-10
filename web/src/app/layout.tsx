@@ -24,13 +24,13 @@ export async function generateMetadata(): Promise<Metadata> {
     }, {});
 
     return {
-      title: seo.default_title || "this best hiring tool | Standardizing Global Talent",
+      title: seo.default_title || "Best Hiring Tool | Standardizing Global Talent",
       description: seo.default_description || "career verification and sovereign professional identity.",
       keywords: seo.keywords || "blockchain, ai hiring, solana",
     };
   } catch (e) {
     return {
-      title: "this best hiring tool | Standardizing Global Talent",
+      title: "Best Hiring Tool | Standardizing Global Talent",
       description: "career verification and sovereign professional identity.",
     };
   }

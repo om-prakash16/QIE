@@ -34,7 +34,7 @@ const FAQS = [
         answer: "Once an application is submitted, it cannot be edited. However, you can update your profile usage data, and recruiters will see the latest version when they view your profile."
     },
     {
-        question: "Is this best hiring tool free for job seekers?",
+        question: "Is Best Hiring Tool free for job seekers?",
         answer: "Yes! Creating a profile, searching for jobs, and applying is 100% free for all candidates. We only charge companies for premium hiring tools."
     },
     {

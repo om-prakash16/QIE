@@ -94,7 +94,7 @@ export default function CandidateDashboard() {
                         Welcome back{user?.name ? `, ${user.name}` : ""}
                     </motion.h1>
                     <p className="text-muted-foreground text-sm">
-                        Your this best hiring tool dashboard — track your reputation, credentials, and career progress.
+                        Your Best Hiring Tool dashboard — track your reputation, credentials, and career progress.
                     </p>
                 </div>
 

@@ -1,5 +1,7 @@
 "use client"
 
+import { useState, useEffect } from "react"
+
 import { motion } from "framer-motion"
 import { Brain, FileText, Target, TrendingUp, GitBranch, Sparkles, ArrowRight, CheckCircle2, AlertTriangle, Lightbulb } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -41,7 +43,28 @@ const careerPath = [
     { milestone: "VP of Engineering (Web3)", probability: "55%", timeline: "3-5 years" },
 ]
 
-export default function AIInsightsPage() {
+    const [skills, setSkills] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        async function fetchSkills() {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/profile/skills`, {
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("sp_token")}`
+                    }
+                })
+                const data = await res.json()
+                setSkills(data)
+            } catch (err) {
+                console.error("Failed to fetch skills", err)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        fetchSkills()
+    }, [])
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -61,11 +84,22 @@ export default function AIInsightsPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Extracted Skills</span>
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Verified Profile Skills</span>
                         <div className="flex flex-wrap gap-1.5">
-                            {resumeAnalysis.extracted_skills.map(s => (
-                                <Badge key={s} className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px]">✓ {s}</Badge>
-                            ))}
+                            {isLoading ? (
+                                <div className="h-4 w-20 bg-muted animate-pulse rounded" />
+                            ) : skills.length > 0 ? (
+                                skills.map(s => (
+                                    <Badge key={s.id} className={cn(
+                                        "text-[10px] gap-1",
+                                        s.is_verified ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                                    )}>
+                                        {s.is_verified ? "✓ " : "? "}{s.skill_name}
+                                    </Badge>
+                                ))
+                            ) : (
+                                <p className="text-[10px] text-muted-foreground italic">No skills added yet</p>
+                            )}
                         </div>
                     </div>
                     <div className="p-4 rounded-xl bg-white/5 border border-white/5 space-y-2">
@@ -107,7 +141,7 @@ export default function AIInsightsPage() {
                                 </div>
                                 <Link href="/dashboard/candidate/skills">
                                     <Button variant="outline" size="sm" className="text-xs rounded-lg border-white/10 gap-1">
-                                        Take Quiz <ArrowRight className="w-3 h-3" />
+                                        Manage Skills <ArrowRight className="w-3 h-3" />
                                     </Button>
                                 </Link>
                             </div>

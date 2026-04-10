@@ -48,7 +48,7 @@ class ResumeService:
             output = self.llm.invoke(_input.to_messages())
             parsed_data = self.parser.parse(output.content)
             
-            # Map ParsedResume fields to this best hiring tool score model
+            # Map ParsedResume fields to Best Hiring Tool score model
             analysis_results = {
                 "user_id": user_id,
                 "skill_score": parsed_data.skill_score if hasattr(parsed_data, 'skill_score') else 75,

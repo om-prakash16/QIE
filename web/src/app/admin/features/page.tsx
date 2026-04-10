@@ -55,7 +55,7 @@ export default function AdminFeatureControl() {
            <h1 className="text-6xl font-black font-heading tracking-tighter italic uppercase flex items-center gap-4">
              Feature Registry <SlidersHorizontal className="w-10 h-10 text-primary" />
            </h1>
-           <p className="text-muted-foreground max-w-xl italic">Dynamic configuration for the this best hiring tool ecosystem. Toggle platform capabilities in real-time without redeploying code.</p>
+           <p className="text-muted-foreground max-w-xl italic">Dynamic configuration for the Best Hiring Tool ecosystem. Toggle platform capabilities in real-time without redeploying code.</p>
         </div>
         <div className="flex gap-4">
             <Button onClick={fetchFeatures} size="lg" variant="outline" className="h-16 px-8 border-white/10 font-black tracking-tight italic flex items-center gap-2">

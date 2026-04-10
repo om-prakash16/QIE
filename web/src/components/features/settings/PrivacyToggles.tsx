@@ -44,7 +44,7 @@ export function PrivacyToggles() {
             </div>
             <div>
                <p className="font-bold text-base">Global Profile Status</p>
-               <p className="text-xs text-muted-foreground italic">Master switch for your this best hiring tool discovery presence.</p>
+               <p className="text-xs text-muted-foreground italic">Master switch for your Best Hiring Tool discovery presence.</p>
             </div>
           </div>
           <Select value={globalVisibility} onValueChange={setGlobalVisibility}>

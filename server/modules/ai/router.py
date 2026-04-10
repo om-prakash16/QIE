@@ -3,10 +3,16 @@ from typing import List, Dict, Any, Optional
 from modules.auth.service import get_current_user
 from core.supabase import get_supabase
 from modules.ai.services.evaluation_service import EvaluationService as AIService
+from modules.ai.quiz_router import router as quiz_router
+from modules.ai.interview_router import router as interview_router
 from pydantic import BaseModel
 
 router = APIRouter()
 ai_service = AIService()
+
+# Include sub-routers
+router.include_router(quiz_router, prefix="/quiz", tags=["Quiz"])
+router.include_router(interview_router, prefix="/interview", tags=["Interview Prep"])
 
 class ProfileAnalysisRequest(BaseModel):
     profile_data: Dict[str, Any]

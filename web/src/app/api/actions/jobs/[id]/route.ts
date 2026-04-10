@@ -83,7 +83,7 @@ export const POST = async (req: Request, { params }: { params: Promise<{ id: str
         const payload: ActionPostResponse = await createPostResponse({
             fields: {
                 transaction,
-                message: `Application for '${jobId}' submitted to this best hiring tool Network.`,
+                message: `Application for '${jobId}' submitted to Best Hiring Tool Network.`,
                 type: "transaction",
             },
         })

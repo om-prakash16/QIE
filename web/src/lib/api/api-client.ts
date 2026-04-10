@@ -116,5 +116,23 @@ export const api = {
         section: (section: string) => fetchWithAuth(`/cms/${section}`),
         update: (data: any) => fetchWithAuth("/cms/update", { method: "PATCH", body: JSON.stringify(data) }),
         delete: (section: string, key: string) => fetchWithAuth(`/cms/${section}/${key}`, { method: "DELETE" })
+    },
+    career: {
+        getGoals: () => fetchWithAuth("/career/goals"),
+        createGoal: (data: any) => fetchWithAuth("/career/goals", { method: "POST", body: JSON.stringify(data) }),
+        addTask: (data: any) => fetchWithAuth("/career/tasks", { method: "POST", body: JSON.stringify(data) }),
+    },
+    identity: {
+        getTimeline: (userId: string) => fetchWithAuth(`/connections/timeline/${userId}`),
+        requestConnection: (targetUserId: string) => fetchWithAuth("/connections/request", { method: "POST", body: JSON.stringify({ target_user_id: targetUserId }) }),
+        getConnections: () => fetchWithAuth("/connections/list"),
+    },
+    interview: {
+        generate: (jobId: string, count: number = 10) => fetchWithAuth("/ai/generate-interview-questions", { method: "POST", body: JSON.stringify({ job_id: jobId, count }) }),
+        get: (jobId?: string) => fetchWithAuth(`/ai/interview-questions${jobId ? `?job_id=${jobId}` : ""}`),
+    },
+    chat: {
+        getRooms: () => fetchWithAuth("/chat/rooms"),
+        getHistory: (roomId: string) => fetchWithAuth(`/chat/history/${roomId}`),
     }
 };

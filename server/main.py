@@ -15,10 +15,13 @@ from modules.analytics.router import router as analytics_router
 from modules.sync.router import router as sync_router
 from modules.admin.router import router as admin_router
 from modules.cms.router import router as cms_router
+from modules.career.router import router as career_router
+from modules.users.identity_router import router as identity_router
+from modules.chat.router import router as chat_router
 
 app = FastAPI(
-    title="SkillProof AI",
-    description="Web3 hiring platform — AI matching, on-chain credentials, and real-time analytics.",
+    title="Best Hiring Tool",
+    description="Full-stack, enterprise-grade hiring platform with AI matching and verifiable credentials.",
     version="3.1.0",
 )
 
@@ -45,13 +48,17 @@ app.include_router(analytics_router, prefix="/api/v1/analytics", tags=["Analytic
 app.include_router(sync_router, prefix="/api/v1/sync", tags=["Sync"])
 app.include_router(admin_router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(cms_router, prefix="/api/v1/cms", tags=["CMS"])
+app.include_router(career_router, prefix="/api/v1/career", tags=["Career Planning"])
+app.include_router(identity_router, prefix="/api/v1/connections", tags=["Networking"])
+app.include_router(identity_router, prefix="/api/v1/profile", tags=["Professional Identity"])
+app.include_router(chat_router, prefix="/api/v1/chat", tags=["Community Chat"])
 
 
 @app.get("/")
 def health():
     return {
         "status": "online",
-        "platform": "SkillProof AI",
+        "platform": "Best Hiring Tool",
         "version": "3.1.0",
         "docs": "/docs",
     }

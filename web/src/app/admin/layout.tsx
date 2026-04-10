@@ -98,13 +98,13 @@ export default function AdminLayout({
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-radial-gradient(circle,transparent_0%,#030712_100%) opacity-40" />
             </div>
 
-            <Sidebar role="admin" />
+            <Sidebar role="admin" className="hidden lg:flex" />
             
-            <main className="flex-1 overflow-y-auto h-screen relative scroll-smooth custom-scrollbar z-10">
+            <main className="flex-1 w-full pt-16 relative scroll-smooth custom-scrollbar z-10">
                 {/* Top dynamic header blur mask */}
-                <div className="sticky top-0 w-full h-12 bg-gradient-to-b from-[#030712] to-transparent z-30 pointer-events-none opacity-80" />
+                <div className="sticky top-0 w-full h-12 bg-gradient-to-b from-[#030712] to-transparent z-40 pointer-events-none opacity-80" />
                 
-                <div className="w-full px-6 py-6 md:px-16 md:py-16 max-w-[1900px] mx-auto">
+                <div className="w-full px-4 py-8 md:px-12 md:py-16 max-w-[1900px] mx-auto">
                     <AnimatePresence mode="wait">
                         <motion.div
                             initial={{ opacity: 0, y: 30, scale: 0.98 }}

@@ -11,7 +11,7 @@ const ICON_MAP: Record<string, any> = {
 export function WhyChooseUs() {
   const { getVal, getJson } = useCMS();
 
-  const title = getVal("features", "title", "The this best hiring tool Paradigm");
+  const title = getVal("features", "title", "The Best Hiring Tool Paradigm");
   const subtitle = getVal("features", "subtitle", "We've discarded traditional hiring friction for verified cryptographic certainty.");
   const features = getJson("features", "cards") || [
     { title: 'Precision Verification', description: 'On-chain proof of expertise verified through Solana-based NFT skill badges.', icon: 'ShieldCheck' },

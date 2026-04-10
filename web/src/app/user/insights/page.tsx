@@ -101,7 +101,7 @@ export default function CandidateInsights() {
                     <Sparkles className="w-12 h-12 text-primary" />
                     <div className="space-y-2">
                         <h3 className="text-xl font-bold italic tracking-tight">AI Talent Ranking</h3>
-                        <p className="text-xs text-neutral-500 italic">You are in the top 5% of Solana Developers verified on this best hiring tool this month.</p>
+                        <p className="text-xs text-neutral-500 italic">You are in the top 5% of Solana Developers verified on Best Hiring Tool this month.</p>
                     </div>
                 </Card>
                 <Card className="bg-white/5 border-white/10 p-8 space-y-6">

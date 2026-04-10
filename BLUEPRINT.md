@@ -1,4 +1,4 @@
-# SkillProof — Hiring Tool
+# Best Hiring Tool — Hiring Tool
 
 A full-stack, enterprise-grade hiring platform built for the modern Web3 talent economy. Companies can post jobs and verify talent, candidates can build verifiable on-chain profiles, and administrators manage the platform through a real-time CMS.
 
