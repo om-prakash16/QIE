@@ -15,7 +15,7 @@ import { Briefcase, Eye, EyeOff, Loader2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 
 export default function LoginPage() {
-    const { demoLogin } = useAuth()
+    const { demoLogin, login } = useAuth()
     const [isLoading, setIsLoading] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
 
@@ -128,8 +128,8 @@ export default function LoginPage() {
                                 </FormItem>
                             )}
                         />
-                        <Button className="w-full" type="submit" disabled={true}>
-                            Email Login Disabled (Use Demo Mode)
+                        <Button className="w-full" type="submit" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
                         </Button>
                         
                         <div className="pt-4 space-y-3">

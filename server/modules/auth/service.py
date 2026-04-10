@@ -42,17 +42,36 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
     """
-    Validates the custom JWT and returns the user payload.
+    Validates the custom JWT or Supabase JWT and returns the user payload.
     """
     token = credentials.credentials
+    
+    # 1. Try Custom JWT (Wallet/Demo)
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
-        return payload
+        user_id = payload.get("sub")
+        if user_id:
+            return payload
     except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Token expired or invalid")
+        pass
+
+    # 2. Try Supabase Auth Verification
+    sb = get_supabase()
+    if sb:
+        try:
+            # We call Supabase API to verify the token
+            user_res = sb.auth.get_user(token)
+            if user_res.user:
+                # Map Supabase user to our payload format
+                return {
+                    "sub": user_res.user.id,
+                    "email": user_res.user.email,
+                    "roles": [user_res.user.user_metadata.get("role", "USER")]
+                }
+        except Exception:
+            pass
+
+    raise HTTPException(status_code=401, detail="Token expired or invalid")
 
 async def get_user_permissions(user_id: str) -> List[str]:
     """

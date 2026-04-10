@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from modules.auth.service import verify_solana_signature, create_access_token, get_current_user
 from modules.auth.models import WalletLoginRequest, AuthTokenResponse
 from core.supabase import get_supabase
+import uuid
 
 router = APIRouter()
 
@@ -25,14 +26,17 @@ async def wallet_login(req: WalletLoginRequest):
 
     existing = db.table("users").select("*").eq("wallet_address", req.wallet_address).execute()
 
+    role = (req.requested_role.upper() if req.requested_role else "USER")
+    
     if existing.data:
         user = existing.data[0]
     else:
         # First time this wallet has connected — create the account.
-        role = req.requested_role.upper() if req.requested_role else "USER"
+        uid = str(uuid.uuid4())
         created = db.table("users").insert({
+            "id": uid,
             "wallet_address": req.wallet_address,
-            "role": role,
+            # 'role' column is not in public.users, we use the user_roles table
         }).execute()
 
         if not created.data:
@@ -40,25 +44,27 @@ async def wallet_login(req: WalletLoginRequest):
 
         user = created.data[0]
 
-        # Wire up the role in the join table so permission checks work.
+    # Pull existing roles for this user
+    user_roles_query = db.table("user_roles").select("roles(role_name)").eq("user_id", user["id"]).execute()
+    current_roles = [r["roles"]["role_name"] for r in user_roles_query.data] if user_roles_query.data else []
+
+    # Ensure the requested role is assigned if not already present
+    if role not in current_roles:
         role_row = db.table("roles").select("id").eq("role_name", role).single().execute()
         if role_row.data:
             db.table("user_roles").insert({
                 "user_id": user["id"],
                 "role_id": role_row.data["id"],
             }).execute()
-
-    # Pull roles for the token payload.
-    user_roles = db.table("user_roles").select("roles(role_name)").eq("user_id", user["id"]).execute()
-    roles = [r["roles"]["role_name"] for r in user_roles.data] if user_roles.data else ["USER"]
+            current_roles.append(role)
 
     token = create_access_token(data={
         "sub": user["id"],
         "wallet": user["wallet_address"],
-        "roles": roles,
+        "roles": current_roles if current_roles else ["USER"],
     })
 
-    return AuthTokenResponse(access_token=token, role=roles[0])
+    return AuthTokenResponse(access_token=token, role=current_roles[0] if current_roles else "USER")
 
 
 @router.get("/me")

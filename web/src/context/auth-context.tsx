@@ -25,6 +25,7 @@ interface AuthContextType {
     isLoading: boolean
     walletLogin: (role?: string) => Promise<void>
     demoLogin: (role?: string) => Promise<void>
+    login: (email: string, password: string) => Promise<void>
     logout: () => void
 }
 
@@ -124,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = await res.json()
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
-            localStorage.setItem("sp_token", data.access_token)
+            localStorage.setItem("auth_token", data.access_token)
             setUser({
                 id: "wallet-user",
                 name: `${address.slice(0, 4)}...${address.slice(-4)}`,
@@ -147,15 +148,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const demoLogin = async (role = "user") => {
         setIsLoading(true)
         try {
-            // Check if we have a saved mock wallet, otherwise generate one.
-            let mockWallet = localStorage.getItem("sp_demo_wallet")
+            // Check if we have a saved mock wallet for this specific role,
+            // otherwise generate a unique one. This ensures identities don't mix.
+            const storageKey = `sp_demo_wallet_${role.toLowerCase()}`
+            let mockWallet = localStorage.getItem(storageKey)
             if (!mockWallet) {
-                const randomId = Math.random().toString(36).substring(2, 10)
-                mockWallet = `DEV_${randomId}`
-                localStorage.setItem("sp_demo_wallet", mockWallet)
+                const randomId = Math.random().toString(36).substring(2, 6)
+                mockWallet = `DEV_${role.toUpperCase()}_${randomId}`
+                localStorage.setItem(storageKey, mockWallet)
             }
 
-            const message = `Sign in to Best Hiring Tool (DEMO MODE)\n\nWallet: ${mockWallet}\nTime: ${Date.now()}`
+            const message = `Sign in to Best Hiring Tool (DEMO MODE)\n\nRole: ${role}\nWallet: ${mockWallet}\nTime: ${Date.now()}`
             
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet-login`, {
                 method: "POST",
@@ -171,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const data = await res.json()
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
-            localStorage.setItem("sp_token", data.access_token)
+            localStorage.setItem("auth_token", data.access_token)
             setUser({
                 id: "demo-user",
                 name: `Demo User (${mockWallet.slice(4)})`,
@@ -190,17 +193,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(false)
         }
     }
+    const login = async (email: string, password: string) => {
+        setIsLoading(true)
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            })
+
+            if (error) throw error
+            if (!data.session) throw new Error("Login failed")
+
+            // Store token for fetchWithAuth compatibility
+            localStorage.setItem("auth_token", data.session.access_token)
+
+            toast.success("Welcome back!")
+            router.push("/dashboard")
+        } catch (err: any) {
+            console.error("[auth] login failed:", err)
+            toast.error(err.message || "Login failed")
+            throw err
+        } finally {
+            setIsLoading(false)
+        }
+    }
 
     const logout = async () => {
-        localStorage.removeItem("sp_token")
+        localStorage.removeItem("auth_token")
         setUser(null)
+        await supabase.auth.signOut()
         if (connected) await disconnect()
         toast.info("Signed out")
         router.push("/auth/login")
     }
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, walletLogin, demoLogin, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, walletLogin, demoLogin, login, logout }}>
             {children}
         </AuthContext.Provider>
     )
