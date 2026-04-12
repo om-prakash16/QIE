@@ -110,3 +110,19 @@ async def update_settings(setting: PlatformSettingRequest, user = Depends(requir
     db = get_supabase()
     response = db.table("platform_settings").update({"setting_value": setting.setting_value}).eq("setting_key", setting.setting_key).execute()
     return {"status": "success", "data": response.data}
+
+
+# Subscriptions & SaaS Endpoints (Module 15)
+@router.get("/subscriptions")
+async def get_subscriptions():
+    db = get_supabase()
+    if not db: return []
+    response = db.table("platform_subscriptions").select("*").execute()
+    return response.data
+
+@router.patch("/subscriptions/{sub_id}")
+async def update_subscription(sub_id: str, payload: Dict[str, Any], user = Depends(require_permission("manage_flags"))):
+    db = get_supabase()
+    update_data = {k: v for k, v in payload.items() if v is not None}
+    response = db.table("platform_subscriptions").update(update_data).eq("id", sub_id).execute()
+    return {"status": "success", "data": response.data}

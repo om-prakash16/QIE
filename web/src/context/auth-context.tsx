@@ -126,6 +126,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
             localStorage.setItem("auth_token", data.access_token)
+            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            
             setUser({
                 id: "wallet-user",
                 name: `${address.slice(0, 4)}...${address.slice(-4)}`,
@@ -136,7 +138,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
 
             toast.success("Signed in")
-            router.push("/dashboard")
+            
+            const normalizedRole = (data.role || role).toLowerCase()
+            if (normalizedRole === "admin") {
+                router.push("/admin")
+            } else if (normalizedRole === "company") {
+                router.push("/company/dashboard")
+            } else {
+                router.push("/dashboard/candidate")
+            }
         } catch (err: any) {
             console.error("[auth] wallet login failed:", err)
             toast.error(err.message || "Sign in failed")
@@ -175,6 +185,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
             localStorage.setItem("auth_token", data.access_token)
+            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            
             setUser({
                 id: "demo-user",
                 name: `Demo User (${mockWallet.slice(4)})`,
@@ -185,7 +197,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             })
 
             toast.success("Signed in (Demo Mode)")
-            router.push("/dashboard")
+            
+            const normalizedRole = (data.role || role).toLowerCase()
+            if (normalizedRole === "admin") {
+                router.push("/admin")
+            } else if (normalizedRole === "company") {
+                router.push("/company/dashboard")
+            } else {
+                router.push("/dashboard/candidate")
+            }
         } catch (err: any) {
             console.error("[auth] demo login failed:", err)
             toast.error(err.message || "Sign in failed")

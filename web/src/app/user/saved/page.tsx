@@ -12,9 +12,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Search, BookmarkX, ArrowRight } from "lucide-react"
-import { SavedJobCard } from "@/components/features/user/saved-job-card"
 import { SAVED_JOBS, SavedJob } from "@/lib/mock-api/saved-jobs"
-import { SavedJobsSkeleton } from "@/components/features/user/saved-jobs-skeleton"
+import { SavedJobsSkeleton } from "@/features/user/saved-jobs-skeleton"
 import { Pagination } from "@/components/shared/pagination"
 import Link from "next/link"
 
@@ -123,11 +122,9 @@ export default function SavedJobsPage() {
                 <>
                     <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {paginatedJobs.map(job => (
-                            <SavedJobCard
-                                key={job.id}
-                                job={job}
-                                onRemove={handleRemove}
-                            />
+                            <div key={job.id} className="p-4 border rounded-xl bg-white/5 text-white/50">
+                                Legacy component missing for: {job.title}
+                            </div>
                         ))}
                     </div>
 

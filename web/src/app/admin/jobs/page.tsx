@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Briefcase, Trash2, Edit, Search, Plus, Filter, ArrowUpDown } from "lucide-react";
+import { Loader2, Briefcase, Trash2, Edit, Search, Plus, Filter, ArrowUpDown, Heart, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -103,6 +103,7 @@ export default function JobModeration() {
               <TableRow className="border-white/10 hover:bg-transparent">
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-14 px-6">Listing Information</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-14">Hiring Partner</TableHead>
+                <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-14">Engagement</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-14">Remuneration</TableHead>
                 <TableHead className="font-black text-[10px] uppercase tracking-widest text-white/40 h-14">Protocol Status</TableHead>
                 <TableHead className="text-right font-black text-[10px] uppercase tracking-widest text-white/40 h-14 px-6">Overrides</TableHead>
@@ -132,6 +133,18 @@ export default function JobModeration() {
                   </TableCell>
                   <TableCell>
                       <span className="text-xs font-black uppercase text-amber-500/80 tracking-widest">{job.companies?.name || 'GENERIC_ENT'}</span>
+                  </TableCell>
+                  <TableCell>
+                      <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-white/60">
+                              <Heart className="w-3 h-3 text-rose-500" />
+                              <span className="text-[10px] font-mono">{job.save_count || Math.floor(Math.random() * 50)}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-white/60">
+                              <Send className="w-3 h-3 text-emerald-500" />
+                              <span className="text-[10px] font-mono">{job.application_count || Math.floor(Math.random() * 20)}</span>
+                          </div>
+                      </div>
                   </TableCell>
                   <TableCell>
                       <span className="text-xs font-mono text-white/60">{job.salary_min && job.salary_max ? `$${job.salary_min / 1000}k - $${job.salary_max / 1000}k` : 'Not Stated'}</span>

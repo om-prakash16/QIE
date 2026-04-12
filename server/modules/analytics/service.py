@@ -23,6 +23,11 @@ class AnalyticsService:
             .eq("candidate_id", uid) \
             .execute()
 
+        saved = db.table("saved_jobs") \
+            .select("id", count="exact") \
+            .eq("candidate_id", uid) \
+            .execute()
+
         profile_views = db.table("activity_events") \
             .select("id", count="exact") \
             .eq("entity_id", uid) \
@@ -38,6 +43,7 @@ class AnalyticsService:
 
         return {
             "total_applications": apps.count or 0,
+            "total_saved": saved.count or 0,
             "profile_views": profile_views.count or 0,
             "recent_activity": recent.data or [],
             "skill_improvement": 12.5,
@@ -84,6 +90,7 @@ class AnalyticsService:
         companies = db.table("companies").select("id", count="exact").execute()
         jobs = db.table("jobs").select("id", count="exact").execute()
         apps = db.table("applications").select("id", count="exact").execute()
+        saves = db.table("saved_jobs").select("id", count="exact").execute()
         events = db.table("activity_events").select("id", count="exact").execute()
 
         recent = db.table("activity_events") \
@@ -92,13 +99,23 @@ class AnalyticsService:
             .limit(20) \
             .execute()
 
+        # Calculate platform-wide conversion (Saved -> Applied)
+        conversion_rate = 0
+        if saves.count and saves.count > 0:
+            conversion_rate = (apps.count / saves.count) * 100
+
         return {
             "totals": {
                 "users": users.count or 0,
                 "companies": companies.count or 0,
                 "jobs": jobs.count or 0,
                 "applications": apps.count or 0,
+                "saves": saves.count or 0,
                 "events": events.count or 0,
             },
             "recent_activity": recent.data or [],
+            "conversion_metrics": {
+                "save_to_apply_ratio": round(conversion_rate, 2),
+                "intent_index": "High" if conversion_rate > 30 else "Moderate"
+            }
         }

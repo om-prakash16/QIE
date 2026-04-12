@@ -49,7 +49,7 @@ class AdminService:
 
     # AI & Platform Configuration
 
-    async def set_platform_config(self, group: str, key: str, value: Any, staff_wallet: str) -> bool:
+    async def set_platform_config(self, key: str, value: Any, staff_wallet: str) -> bool:
         """
         Updates a platform-wide setting (AI weights, Feature Flags).
         """
@@ -58,16 +58,25 @@ class AdminService:
             return False
             
         db.table("platform_settings").upsert({
-            "config_group": group,
-            "key": key,
-            "value": value,
-            "updated_by": staff_wallet,
+            "setting_key": key,
+            "setting_value": value,
             "updated_at": datetime.utcnow().isoformat()
         }).execute()
         
         # Log action for audit trail
-        await self.log_admin_action(staff_wallet, f"update_config_{group}", "setting", key, {"new_value": value})
+        await self.log_admin_action(staff_wallet, "update_config", "setting", key, {"new_value": value})
         return True
+
+    async def get_config(self, key: str) -> Optional[Any]:
+        """
+        Fetches a specific setting by key.
+        """
+        db = get_supabase()
+        if not db:
+            return None
+            
+        response = db.table("platform_settings").select("setting_value").eq("setting_key", key).single().execute()
+        return response.data['setting_value'] if response.data else None
 
     async def get_config_group(self, group: str) -> Dict[str, Any]:
         """

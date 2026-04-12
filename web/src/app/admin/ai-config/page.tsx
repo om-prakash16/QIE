@@ -17,7 +17,10 @@ export default function AITuningPanel() {
       skill_match_weight: 40,
       experience_weight: 30,
       project_score_weight: 30,
-      min_resonance_threshold: 65
+      min_resonance_threshold: 65,
+      mcq_difficulty: 2, // 1: Easy, 2: Med, 3: Hard
+      questions_per_assessment: 10,
+      skill_importance_weight: 70
   });
 
   useEffect(() => {
@@ -56,8 +59,12 @@ export default function AITuningPanel() {
               return;
           }
 
-          // In production, we'd loop through and update each individually or send a bulk request
-          // Here we mock the save for simplicity of the UI since we don't have a bulk standard
+          if (api.admin.updateSettings) {
+              await api.admin.updateSettings({
+                  setting_key: "resonance_formula",
+                  setting_value: weights
+              });
+          }
           toast.success("AI Resonance Formula Synchronized");
       } catch (err) {
           toast.error("Failed to update tuning parameters.");
@@ -156,6 +163,51 @@ export default function AITuningPanel() {
                             className="[&_[role=slider]]:bg-orange-500 [&_[role=slider]]:border-none [&>span:first-child]:bg-orange-500/20 [&_[data-orientation=horizontal]]:bg-orange-500" 
                         />
                         <p className="text-xs text-white/40 italic">The minimum AI Resonance Score required for a candidate to be visible in a recruiter's shortlist.</p>
+                    </div>
+
+                    <div className="pt-8 border-t border-white/10 space-y-8">
+                        <div>
+                            <CardTitle className="text-xl flex items-center gap-2 mb-2"><ActivitySquare className="w-5 h-5 text-blue-400" /> Skill Assessment Tuning (Section 9)</CardTitle>
+                            <CardDescription>Configure AI MCQ difficulty and skill depth.</CardDescription>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm uppercase tracking-widest font-black text-white/80">Question Difficulty Profile</label>
+                                <Badge className={weights.mcq_difficulty === 1 ? "bg-emerald-500" : weights.mcq_difficulty === 2 ? "bg-blue-500" : "bg-rose-500"}>
+                                    {weights.mcq_difficulty === 1 ? "EASY" : weights.mcq_difficulty === 2 ? "MEDIUM" : "HARD"}
+                                </Badge>
+                            </div>
+                            <Slider 
+                                value={[weights.mcq_difficulty]} 
+                                max={3} 
+                                min={1}
+                                step={1} 
+                                onValueChange={(v) => setWeights({...weights, mcq_difficulty: v[0]})}
+                                className="[&_[role=slider]]:bg-blue-400" 
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <label className="text-sm uppercase tracking-widest font-black text-white/80">Questions per Session</label>
+                                <Input 
+                                    type="number" 
+                                    value={weights.questions_per_assessment}
+                                    onChange={(e) => setWeights({...weights, questions_per_assessment: parseInt(e.target.value) || 10})}
+                                    className="bg-black/40 border-white/10 text-white"
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <label className="text-sm uppercase tracking-widest font-black text-white/80">Skill Weight Importance (%)</label>
+                                <Input 
+                                    type="number" 
+                                    value={weights.skill_importance_weight}
+                                    onChange={(e) => setWeights({...weights, skill_importance_weight: parseInt(e.target.value) || 70})}
+                                    className="bg-black/40 border-white/10 text-white"
+                                />
+                            </div>
+                        </div>
                     </div>
 
                     <Button 

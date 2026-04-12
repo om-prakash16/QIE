@@ -182,3 +182,58 @@ class JobService:
             .execute()
         return response.data
 
+    async def save_job(self, job_id: str, candidate_id: str) -> Dict[str, Any]:
+        """
+        Save a job for later review.
+        """
+        db = get_supabase()
+        if not db: raise Exception("Database service unavailable")
+        
+        response = db.table("saved_jobs").insert({
+            "job_id": job_id,
+            "candidate_id": candidate_id
+        }).execute()
+        
+        if response.data:
+            # Log Activity
+            try:
+                await NotificationService.log_activity(
+                    user_id=uuid.UUID(candidate_id),
+                    action_type="save_job",
+                    entity_type="job",
+                    entity_id=uuid.UUID(job_id),
+                    description="Saved job for later review."
+                )
+            except Exception: pass
+            
+        return response.data[0] if response.data else {}
+
+    async def unsave_job(self, job_id: str, candidate_id: str) -> bool:
+        """
+        Remove a job from saved list.
+        """
+        db = get_supabase()
+        if not db: return False
+        
+        response = db.table("saved_jobs") \
+            .delete() \
+            .eq("job_id", job_id) \
+            .eq("candidate_id", candidate_id) \
+            .execute()
+            
+        return True
+
+    async def get_saved_jobs(self, candidate_id: str) -> List[Dict[str, Any]]:
+        """
+        Fetch all jobs saved by the candidate.
+        """
+        db = get_supabase()
+        if not db: return []
+        
+        response = db.table("saved_jobs") \
+            .select("*, jobs(*, companies(name))") \
+            .eq("candidate_id", candidate_id) \
+            .execute()
+            
+        return response.data
+

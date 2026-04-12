@@ -59,35 +59,56 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // --- Route Protection Logic ---
-  
   const path = request.nextUrl.pathname
+
+  let role: string | null = null
+
+  // 1. Try Supabase user first
+  if (user && user.user_metadata) {
+    role = user.user_metadata.role as string
+  } 
+  // 2. Fallback to custom JWT cookie (wallet auth)
+  else {
+    const customToken = request.cookies.get('auth_token')?.value
+    if (customToken) {
+      try {
+        const { decodeJwt } = await import('jose')
+        const payload = decodeJwt(customToken)
+        if (payload && payload.roles && Array.isArray(payload.roles)) {
+           role = payload.roles[0] 
+        }
+      } catch (e) {
+        console.error("Failed to decode custom JWT in middleware", e)
+      }
+    }
+  }
 
   // Redirect to login if accessing protected routes without session
   if (path.startsWith('/admin') || path.startsWith('/dashboard') || path.startsWith('/company')) {
-    if (!user) {
+    if (!role && !user) {
       const redirectUrl = new URL('/auth/login', request.url)
       redirectUrl.searchParams.set('redirectedFrom', path)
       return NextResponse.redirect(redirectUrl)
     }
 
-    const role = user.user_metadata?.role as string
+    const normalizedRole = (role || 'user').toLowerCase()
 
     // Role-based redirects
-    if (path.startsWith('/admin') && role !== 'admin') {
-      return NextResponse.redirect(new URL(role === 'company' ? '/company/dashboard' : '/user/dashboard', request.url))
+    if (path.startsWith('/admin') && normalizedRole !== 'admin') {
+      return NextResponse.redirect(new URL(normalizedRole === 'company' ? '/company/dashboard' : '/dashboard/candidate', request.url))
     }
 
-    if (path.startsWith('/company') && role !== 'company' && role !== 'admin') {
-      return NextResponse.redirect(new URL('/user/dashboard', request.url))
+    if (path.startsWith('/company') && normalizedRole !== 'company' && normalizedRole !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard/candidate', request.url))
     }
   }
 
   // Redirect to dashboard if logged in and accessing auth pages
-  if (path.startsWith('/auth') && user) {
-    const role = user.user_metadata?.role as string
-    if (role === 'admin') return NextResponse.redirect(new URL('/admin/dashboard', request.url))
-    if (role === 'company') return NextResponse.redirect(new URL('/company/dashboard', request.url))
-    return NextResponse.redirect(new URL('/user/dashboard', request.url))
+  if (path.startsWith('/auth') && (user || role)) {
+    const normalizedRole = (role || 'user').toLowerCase()
+    if (normalizedRole === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
+    if (normalizedRole === 'company') return NextResponse.redirect(new URL('/company/dashboard', request.url))
+    return NextResponse.redirect(new URL('/dashboard/candidate', request.url))
   }
 
   return response

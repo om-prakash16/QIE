@@ -157,6 +157,16 @@ export default function LoginPage() {
                             >
                                 Demo Login: Company
                             </Button>
+                            
+                            <Button 
+                                type="button" 
+                                variant="outline" 
+                                className="w-full h-12 border-rose-500/20 hover:bg-rose-500/10 hover:border-rose-500/50 transition-all font-black uppercase text-xs tracking-widest text-rose-500"
+                                onClick={() => demoLogin("ADMIN")}
+                                disabled={isLoading}
+                            >
+                                Demo Login: Admin
+                            </Button>
                         </div>
                     </form>
                 </Form>

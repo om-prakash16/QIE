@@ -13,9 +13,11 @@ router = APIRouter()
 class SchemaFieldCreate(BaseModel):
     id: Optional[str] = None
     field_name: str
-    field_type: str  # text | number | select | date
+    field_label: Optional[str] = None
+    field_type: str  # text | number | select | date | file_upload
     section: str = "General"
     required: bool = False
+    placeholder: Optional[str] = None
     validation_rules: Optional[Dict[str, Any]] = None
     display_order: int = 0
 
@@ -184,9 +186,22 @@ async def admin_verify_company(company_id: str, user = Depends(require_permissio
 
 @router.get("/all-jobs")
 async def admin_get_all_jobs(user = Depends(require_permission("admin.access"))):
-    """Return every job listing across all companies."""
+    """Return every job listing across all companies with engagement telemetry."""
     db = get_supabase()
-    return db.table("jobs").select("*, companies(name)").execute().data
+    jobs = db.table("jobs").select("*, companies(name)").execute().data
+    
+    if not jobs:
+        return []
+        
+    # Enrich with application and save counts
+    # In a production app, this should be done via a view or an aggregation query
+    for job in jobs:
+        apps = db.table("applications").select("id", count="exact").eq("job_id", job["id"]).execute()
+        saves = db.table("saved_jobs").select("id", count="exact").eq("job_id", job["id"]).execute()
+        job["application_count"] = apps.count or 0
+        job["save_count"] = saves.count or 0
+        
+    return jobs
 
 
 @router.delete("/jobs/{job_id}")

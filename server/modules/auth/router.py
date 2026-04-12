@@ -26,7 +26,7 @@ async def wallet_login(req: WalletLoginRequest):
 
     existing = db.table("users").select("*").eq("wallet_address", req.wallet_address).execute()
 
-    role = (req.requested_role.upper() if req.requested_role else "USER")
+    role = (req.requested_role.lower() if req.requested_role else "user")
     
     if existing.data:
         user = existing.data[0]
@@ -46,25 +46,29 @@ async def wallet_login(req: WalletLoginRequest):
 
     # Pull existing roles for this user
     user_roles_query = db.table("user_roles").select("roles(role_name)").eq("user_id", user["id"]).execute()
-    current_roles = [r["roles"]["role_name"] for r in user_roles_query.data] if user_roles_query.data else []
+    current_roles_upper = [r["roles"]["role_name"].upper() for r in user_roles_query.data] if user_roles_query.data else []
+
+    # Use uppercase for database querying
+    db_role_name = role.upper()
 
     # Ensure the requested role is assigned if not already present
-    if role not in current_roles:
-        role_row = db.table("roles").select("id").eq("role_name", role).single().execute()
-        if role_row.data:
+    if db_role_name not in current_roles_upper:
+        # Avoid .single() crash by fetching and checking length
+        role_row = db.table("roles").select("id").eq("role_name", db_role_name).execute()
+        if role_row.data and len(role_row.data) > 0:
             db.table("user_roles").insert({
                 "user_id": user["id"],
-                "role_id": role_row.data["id"],
+                "role_id": role_row.data[0]["id"],
             }).execute()
-            current_roles.append(role)
+            current_roles_upper.append(db_role_name)
 
     token = create_access_token(data={
         "sub": user["id"],
         "wallet": user["wallet_address"],
-        "roles": current_roles if current_roles else ["USER"],
+        "roles": [r.lower() for r in current_roles_upper] if current_roles_upper else ["user"],
     })
 
-    return AuthTokenResponse(access_token=token, role=current_roles[0] if current_roles else "USER")
+    return AuthTokenResponse(access_token=token, role=current_roles_upper[0].lower() if current_roles_upper else "user")
 
 
 @router.get("/me")

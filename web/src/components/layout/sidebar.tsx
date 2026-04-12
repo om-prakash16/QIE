@@ -17,7 +17,9 @@ import {
     Zap,
     Code,
     Brain,
-    Boxes
+    Boxes,
+    History,
+    ShieldAlert
 } from "lucide-react"
 
 import { useAuth } from "@/context/auth-context"
@@ -49,10 +51,16 @@ export function Sidebar({ role, className, variant = "default" }: SidebarProps) 
     const adminLinks = [
         { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
         { href: "/admin/users", label: "Manage Users", icon: Users },
-        { href: "/admin/jobs", label: "Manage Jobs", icon: Briefcase },
+        { href: "/admin/companies", label: "Partner Matrix", icon: Building2 },
+        { href: "/admin/reports", label: "Moderation Queue", icon: ShieldAlert },
         { href: "/admin/schema", label: "Schema Builder", icon: Code },
+        { href: "/admin/taxonomy", label: "Taxonomy Manager", icon: Boxes },
         { href: "/admin/ai-config", label: "AI & Reputation", icon: Brain },
-        { href: "/admin/features", label: "Feature Flags", icon: Boxes },
+        { href: "/admin/blockchain", label: "Digital Identity", icon: Zap },
+        { href: "/admin/features", label: "Feature Flags", icon: Zap },
+        { href: "/admin/subscriptions", label: "SaaS Plans", icon: Building2 },
+        { href: "/admin/logs", label: "Audit Stream", icon: History },
+        { href: "/admin/settings", label: "System Protocol", icon: Settings },
     ]
 
 

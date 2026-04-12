@@ -89,6 +89,27 @@ async def apply_to_job(data: ApplicationCreate, user = Depends(get_current_user)
         **data.model_dump()
     )
 
+@router.post("/save")
+async def save_job(job_id: str, user = Depends(get_current_user)):
+    """
+    Save a job for later review.
+    """
+    return await job_service.save_job(job_id, user.get("id"))
+
+@router.delete("/unsave/{job_id}")
+async def unsave_job(job_id: str, user = Depends(get_current_user)):
+    """
+    Remove a job from saved list.
+    """
+    return await job_service.unsave_job(job_id, user.get("id"))
+
+@router.get("/saved")
+async def get_saved_jobs(user = Depends(get_current_user)):
+    """
+    Get all jobs saved by the current user.
+    """
+    return await job_service.get_saved_jobs(user.get("id"))
+
 
 @router.get("/user")
 async def get_user_applications(user_id: str):

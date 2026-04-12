@@ -6,14 +6,14 @@ RBAC is enforced server-side via verify_staff_permission() dependency.
 import json
 from fastapi import APIRouter, HTTPException, Query
 from typing import List, Optional
-from db.database import get_db_connection
-from models.staff import (
+from core.postgres import get_db_connection
+from modules.admin.models import (
     StaffPermissionGrant, StaffPermissionResponse,
     UserReportCreate, UserReportUpdate, UserReportResponse,
     JobReportCreate, JobReportUpdate, JobReportResponse,
     SkillFlagCreate, SkillFlagReview, SkillFlagResponse,
     SupportTicketCreate, SupportTicketUpdate, SupportTicketResponse,
-    FlagUserAction, AuditLogResponse,
+    FlagUserAction, StaffAuditLogResponse as AuditLogResponse,
 )
 
 router = APIRouter(prefix="/staff")

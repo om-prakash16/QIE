@@ -12,7 +12,9 @@ import {
   LayoutDashboard, 
   Download,
   Calendar,
-  Sparkles
+  Sparkles,
+  Heart,
+  MousePointer2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -31,6 +33,13 @@ const SKILL_DEMAND = [
   { label: 'Python', value: 64 },
   { label: 'Rust', value: 78 },
   { label: 'LLM', value: 95 },
+];
+
+const ENGAGEMENT_FUNNEL = [
+    { label: 'Total Views', value: 25000 },
+    { label: 'Job Saves', value: 12000 },
+    { label: 'Applications', value: 4500 },
+    { label: 'Shortlisted', value: 1200 },
 ];
 
 export default function AdminAnalyticsPage() {
@@ -81,11 +90,18 @@ export default function AdminAnalyticsPage() {
             icon={Database} 
           />
           <MetricCard 
-            title="Open Requisitions" 
-            value="432" 
-            trend={-2.4} 
-            description="Active job postings from verified companies."
-            icon={Briefcase} 
+            title="Job Engagement" 
+            value="12.0k" 
+            trend={42.1} 
+            description="Total jobs saved by candidates (Micro-conversions)."
+            icon={Heart} 
+          />
+          <MetricCard 
+            title="Total Applications" 
+            value="4,500" 
+            trend={12.4} 
+            description="Completed job applications across the platform."
+            icon={MousePointer2} 
           />
           <MetricCard 
             title="AI Ingestions" 
@@ -124,19 +140,44 @@ export default function AdminAnalyticsPage() {
         </div>
 
         {/* Intelligence Alert */}
-        <Card className="p-6 bg-gradient-to-r from-indigo-600/10 to-primary/10 border-indigo-500/20 border-dashed">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-indigo-400" />
-                    </div>
-                    <div>
-                        <p className="text-sm font-bold text-foreground">AI Observation: Massive Solana Developer Shortage</p>
-                        <p className="text-xs text-muted-foreground">Demand for Rust + Solana has spiked 45% this month with only 8% supply growth.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card className="p-6 bg-gradient-to-r from-indigo-600/10 to-primary/10 border-indigo-500/20 border-dashed">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                            <Sparkles className="w-6 h-6 text-indigo-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-foreground">AI Observation: Save-to-Apply Friction</p>
+                            <p className="text-xs text-muted-foreground">High "Save" volume on Senior Rust roles, but only 12% application rate. Candidates may lack specific Solana verification badges.</p>
+                        </div>
                     </div>
                 </div>
-                <Button variant="link" className="text-indigo-400 font-bold uppercase text-[10px] tracking-widest">Create Campaign</Button>
+            </Card>
+
+            <Card className="p-6 bg-gradient-to-r from-emerald-600/10 to-primary/10 border-emerald-500/20 border-dashed">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                            <Briefcase className="w-6 h-6 text-emerald-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-bold text-foreground">Admin Tip: High Intent Alert</p>
+                            <p className="text-xs text-muted-foreground">Jobs saved more than 50 times in 24h are prioritized in the main feed to boost conversion.</p>
+                        </div>
+                    </div>
+                </div>
+            </Card>
+        </div>
+
+        <Card className="p-8 bg-card/20 backdrop-blur-xl border-primary/10">
+            <div className="flex justify-between items-center mb-8">
+                <div>
+                    <h3 className="text-xl font-bold tracking-tight">Engagement Funnel</h3>
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest">Platform-wide conversion metrics: from Interest to Action</p>
+                </div>
             </div>
+            <AnalyticsCharts data={ENGAGEMENT_FUNNEL} type="bar" dataKey="value" />
         </Card>
       </main>
     </div>
