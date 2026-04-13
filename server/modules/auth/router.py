@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from modules.auth.service import verify_solana_signature, create_access_token, get_current_user
 from modules.auth.models import WalletLoginRequest, AuthTokenResponse
 from core.supabase import get_supabase
+from core.events import bus
+from modules.auth.handlers import USER_CREATED
 import uuid
 
 router = APIRouter()
@@ -53,6 +55,14 @@ async def wallet_login(req: WalletLoginRequest):
             raise HTTPException(status_code=500, detail="Failed to create account")
 
         user = created.data[0]
+        
+        # Emit event for new registration (side effects like welcome email)
+        await bus.emit(USER_CREATED, {
+            "user_id": user["id"],
+            "wallet": user["wallet_address"],
+            "name": user["full_name"],
+            "email": user.get("email") # Might be null at first sync
+        })
 
     # Pull existing roles for this user
     user_roles_query = db.table("user_roles").select("roles(role_name)").eq("user_id", user["id"]).execute()

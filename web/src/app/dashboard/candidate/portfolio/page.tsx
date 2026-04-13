@@ -370,7 +370,7 @@ export default function PortfolioPage() {
                                     <h3 className="text-xl font-bold">Your Network is currently a sandbox.</h3>
                                     <p className="text-muted-foreground">The best opportunities come through connections. Start exploring the community!</p>
                                 </div>
-                                <Button className="rounded-xl px-8 h-12 font-bold shadow-xl shadow-primary/10">Explore Skillsutra Community</Button>
+                                <Button className="rounded-xl px-8 h-12 font-bold shadow-xl shadow-primary/10">Explore Nexus Community</Button>
                             </Card>
                         )}
                     </div>

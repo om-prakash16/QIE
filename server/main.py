@@ -18,12 +18,18 @@ from modules.cms.router import router as cms_router
 from modules.career.router import router as career_router
 from modules.users.identity_router import router as identity_router
 from modules.chat.router import router as chat_router
+from modules.auth.handlers import initialize_event_handlers
 
 app = FastAPI(
     title="Best Hiring Tool",
     description="Full-stack, enterprise-grade hiring platform with AI matching and verifiable credentials.",
     version="3.1.0",
 )
+
+@app.on_event("startup")
+async def startup_event():
+    # Initialize system-wide event handlers (Mailer, Analytics, etc.)
+    initialize_event_handlers()
 
 app.add_middleware(
     CORSMiddleware,

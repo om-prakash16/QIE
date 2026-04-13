@@ -92,7 +92,7 @@ class JobService:
         
         # Fetch Job, Recruiter, and Candidate Skills
         job_resp = db.table("jobs").select("title, skills_required, created_by, company:companies(name, id)").eq("id", job_id).single().execute()
-        user_resp = db.table("users").select("full_name, profile_data").eq("id", candidate_id).single().execute()
+        user_resp = db.table("users").select("full_name, email, profile_data").eq("id", candidate_id).single().execute()
         
         job = job_resp.data if job_resp.data else {}
         user = user_resp.data if user_resp.data else {}
@@ -157,6 +157,16 @@ class JobService:
             entity_id=job_id,
             description=f"Applied to {job.get('title')} at {job.get('company', {}).get('name')}"
         )
+
+        # 4. Emit Global Event (Side effects like transactional email)
+        from core.events import bus
+        from modules.auth.handlers import JOB_APPLIED
+        await bus.emit(JOB_APPLIED, {
+            "email": user.get("email"),
+            "name": user.get("full_name"),
+            "job_title": job.get("title"),
+            "company_name": job.get("company", {}).get("name")
+        })
 
         return {
             "application": response.data[0] if response.data else {},
