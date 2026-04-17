@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends
 from typing import Dict, Any
 from modules.analytics.service import AnalyticsService
 from modules.auth.service import get_current_user, require_permission
+from modules.analytics.market_intelligence_router import router as market_intel_router
+from modules.ai.services.growth_service import GrowthTrackingService
 import uuid
 
 router = APIRouter()
 svc = AnalyticsService()
+growth_svc = GrowthTrackingService()
 
 
 # -- Role-scoped analytics --
@@ -14,6 +17,12 @@ svc = AnalyticsService()
 async def user_analytics(user: Dict[str, Any] = Depends(get_current_user)):
     """Career growth metrics for the authenticated candidate."""
     return await svc.get_user_analytics(uuid.UUID(user["sub"]))
+
+
+@router.get("/user/growth")
+async def user_growth_tracking(user: Dict[str, Any] = Depends(get_current_user)):
+    """Historical growth data and milestones."""
+    return await growth_svc.get_user_growth_metrics(user["sub"])
 
 
 @router.get("/company")
@@ -46,3 +55,6 @@ async def company_insights(user: Dict[str, Any] = Depends(get_current_user)):
 async def admin_insights(user: Dict[str, Any] = Depends(require_permission("admin.access"))):
     """Alias for /analytics/admin — used by the insights dashboard."""
     return await svc.get_admin_analytics()
+
+# -- Market Intelligence --
+router.include_router(market_intel_router, prefix="/market-intel", tags=["Market Intelligence"])

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,7 +12,18 @@ import { Footer } from "@/components/layout/footer";
 import { CMSProvider } from "@/context/cms-context";
 import { API_BASE_URL } from "@/lib/api/api-client";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const inter = Inter({ 
+  subsets: ["latin"], 
+  variable: "--font-inter",
+  display: 'swap',
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-poppins",
+  display: 'swap',
+});
 
 export async function generateMetadata(): Promise<Metadata> {
   try {
@@ -42,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className={`${inter.variable} antialiased font-sans bg-background text-foreground`}>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${poppins.variable} scroll-smooth`}>
+      <body className="antialiased font-sans bg-background text-foreground selection:bg-primary/20">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -56,9 +67,9 @@ export default function RootLayout({
                 <CMSProvider>
                   <SmoothScroll />
                   <Navbar />
-                  <div className="flex-1 w-full relative">
+                  <main className="flex-1 w-full relative min-h-screen">
                     {children}
-                  </div>
+                  </main>
                   <Footer />
                 </CMSProvider>
               </AuthProvider>

@@ -36,11 +36,30 @@ class InterviewService:
         if not profile or not job:
             raise Exception("Candidate profile or Job not found")
 
-        # 3. Gap Analysis & Prompt Construction
+        # 3. Fetch Reputation & Weak Skills
+        proof_score = 600
+        weak_skills = []
+        
+        # Get Global Proof Score
+        score_resp = db.table("ai_scores").select("proof_score").eq("user_id", user_id).single().execute()
+        if score_resp.data:
+            proof_score = score_resp.data.get("proof_score", 600)
+            
+        # Identify Weak Skills (Failed or low score quizzes)
+        quiz_resp = db.table("ai_quizzes").select("skill_name, score").eq("user_id", user_id).lt("score", 60).execute()
+        if quiz_resp.data:
+            weak_skills = list(set([q["skill_name"] for q in quiz_resp.data]))
+
+        # 4. Gap Analysis & Prompt Construction
         skills_candidate = profile.get("skills", [])
         projects_candidate = profile.get("projects", [])
         skills_required = job.get("skills_required", [])
         experience_level = profile.get("experience_years", "Intermediate")
+        
+        # Scaling difficulty based on Proof Score
+        target_difficulty = "Intermediate"
+        if proof_score > 750: target_difficulty = "Advanced"
+        elif proof_score < 400: target_difficulty = "Beginner"
 
         # Determine skill gaps
         gaps = [s for s in skills_required if s not in skills_candidate]
@@ -50,50 +69,49 @@ class InterviewService:
             return await self._get_mock_questions(user_id, job_id, count)
 
         prompt = PromptTemplate(
-            template="""You are a senior AI architect designing an interview.
+            template="""You are a senior AI technical interviewer for a high-stakes hiring platform.
             
 Candidate Profile:
 - Skills: {skills_candidate}
-- Projects: {projects_candidate}
-- Experience: {experience_level}
+- Experience Level: {experience_level}
+- Verified Proof Score: {proof_score}/1000
+
+Contextual signals:
+- Identified Skill Gaps (Missing): {gaps}
+- Identified Weak Skill Areas (Prior low performance): {weak_skills}
 
 Job Requirements:
 - Job Title: {job_title}
 - Required Skills: {skills_required}
-- Identified Gaps: {gaps}
 
 OBJECTIVE:
-Generate {count} personalized MCQ interview questions.
-Focus 60% of questions on identified skill gaps and 40% on validating claimed skills/projects in the context of this job.
+Generate {count} personalized MCQ interview questions targeting a {target_difficulty} depth.
+
+Distribution Strategy:
+- 40% on Weak Skill Areas (to verify improvement).
+- 40% on Identified Gaps (to explore potential).
+- 20% on verifying high-confidence core skills in the context of {job_title}.
 
 Return ONLY a JSON array of objects with exactly these keys:
 - question (string)
 - options (array of 4 strings)
 - correct_answer (string from the options)
 - difficulty (Beginner, Intermediate, Advanced)
-
-Example:
-[
-  {{
-    "question": "What is ...?",
-    "options": ["A", "B", "C", "D"],
-    "correct_answer": "B",
-    "difficulty": "Intermediate"
-  }}
-]
 """,
-            input_variables=["count", "skills_candidate", "projects_candidate", "job_title", "skills_required", "gaps", "experience_level"]
+            input_variables=["count", "skills_candidate", "proof_score", "job_title", "skills_required", "gaps", "weak_skills", "experience_level", "target_difficulty"]
         )
 
         try:
             formatted_prompt = prompt.format(
                 count=count,
                 skills_candidate=", ".join(skills_candidate),
-                projects_candidate=json.dumps(projects_candidate),
+                proof_score=proof_score,
                 job_title=job.get("title", "Software Engineer"),
                 skills_required=", ".join(skills_required),
                 gaps=", ".join(gaps) if gaps else "None",
-                experience_level=experience_level
+                weak_skills=", ".join(weak_skills) if weak_skills else "None",
+                experience_level=experience_level,
+                target_difficulty=target_difficulty
             )
             
             response = self.llm.invoke(formatted_prompt)

@@ -55,7 +55,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-5xl md:text-7xl font-black tracking-tighter leading-[1.1] text-white"
+          className="h1 text-white max-w-4xl mx-auto"
         >
           {content.title.split('.').map((part: string, i: number) => (
             <span key={i} className={i === 1 ? "text-primary italic" : ""}>
@@ -68,7 +68,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-xl text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed"
+          className="body-large text-muted-foreground max-w-2xl mx-auto"
         >
           {content.subtitle}
         </motion.p>
@@ -80,12 +80,12 @@ export function HeroSection() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
         >
           <Link href="/jobs">
-            <Button size="lg" className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold text-lg shadow-2xl shadow-primary/20 hover:scale-105 transition-all">
+            <Button size="lg" className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold shadow-2xl shadow-primary/20 hover:scale-105 transition-all">
               Discover Jobs <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
           <Link href="/talent">
-            <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl border-primary/20 bg-background/50 backdrop-blur-xl font-bold text-lg hover:bg-primary/5 transition-all text-white">
+            <Button size="lg" variant="outline" className="h-14 px-8 rounded-2xl border-primary/20 bg-background/50 backdrop-blur-xl font-bold hover:bg-primary/5 transition-all text-white">
               Find Talent
             </Button>
           </Link>

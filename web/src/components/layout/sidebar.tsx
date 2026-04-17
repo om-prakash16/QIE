@@ -102,6 +102,7 @@ const companyLinks = [
     { href: "/company/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/company/jobs", label: "Manage Jobs", icon: Briefcase },
     { href: "/company/applicants", label: "Applicants", icon: Users },
+    { href: "/company/api", label: "Developer API", icon: Code },
     { href: "/company/profile", label: "Company Profile", icon: Building2 },
 ]
 

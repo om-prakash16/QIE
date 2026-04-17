@@ -5,6 +5,18 @@ from core.supabase import get_supabase
 from modules.ai.services.evaluation_service import EvaluationService as AIService
 from modules.ai.quiz_router import router as quiz_router
 from modules.ai.interview_router import router as interview_router
+from modules.ai.portfolio_router import router as portfolio_router
+from modules.ai.salary_router import router as salary_router
+from modules.ai.fraud_router import router as fraud_router
+from modules.ai.soft_skills_router import router as soft_skills_router
+from modules.ai.skill_graph_router import router as skill_graph_router
+from modules.ai.recruiter_dashboard_router import router as recruiter_dashboard_router
+from modules.ai.external_platform_router import router as external_platform_router
+from modules.ai.feedback_loop_router import router as feedback_loop_router
+from modules.ai.simulation_router import router as simulation_router
+from modules.ai.job_optimizer_router import router as job_optimizer_router
+from modules.ai.team_analyzer_router import router as team_analyzer_router
+from modules.ai.career_risk_router import router as career_risk_router
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -13,6 +25,18 @@ ai_service = AIService()
 # Include sub-routers (no extra prefix to match frontend api-client)
 router.include_router(quiz_router, tags=["Quiz"])
 router.include_router(interview_router, tags=["Interview Prep"])
+router.include_router(portfolio_router, prefix="/portfolio", tags=["Portfolio Auto-Builder"])
+router.include_router(salary_router, prefix="/salary", tags=["Salary Prediction AI"])
+router.include_router(fraud_router, prefix="/fraud", tags=["AI Fraud Detection"])
+router.include_router(soft_skills_router, prefix="/soft-skills", tags=["Soft Skill Verification"])
+router.include_router(skill_graph_router, prefix="/skill-graph", tags=["Skill Graph Intelligence"])
+router.include_router(recruiter_dashboard_router, prefix="/recruiter", tags=["Recruiter Intelligence Dashboard"])
+router.include_router(external_platform_router, prefix="/platforms", tags=["External Platform Integration"])
+router.include_router(feedback_loop_router, prefix="/feedback", tags=["Hiring Feedback Loop"])
+router.include_router(simulation_router, prefix="/simulation", tags=["Real Work Simulation Engine"])
+router.include_router(job_optimizer_router, prefix="/job-optimizer", tags=["AI Job Description Optimizer"])
+router.include_router(team_analyzer_router, prefix="/team-analyzer", tags=["Team Skill Balance Analyzer"])
+router.include_router(career_risk_router, prefix="/career-risk", tags=["AI Career Risk Predictor"])
 
 class ProfileAnalysisRequest(BaseModel):
     profile_data: Dict[str, Any]

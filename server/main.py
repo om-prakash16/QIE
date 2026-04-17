@@ -18,6 +18,7 @@ from modules.cms.router import router as cms_router
 from modules.career.router import router as career_router
 from modules.users.identity_router import router as identity_router
 from modules.chat.router import router as chat_router
+from modules.enterprise.router import router as enterprise_router
 from modules.auth.handlers import initialize_event_handlers
 
 app = FastAPI(
@@ -33,7 +34,7 @@ async def startup_event():
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -57,6 +58,7 @@ app.include_router(cms_router, prefix="/api/v1/cms", tags=["CMS"])
 app.include_router(career_router, prefix="/api/v1/career", tags=["Career Planning"])
 app.include_router(identity_router, prefix="/api/v1", tags=["Networking & Identity"])
 app.include_router(chat_router, prefix="/api/v1/chat", tags=["Community Chat"])
+app.include_router(enterprise_router, prefix="/api/v1/enterprise", tags=["Enterprise API"])
 
 
 @app.get("/")

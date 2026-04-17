@@ -9,6 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 import Link from "next/link"
+import { CareerRiskPredictor } from "@/components/dashboard/CareerRiskPredictor"
+import { SkillGrowthTracker } from "@/components/dashboard/SkillGrowthTracker"
 
 const resumeAnalysis = {
     extracted_skills: ["Rust", "Solana", "TypeScript", "Next.js", "Python", "FastAPI"],
@@ -66,7 +68,7 @@ const careerPath = [
     }, [])
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-12">
             {/* Header */}
             <div className="space-y-2">
                 <motion.h1 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-3xl font-black font-heading tracking-tight flex items-center gap-3">
@@ -75,6 +77,11 @@ const careerPath = [
                 </motion.h1>
                 <p className="text-muted-foreground text-sm">AI-powered analysis of your skills, career trajectory, and market positioning.</p>
             </div>
+
+            {/* Growth Tracking Visualization */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+                <SkillGrowthTracker />
+            </motion.div>
 
             {/* Resume Analysis */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-5">
@@ -154,7 +161,7 @@ const careerPath = [
                 </div>
             </motion.div>
 
-            {/* GitHub Insights + Career Path */}
+            {/* GitHub Insights + Career Risk */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* GitHub */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-5">
@@ -186,34 +193,9 @@ const careerPath = [
                     </div>
                 </motion.div>
 
-                {/* Career Path */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-6 rounded-2xl border border-white/10 bg-white/[0.02] backdrop-blur-md space-y-5">
-                    <div className="flex items-center gap-3">
-                        <TrendingUp className="w-5 h-5 text-primary" />
-                        <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Career Path Prediction</h2>
-                    </div>
-                    <div className="space-y-4">
-                        {careerPath.map((step, i) => (
-                            <div key={step.milestone} className="flex items-center gap-4 p-3 rounded-xl bg-white/5">
-                                <div className={cn(
-                                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-black text-sm border",
-                                    i === 0 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
-                                    i === 1 ? "bg-blue-500/10 text-blue-500 border-blue-500/20" :
-                                    "bg-violet-500/10 text-violet-500 border-violet-500/20"
-                                )}>
-                                    {step.probability}
-                                </div>
-                                <div>
-                                    <p className="text-sm font-bold">{step.milestone}</p>
-                                    <p className="text-[10px] text-muted-foreground">{step.timeline}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 pt-2">
-                        <Sparkles className="w-3 h-3" />
-                        <span>Predictions based on verified on-chain skills and market data</span>
-                    </div>
+                {/* AI Career Risk Predictor */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+                    <CareerRiskPredictor />
                 </motion.div>
             </div>
         </div>

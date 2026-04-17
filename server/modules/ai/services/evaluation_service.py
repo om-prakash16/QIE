@@ -92,6 +92,7 @@ class EvaluationService:
         # Persistence (SECTION 7 & 9)
         db = get_supabase()
         if db:
+            # 1. Update latest state
             db.table("ai_scores").upsert({
                 "user_id": user_id,
                 "skill_score": skill_score,
@@ -99,6 +100,15 @@ class EvaluationService:
                 "experience_score": experience_score,
                 "proof_score": proof_score,
                 "updated_at": "now()"
+            }).execute()
+            
+            # 2. Log History Snapshot for Growth Tracking
+            db.table("ai_score_history").insert({
+                "user_id": user_id,
+                "skill_score": skill_score,
+                "project_score": project_score,
+                "experience_score": experience_score,
+                "proof_score": proof_score
             }).execute()
 
         return AIScoreResponse(

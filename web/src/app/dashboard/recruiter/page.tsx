@@ -20,6 +20,7 @@ import {
     Zap
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { MarketHeatmap } from "@/components/dashboard/MarketHeatmap";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
@@ -173,6 +174,10 @@ export default function RecruiterDashboard() {
                     </div>
                 )}
             </div>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-8">
+            <MarketHeatmap />
         </TabsContent>
       </Tabs>
     </div>

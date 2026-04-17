@@ -104,7 +104,9 @@ ALTER TABLE public.platform_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.company_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.skill_verification_flags ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public read platform_subscriptions" ON public.platform_subscriptions;
 CREATE POLICY "Public read platform_subscriptions" ON public.platform_subscriptions FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Companies read own subscriptions" ON public.company_subscriptions;
 CREATE POLICY "Companies read own subscriptions" ON public.company_subscriptions FOR SELECT USING (
     EXISTS (SELECT 1 FROM public.company_members WHERE company_id = company_subscriptions.company_id AND user_id = auth.uid())
 );
