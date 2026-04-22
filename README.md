@@ -102,3 +102,5 @@ To maintain a professional multi-project workflow, Best Hiring Tool follows thes
 <p align="center">
   Engineered with ❤️ for decentralized hiring.
 </p>
+
+# QIE
