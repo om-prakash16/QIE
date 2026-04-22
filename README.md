@@ -1,18 +1,25 @@
 <div align="center">
-  <img src="https://img.shields.io/badge/Solana-14F195?style=for-the-badge&logo=solana&logoColor=white" alt="Solana" />
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white" alt="LangChain" />
-  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+  <!-- Shark-Tier Professional Badges -->
+  <img src="https://img.shields.io/badge/AI_VERIFIED-PRO_SHARK-003366?style=for-the-badge&logo=ai&logoColor=white" alt="AI Verified" />
+  <img src="https://img.shields.io/badge/SOLANA-HACKATHON_READY-14F195?style=for-the-badge&logo=solana&logoColor=black" alt="Solana Hackathon" />
+  <img src="https://img.shields.io/badge/QIE-INTEGRATED-0055aa?style=for-the-badge&logo=blockchain&logoColor=white" alt="QIE Integrated" />
+  <img src="https://img.shields.io/badge/SECURITY-HARDENED-steel?style=for-the-badge&logo=shield&logoColor=white" alt="Security Hardened" />
+  
+  <br />
+
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Next.js_15-black?style=flat&logo=next.js" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Deployment-Verified-success?style=flat&logo=github-actions" alt="Deployment" />
+  <img src="https://img.shields.io/badge/License-MIT-gray?style=flat" alt="License" />
   
   <br />
   <br />
 
   <h1>🚀 Best Hiring Tool</h1>
-  <h3>The Ultimate AI-Powered Web3 Talent Marketplace</h3>
+  <h3>The Ultimate AI-Powered Career Operating System</h3>
   
   <p align="center">
-    <b>A disruptive decentralized SaaS platform merging Artificial Intelligence (LangChain + OpenAI) with Solana Web3 to guarantee immutable resume verification, dynamic skill NFTs, and flawless job matching.</b>
+    <b>A disruptive decentralized ecosystem merging Artificial Intelligence with Web3 to replace resumes with "Proof Scores" — verified on-chain, ungameable, and shark-tier.</b>
   </p>
 
 </div>
