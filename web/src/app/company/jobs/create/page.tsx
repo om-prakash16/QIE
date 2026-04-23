@@ -50,12 +50,8 @@ const formSchema = z.object({
     location: z.string().min(2, {
         message: "Location is required."
     }),
-    type: z.string({
-        required_error: "Please select a job type.",
-    }),
-    experience: z.string({
-        required_error: "Please select experience level.",
-    }),
+    type: z.string().min(1, "Please select a job type."),
+    experience: z.string().min(1, "Please select experience level."),
     salary: z.string().optional(),
     assessment_questions: z.array(z.object({
         question_text: z.string().min(5, "Question must be at least 5 chars"),
@@ -70,7 +66,7 @@ export default function CreateJobPage() {
     const [isLoading, setIsLoading] = useState(false)
 
     const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+        resolver: zodResolver(formSchema) as any,
         defaultValues: {
             title: "",
             description: "",

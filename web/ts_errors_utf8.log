@@ -1,0 +1,24 @@
+﻿src/components/features/companies/tabs/about-tab.tsx(1,74): error TS1127: Invalid character.
+src/components/features/companies/tabs/about-tab.tsx(1,75): error TS1003: Identifier expected.
+src/components/features/companies/tabs/about-tab.tsx(1,194): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/about-tab.tsx(2,1): error TS1005: '}' expected.
+src/components/features/companies/tabs/analytics-tab.tsx(1,78): error TS1127: Invalid character.
+src/components/features/companies/tabs/analytics-tab.tsx(1,79): error TS1003: Identifier expected.
+src/components/features/companies/tabs/analytics-tab.tsx(1,188): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/analytics-tab.tsx(2,1): error TS1005: '}' expected.
+src/components/features/companies/tabs/culture-tab.tsx(1,76): error TS1127: Invalid character.
+src/components/features/companies/tabs/culture-tab.tsx(1,77): error TS1003: Identifier expected.
+src/components/features/companies/tabs/culture-tab.tsx(1,193): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/culture-tab.tsx(2,1): error TS1005: '}' expected.
+src/components/features/companies/tabs/jobs-tab.tsx(1,73): error TS1127: Invalid character.
+src/components/features/companies/tabs/jobs-tab.tsx(1,74): error TS1003: Identifier expected.
+src/components/features/companies/tabs/jobs-tab.tsx(1,187): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/jobs-tab.tsx(2,1): error TS1005: '}' expected.
+src/components/features/companies/tabs/reviews-tab.tsx(1,76): error TS1127: Invalid character.
+src/components/features/companies/tabs/reviews-tab.tsx(1,77): error TS1003: Identifier expected.
+src/components/features/companies/tabs/reviews-tab.tsx(1,194): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/reviews-tab.tsx(2,1): error TS1005: '}' expected.
+src/components/features/companies/tabs/tech-stack-tab.tsx(1,78): error TS1127: Invalid character.
+src/components/features/companies/tabs/tech-stack-tab.tsx(1,79): error TS1003: Identifier expected.
+src/components/features/companies/tabs/tech-stack-tab.tsx(1,193): error TS1002: Unterminated string literal.
+src/components/features/companies/tabs/tech-stack-tab.tsx(2,1): error TS1005: '}' expected.

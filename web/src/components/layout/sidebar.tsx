@@ -86,16 +86,16 @@ const adminNavGroups = [
 ]
 
 const userLinks = [
-    { href: "/dashboard/candidate", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { href: "/dashboard/candidate/edit", label: "My Profile", icon: User },
-    { href: "/dashboard/candidate/applications", label: "Applied Jobs", icon: Briefcase },
-    { href: "/dashboard/candidate/jobs", label: "Job Matches", icon: Brain },
-    { href: "/dashboard/candidate/saved", label: "Saved Jobs", icon: Bookmark },
-    { href: "/dashboard/candidate/skills", label: "Skills & NFTs", icon: Zap },
-    { href: "/dashboard/candidate/nfts", label: "NFT Portfolio", icon: Fingerprint },
-    { href: "/dashboard/candidate/career", label: "Career Planning", icon: BarChart3 },
-    { href: "/dashboard/candidate/interview", label: "Interview Prep", icon: Cpu },
-    { href: "/dashboard/candidate/community", label: "Community", icon: Users },
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/dashboard/edit", label: "My Profile", icon: User },
+    { href: "/applications", label: "Applied Jobs", icon: Briefcase },
+    { href: "/dashboard/jobs", label: "Job Matches", icon: Brain },
+    { href: "/dashboard/saved", label: "Saved Jobs", icon: Bookmark },
+    { href: "/dashboard/skills", label: "Skills & NFTs", icon: Zap },
+    { href: "/dashboard/nfts", label: "NFT Portfolio", icon: Fingerprint },
+    { href: "/dashboard/career", label: "Career Planning", icon: BarChart3 },
+    { href: "/dashboard/interview", label: "Interview Prep", icon: Cpu },
+    { href: "/dashboard/community", label: "Community", icon: Users },
 ]
 
 const companyLinks = [

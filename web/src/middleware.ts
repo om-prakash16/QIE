@@ -83,32 +83,53 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // Define route patterns
+  const isPublicRoute = path === '/' || path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/jobs') && !path.startsWith('/jobs/create')
+  const isAdminRoute = path.startsWith('/admin')
+  const isCompanyRoute = path.startsWith('/company')
+  const isUserRoute = path.startsWith('/dashboard') || path.startsWith('/profile') || path.startsWith('/applications') || path.startsWith('/career') || path.startsWith('/settings')
+
   // Redirect to login if accessing protected routes without session
-  if (path.startsWith('/admin') || path.startsWith('/dashboard') || path.startsWith('/company')) {
-    if (!role && !user) {
-      const redirectUrl = new URL('/auth/login', request.url)
-      redirectUrl.searchParams.set('redirectedFrom', path)
-      return NextResponse.redirect(redirectUrl)
-    }
-
-    const normalizedRole = (role || 'user').toLowerCase()
-
-    // Role-based redirects
-    if (path.startsWith('/admin') && normalizedRole !== 'admin') {
-      return NextResponse.redirect(new URL(normalizedRole === 'company' ? '/company/dashboard' : '/dashboard/candidate', request.url))
-    }
-
-    if (path.startsWith('/company') && normalizedRole !== 'company' && normalizedRole !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard/candidate', request.url))
-    }
+  if (!role && !user && (isAdminRoute || isCompanyRoute || isUserRoute)) {
+    const redirectUrl = new URL('/auth/login', request.url)
+    redirectUrl.searchParams.set('redirectedFrom', path)
+    return NextResponse.redirect(redirectUrl)
   }
 
-  // Redirect to dashboard if logged in and accessing auth pages
-  if (path.startsWith('/auth') && (user || role)) {
+  if (role || user) {
     const normalizedRole = (role || 'user').toLowerCase()
-    if (normalizedRole === 'admin') return NextResponse.redirect(new URL('/admin', request.url))
-    if (normalizedRole === 'company') return NextResponse.redirect(new URL('/company/dashboard', request.url))
-    return NextResponse.redirect(new URL('/dashboard/candidate', request.url))
+
+    // ADMIN RULES: Can only access /admin routes. Blocked from USER and COMPANY routes.
+    if (isAdminRoute && normalizedRole !== 'admin') {
+        // Non-admin trying to access admin
+        return NextResponse.redirect(new URL(normalizedRole === 'company' ? '/company/dashboard' : '/dashboard', request.url))
+    }
+
+    // COMPANY RULES: Can access /company/* and /dashboard
+    if (isCompanyRoute && normalizedRole !== 'company') {
+        // Non-company trying to access company routes
+        return NextResponse.redirect(new URL(normalizedRole === 'admin' ? '/admin/dashboard' : '/dashboard', request.url))
+    }
+
+    // USER RULES: Can access /dashboard, /profile, /applications, /career, /settings
+    // We also explicitly block ADMIN from accessing these to maintain strict separation,
+    // but COMPANY is allowed to access /dashboard based on the spec.
+    if (isUserRoute) {
+        if (normalizedRole === 'admin') {
+            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+        }
+        if (normalizedRole === 'company' && path !== '/dashboard') {
+            // Company can access /dashboard, but not other user routes like /applications
+            return NextResponse.redirect(new URL('/company/dashboard', request.url))
+        }
+    }
+
+    // Redirect logged-in users away from auth pages
+    if (path.startsWith('/auth') || path === '/login' || path === '/signup') {
+      if (normalizedRole === 'admin') return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+      if (normalizedRole === 'company') return NextResponse.redirect(new URL('/company/dashboard', request.url))
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
   }
 
   return response

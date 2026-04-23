@@ -96,14 +96,14 @@ export function Navbar() {
                     ))}
                     {user && (
                         <Link
-                            href="/my-profile"
+                            href="/profile"
                             className={cn(
                                 "text-sm font-medium transition-colors hover:text-primary relative py-2",
-                                pathname === "/my-profile" ? "text-primary" : "text-muted-foreground"
+                                pathname === "/profile" ? "text-primary" : "text-muted-foreground"
                             )}
                         >
                             My Profile
-                            {pathname === "/my-profile" && (
+                            {pathname === "/profile" && (
                                 <motion.div
                                     layoutId="nav-underline"
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"

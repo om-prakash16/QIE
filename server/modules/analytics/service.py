@@ -17,63 +17,39 @@ class AnalyticsService:
         """Career metrics for the candidate dashboard."""
         db = get_supabase()
         uid = str(user_id)
+        
+        import asyncio
 
-        apps = (
-            db.table("applications")
-            .select("id", count="exact")
-            .eq("candidate_id", uid)
-            .execute()
-        )
-        saved = (
-            db.table("saved_jobs")
-            .select("id", count="exact")
-            .eq("candidate_id", uid)
-            .execute()
-        )
+        # Parallelize analytic queries
+        tasks = [
+            db.table("applications").select("id", count="exact").eq("candidate_id", uid).execute(),
+            db.table("saved_jobs").select("id", count="exact").eq("candidate_id", uid).execute(),
+            db.table("activity_events").select("id", count="exact").eq("entity_id", uid).eq("event_type", "viewed_profile").execute(),
+            db.table("user_skills_relational").select("user_id", count="exact").eq("user_id", uid).execute(),
+            db.table("activity_events").select("event_type, description, created_at").eq("actor_id", uid).order("created_at", desc=True).limit(10).execute(),
+            db.table("ai_scores").select("proof_score").eq("user_id", uid).single().execute()
+        ]
 
-        # Real profile views from activity_events
-        profile_views = (
-            db.table("activity_events")
-            .select("id", count="exact")
-            .eq("entity_id", uid)
-            .eq("event_type", "viewed_profile")
-            .execute()
-        )
-
-        # Skill count from user_skills
-        skills_count = (
-            db.table("user_skills")
-            .select("id", count="exact")
-            .eq("user_id", uid)
-            .execute()
-        )
-
-        recent = (
-            db.table("activity_events")
-            .select("event_type, description, created_at")
-            .eq("actor_id", uid)
-            .order("created_at", desc=True)
-            .limit(10)
-            .execute()
-        )
-
-        # AI Proof Score calculation (simplified for now)
-        # In a real scenario, this averages resume scores, github proofs, and MCQ results.
-        proof_score = min(
-            98, 45 + (skills_count.count or 0) * 8 + (apps.count or 0) * 2
-        )
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        apps = results[0].count if not isinstance(results[0], Exception) else 0
+        saved = results[1].count if not isinstance(results[1], Exception) else 0
+        views = results[2].count if not isinstance(results[2], Exception) else 0
+        skills = results[3].count if not isinstance(results[3], Exception) else 0
+        recent = results[4].data if not isinstance(results[4], Exception) else []
+        score_res = results[5].data if not isinstance(results[5], Exception) else {}
+        
+        proof_score = score_res.get("proof_score", 0)
 
         return {
-            "total_applications": apps.count or 0,
-            "total_saved": saved.count or 0,
-            "profile_views": profile_views.count or 0,
-            "skills_count": skills_count.count or 0,
-            "recent_activity": recent.data or [],
+            "total_applications": apps,
+            "total_saved": saved,
+            "profile_views": views,
+            "skills_count": skills,
+            "recent_activity": recent,
             "skill_improvement": 15.2,
             "ai_proof_score": proof_score,
-            "interview_rate": round((apps.count / (saved.count + 1)) * 40, 1)
-            if saved.count > 0
-            else 0,
+            "interview_rate": round((apps / (saved + 1)) * 40, 1) if saved > 0 else 0,
         }
 
     @staticmethod

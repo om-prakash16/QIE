@@ -22,6 +22,7 @@ interface User {
 
 interface AuthContextType {
     user: User | null
+    token: string | null
     isLoading: boolean
     walletLogin: (role?: string) => Promise<void>
     demoLogin: (role?: string) => Promise<void>
@@ -33,6 +34,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
+    const [token, setToken] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
 
@@ -88,6 +90,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Also check for our custom JWT in localStorage (wallet auth path).
     useEffect(() => {
+        const storedToken = localStorage.getItem("auth_token")
+        if (storedToken) setToken(storedToken)
         setIsLoading(false)
     }, [])
 
@@ -127,6 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             localStorage.setItem("auth_token", data.access_token)
             document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            setToken(data.access_token)
             
             setUser({
                 id: "wallet-user",
@@ -186,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             localStorage.setItem("auth_token", data.access_token)
             document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            setToken(data.access_token)
             
             setUser({
                 id: "demo-user",
@@ -226,6 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             // Store token for fetchWithAuth compatibility
             localStorage.setItem("auth_token", data.session.access_token)
+            setToken(data.session.access_token)
 
             const metaRole = (data.user?.user_metadata?.role as string)?.toLowerCase() || "user"
             
@@ -248,6 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         localStorage.removeItem("auth_token")
+        setToken(null)
         setUser(null)
         await supabase.auth.signOut()
         if (connected) await disconnect()
@@ -256,7 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, walletLogin, demoLogin, login, logout }}>
+        <AuthContext.Provider value={{ user, token, isLoading, walletLogin, demoLogin, login, logout }}>
             {children}
         </AuthContext.Provider>
     )

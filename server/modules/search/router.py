@@ -1,38 +1,23 @@
-from fastapi import APIRouter, Query
-from typing import List, Optional
+from fastapi import APIRouter, Query, Depends
+from typing import Optional, List
 from modules.search.service import SearchService
 
 router = APIRouter()
 search_service = SearchService()
 
-# API Endpoints
-
-
-@router.get("/candidates")
-async def search_candidates(
-    skills: Optional[List[str]] = Query(None),
-    min_score: Optional[float] = Query(0.0),
-    location: Optional[str] = Query(None),
-    query: Optional[str] = Query(None),
+@router.get("/")
+async def unified_search(
+    q: Optional[str] = Query(None, description="Search keyword"),
+    skills: Optional[List[str]] = Query(None, description="Filter by skills"),
+    min_score: Optional[int] = Query(None, description="Minimum Proof Score"),
+    location: Optional[str] = Query(None, description="Location filter")
 ):
     """
-    High-performance candidate discovery with AI ranking.
+    Step 5 & 10: Unified Search API.
     """
-    return await search_service.search_candidates(
-        skills=skills, min_score=min_score, location=location, query=query
-    )
-
-
-@router.get("/jobs")
-async def search_jobs(
-    skills: Optional[List[str]] = Query(None),
-    job_type: Optional[str] = Query(None),
-    min_salary: Optional[float] = Query(0.0),
-    query: Optional[str] = Query(None),
-):
-    """
-    High-performance job search with dynamic filtering.
-    """
-    return await search_service.search_jobs(
-        skills=skills, job_type=job_type, min_salary=min_salary, query=query
+    return await search_service.search(
+        query=q,
+        skills=skills,
+        min_score=min_score,
+        location=location
     )

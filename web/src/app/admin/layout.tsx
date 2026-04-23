@@ -20,7 +20,7 @@ export default function AdminLayout({
             if (!user) {
                 router.push("/auth/login")
             } else if (user.role !== "admin" && (user.role as string) !== "super_admin") {
-                router.push("/dashboard/candidate")
+                router.push("/dashboard")
             }
         }
     }, [user, isLoading, router])

@@ -1,6 +1,6 @@
-import json
-from typing import Optional, Dict
-
+import os
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import PromptTemplate
 
 class PitchEngine:
     """
@@ -11,21 +11,53 @@ class PitchEngine:
     """
 
     def __init__(self):
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        self.llm = (
+            ChatGoogleGenerativeAI(
+                temperature=0.7, google_api_key=self.api_key, model="gemini-1.5-flash"
+            )
+            if self.api_key
+            else None
+        )
         self.context = {
-            "product_name": "AI Career Operating System"
+            "product_name": "Best Hiring Tool"
         }
 
-    def _refine_or_generate(self, existing_text: Optional[str], default_content: str) -> str:
+    async def _refine_or_generate(self, existing_text: Optional[str], default_content: str, section_name: str) -> str:
         """
-        In a production LLM pipeline, this would format a prompt asking the AI
-        to refine `existing_text` if it exists. Since no external dependencies 
-        are required for this module, it returns the standard structured content.
+        Uses Gemini to refine the pitch section based on existing user input.
         """
-        # If we had an AI client, we would do:
-        # if existing_text: return ai.refine(existing_text, default_content)
-        return default_content
+        if not self.llm:
+            return default_content
 
-    def generate_problem(self, existing_text: Optional[str] = None) -> str:
+        prompt = PromptTemplate(
+            template="""You are a world-class startup pitch coach. 
+            Refine the following {section_name} section for a hiring platform called 'Best Hiring Tool'.
+            
+            Base Content:
+            {default_content}
+            
+            User's Specific Context/Input:
+            {existing_text}
+            
+            Make it professional, punchy, and high-impact. Return only the refined text.
+            """,
+            input_variables=["section_name", "default_content", "existing_text"],
+        )
+
+        try:
+            formatted_prompt = prompt.format(
+                section_name=section_name,
+                default_content=default_content,
+                existing_text=existing_text or "No specific context provided."
+            )
+            response = self.llm.invoke(formatted_prompt)
+            return response.content.strip()
+        except Exception as e:
+            print(f"Pitch Refinement Error: {e}")
+            return default_content
+
+    async def generate_problem(self, existing_text: Optional[str] = None) -> str:
         content = (
             "1️⃣ PROBLEM\n"
             "---------------------------------\n"
@@ -41,9 +73,9 @@ class PitchEngine:
             "- Biased or inefficient decisions\n\n"
             "“The real problem is the absence of a trusted skill verification layer in hiring.”"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Problem")
 
-    def generate_idea(self, existing_text: Optional[str] = None) -> str:
+    async def generate_idea(self, existing_text: Optional[str] = None) -> str:
         content = (
             "2️⃣ IDEA\n"
             "---------------------------------\n"
@@ -52,9 +84,9 @@ class PitchEngine:
             "- Replace resumes with verified skill profiles\n"
             "- Skill-first matching instead of keyword heuristics"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Idea")
 
-    def generate_solution(self, existing_text: Optional[str] = None) -> str:
+    async def generate_solution(self, existing_text: Optional[str] = None) -> str:
         content = (
             "3️⃣ SOLUTION\n"
             "---------------------------------\n"
@@ -68,9 +100,9 @@ class PitchEngine:
             "⚡ Formula:\n"
             "AI → Proof Score → Match → Questions → Hire"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Solution")
 
-    def generate_features(self, existing_text: Optional[str] = None) -> str:
+    async def generate_features(self, existing_text: Optional[str] = None) -> str:
         content = (
             "4️⃣ FEATURES\n"
             "---------------------------------\n"
@@ -88,9 +120,9 @@ class PitchEngine:
             "5. Blockchain Verification\n\n"
             "“5 core + 5 advanced = full system.”"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Features")
 
-    def generate_flow(self, existing_text: Optional[str] = None) -> str:
+    async def generate_flow(self, existing_text: Optional[str] = None) -> str:
         content = (
             "5️⃣ FLOW\n"
             "---------------------------------\n"
@@ -98,9 +130,9 @@ class PitchEngine:
             "Steps:\n"
             "Profile → AI Analysis → Proof Score → Job Match → Questions → Hiring"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Flow")
 
-    def generate_impact_vision(self, existing_text: Optional[str] = None) -> str:
+    async def generate_impact_vision(self, existing_text: Optional[str] = None) -> str:
         content = (
             "6️⃣ IMPACT + VISION\n"
             "---------------------------------\n"
@@ -110,9 +142,9 @@ class PitchEngine:
             "- Recruiters → Save hours of manual filtering\n\n"
             "“This is not just a hiring tool — it’s a Career Operating System.”"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Impact & Vision")
 
-    def generate_final(self, existing_text: Optional[str] = None) -> str:
+    async def generate_final(self, existing_text: Optional[str] = None) -> str:
         content = (
             "7️⃣ FINAL LINE + MEMORY\n"
             "---------------------------------\n"
@@ -128,21 +160,21 @@ class PitchEngine:
             "Flow\n"
             "Vision"
         )
-        return self._refine_or_generate(existing_text, content)
+        return await self._refine_or_generate(existing_text, content, "Closing")
 
-    def generate_full_pitch(self, existing_sections: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    async def generate_full_pitch(self, existing_sections: Optional[Dict[str, str]] = None) -> Dict[str, str]:
         """
         Compiles the complete pitch, allowing selective inclusion of existing texts.
         """
         e = existing_sections or {}
         
-        problem = self.generate_problem(e.get("problem"))
-        idea = self.generate_idea(e.get("idea"))
-        solution = self.generate_solution(e.get("solution"))
-        features = self.generate_features(e.get("features"))
-        flow = self.generate_flow(e.get("flow"))
-        impact_vision = self.generate_impact_vision(e.get("impact_vision"))
-        final = self.generate_final(e.get("final"))
+        problem = await self.generate_problem(e.get("problem"))
+        idea = await self.generate_idea(e.get("idea"))
+        solution = await self.generate_solution(e.get("solution"))
+        features = await self.generate_features(e.get("features"))
+        flow = await self.generate_flow(e.get("flow"))
+        impact_vision = await self.generate_impact_vision(e.get("impact_vision"))
+        final = await self.generate_final(e.get("final"))
 
         full_pitch_text = "\n\n=================================\n\n".join([
             problem, idea, solution, features, flow, impact_vision, final
@@ -159,11 +191,11 @@ class PitchEngine:
             "full_pitch": full_pitch_text
         }
 
-    def export_as_markdown(self, filename: str = "pitch_deck_script.md", existing_sections: Optional[Dict] = None):
+    async def export_as_markdown(self, filename: str = "pitch_deck_script.md", existing_sections: Optional[Dict] = None):
         """
         Exports the entire generated pitch into a cleanly formatted markdown file.
         """
-        pitch_data = self.generate_full_pitch(existing_sections)
+        pitch_data = await self.generate_full_pitch(existing_sections)
         with open(filename, "w", encoding="utf-8") as f:
             f.write("# AI Career Operating System — Pitch Script\n\n")
             f.write(pitch_data["full_pitch"])

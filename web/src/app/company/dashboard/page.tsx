@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Briefcase, Users, CheckCircle2, XCircle, Plus, FileText, ArrowRight, Loader2, Sparkles, TrendingUp } from "lucide-react"
+import { Briefcase, Users, CheckCircle2, XCircle, Plus, FileText, ArrowRight, Loader2, Sparkles, TrendingUp, Activity as ActivityIcon, Brain } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api/api-client"
@@ -98,7 +98,7 @@ export default function CompanyDashboardPage() {
                     <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-lg font-black uppercase italic tracking-tight">Signal Stream</CardTitle>
-                            <Activity className="w-4 h-4 text-primary/40" />
+                            <ActivityIcon className="w-4 h-4 text-primary/40" />
                         </div>
                         <CardDescription className="text-xs">Immutable chronological record of platform interactions.</CardDescription>
                     </CardHeader>
@@ -142,7 +142,7 @@ export default function CompanyDashboardPage() {
                         </Link>
                         <Card className="p-6 bg-emerald-500/5 border-emerald-500/20 rounded-3xl relative overflow-hidden group hover:bg-emerald-500/10 transition-all cursor-pointer">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-110 transition-transform">
-                                <BrainCircuit className="w-12 h-12 text-emerald-500" />
+                                <Brain className="w-12 h-12 text-emerald-500" />
                             </div>
                             <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-500 mb-2">Proactive Discovery</h4>
                             <div className="flex items-baseline gap-2 mb-2">

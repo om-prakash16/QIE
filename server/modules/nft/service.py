@@ -106,17 +106,31 @@ class NFTService:
 
     async def upload_to_ipfs(self, metadata: Dict[str, Any]) -> str:
         """
-        Simulates pinning the metadata to IPFS via Pinata.
-        In a production environment, this would call Pinata's REST API.
+        Pins the metadata to IPFS via Pinata.
+        Falls back to local hashing if credentials are missing.
         """
-        # Verification of Pinata credentials
         if not self.pinata_key or not self.pinata_secret:
-            # Fallback to local hash-based CID for demo
-            pass
+            # Deterministic mock CID for demo consistency
+            metadata_json = json.dumps(metadata, sort_keys=True)
+            return "Qm" + hashlib.sha256(metadata_json.encode()).hexdigest()[:44]
 
-        metadata_json = json.dumps(metadata, sort_keys=True)
-        cid = "Qm" + hashlib.sha256(metadata_json.encode()).hexdigest()[:44]
-        return cid
+        import httpx
+        url = "https://api.pinata.cloud/pinning/pinJSONToIPFS"
+        headers = {
+            "pinata_api_key": self.pinata_key,
+            "pinata_secret_api_key": self.pinata_secret,
+            "Content-Type": "application/json"
+        }
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=metadata, headers=headers)
+                response.raise_for_status()
+                return response.json().get("IpfsHash")
+        except Exception as e:
+            print(f"[PINATA ERROR] Failed to pin to IPFS: {e}")
+            metadata_json = json.dumps(metadata, sort_keys=True)
+            return "Qm" + hashlib.sha256(metadata_json.encode()).hexdigest()[:44]
 
     async def register_nft(self, user_id: str, mint: str, nft_type: str, cid: str):
         """
@@ -159,9 +173,30 @@ class NFTService:
         self, user_id: str, skill_name: str
     ) -> Optional[Dict[str, Any]]:
         """
-        Verifies quiz completion before minting.
+        Verifies actual quiz completion status before allowing NFT minting.
         """
-        get_supabase()
-        # Mock check: find successful quiz results for this skill
-        # In real app: db.table("ai_quizzes").select("*").eq("user_id", user_id).eq("skill_name", skill_name)...
-        return {"score": 85, "level": "Expert"}
+        db = get_supabase()
+        if not db:
+            return None
+
+        # Fetch the latest passed quiz for this skill
+        response = (
+            db.table("skill_quizzes")
+            .select("score, passed, created_at")
+            .eq("candidate_wallet", user_id) # Using user_id as wallet ref in this context
+            .eq("skill_name", skill_name)
+            .eq("passed", True)
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if not response.data:
+            return None
+            
+        quiz = response.data[0]
+        level = "Intermediate"
+        if quiz["score"] >= 90: level = "Expert"
+        elif quiz["score"] >= 75: level = "Advanced"
+
+        return {"score": quiz["score"], "level": level}

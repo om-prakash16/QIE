@@ -15,11 +15,11 @@ async def generate_pitch(request: PitchRequest):
     Generate or refine the full Pitch Deck copy for the Career Operating System.
     """
     existing = request.existing_sections if request.existing_sections else {}
-    return pitch_engine.generate_full_pitch(existing)
+    return await pitch_engine.generate_full_pitch(existing)
 
 @router.get("/generate")
 async def get_pitch():
     """
     Fetches the base pitch deck copy from scratch without input overrides.
     """
-    return pitch_engine.generate_full_pitch()
+    return await pitch_engine.generate_full_pitch()

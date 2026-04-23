@@ -40,11 +40,16 @@ async def get_reputation_score(wallet: str):
             "badges": ["Rust Certified", "5+ Projects", "Active Web3 User"],
         }
 
-    # Calculate each sub-score
-    skills_score = await _calc_skills_score(db, wallet)
-    project_score = await _calc_project_score(db, wallet)
-    github_score = await _calc_github_score(db, wallet)
-    job_score = await _calc_job_score(db, wallet)
+    # Calculate each sub-score in parallel for maximum speed
+    import asyncio
+    scores = await asyncio.gather(
+        _calc_skills_score(db, wallet),
+        _calc_project_score(db, wallet),
+        _calc_github_score(db, wallet),
+        _calc_job_score(db, wallet)
+    )
+    
+    skills_score, project_score, github_score, job_score = scores
     web3_score = 45.0  # Placeholder until Helius integration
 
     # Weighted composite
@@ -69,23 +74,26 @@ async def get_reputation_score(wallet: str):
     elif total >= 200:
         level = "Junior"
 
-    # Store in history
-    db.table("reputation_history").insert(
-        {
-            "wallet_address": wallet,
-            "total_score": total,
-            "skills_score": skills_score,
-            "project_score": project_score,
-            "github_score": github_score,
-            "job_score": job_score,
-            "web3_score": web3_score,
-        }
-    ).execute()
+    # Store in history (Fire and forget or async)
+    try:
+        db.table("reputation_history").insert(
+            {
+                "wallet_address": wallet,
+                "total_score": total,
+                "skills_score": skills_score,
+                "project_score": project_score,
+                "github_score": github_score,
+                "job_score": job_score,
+                "web3_score": web3_score,
+            }
+        ).execute()
 
-    # Update user reputation
-    db.table("users").update({"reputation_score": total}).eq(
-        "wallet_address", wallet
-    ).execute()
+        # Update user reputation
+        db.table("users").update({"reputation_score": total}).eq(
+            "wallet_address", wallet
+        ).execute()
+    except Exception as e:
+        print(f"Failed to persist reputation update: {e}")
 
     return {
         "wallet_address": wallet,

@@ -45,7 +45,7 @@ export function useRoleGuard(allowedRoles: AllowedRole[]) {
                     router.push("/company/dashboard")
                     break
                 default:
-                    router.push("/dashboard/candidate")
+                    router.push("/dashboard")
             }
         }
     }, [user, isLoading, router, allowedRoles])

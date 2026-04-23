@@ -46,38 +46,37 @@ class JobService:
 
     async def get_jobs_with_scores(self, user_id: str) -> List[Dict[str, Any]]:
         """
-        Public job board with AI match score preview.
+        Public job board with AI match score preview. Optimized with parallel data fetching.
         """
         db = get_supabase()
         if not db:
             return []
 
-        # Fetch active jobs
-        try:
-            jobs_resp = (
-                db.table("jobs")
-                .select("*, companies(name)")
-                .eq("is_active", True)
-                .execute()
-            )
-            jobs = jobs_resp.data if jobs_resp.data else []
-        except Exception as e:
-            print(f"[ERROR] Failed to fetch jobs with company join: {str(e)}")
-            # Fallback to fetching jobs without the join if it fails
-            jobs_resp = db.table("jobs").select("*").eq("is_active", True).execute()
-            jobs = jobs_resp.data if jobs_resp.data else []
+        import asyncio
+        
+        # Define tasks for parallel execution
+        tasks = [
+            db.table("jobs").select("*, companies(name)").eq("is_active", True).execute()
+        ]
+        if user_id:
+            tasks.append(db.table("users").select("profile_data").eq("id", user_id).single().execute())
 
-        if not user_id or not jobs:
+        # Execute in parallel
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        jobs_resp = results[0]
+        user_resp = results[1] if len(results) > 1 else None
+
+        # Handle jobs response
+        if isinstance(jobs_resp, Exception):
+            print(f"[ERROR] Failed to fetch jobs: {jobs_resp}")
+            return []
+        jobs = jobs_resp.data if jobs_resp.data else []
+
+        if not user_id or not jobs or isinstance(user_resp, Exception) or not user_resp:
             return jobs
 
-        # Fetch user profile
-        user_resp = (
-            db.table("users")
-            .select("profile_data")
-            .eq("id", user_id)
-            .single()
-            .execute()
-        )
+        # Process user data and matching
         user_data = user_resp.data if user_resp.data else {}
         profile = user_data.get("profile_data", {})
 
@@ -114,27 +113,25 @@ class JobService:
 
     async def apply_to_job(self, job_id: str, candidate_id: str) -> Dict[str, Any]:
         """
-        Application Flow + AI Match Score.
+        Application Flow + AI Match Score. Parallelized data retrieval.
         """
         db = get_supabase()
         if not db:
             raise Exception("Database service unavailable")
 
-        # Fetch Job, Recruiter, and Candidate Skills
-        job_resp = (
-            db.table("jobs")
-            .select("title, skills_required, created_by, company:companies(name, id)")
-            .eq("id", job_id)
-            .single()
-            .execute()
-        )
-        user_resp = (
-            db.table("users")
-            .select("full_name, email, profile_data")
-            .eq("id", candidate_id)
-            .single()
-            .execute()
-        )
+        import asyncio
+        
+        # Parallel fetch of Job and Candidate data
+        tasks = [
+            db.table("jobs").select("title, skills_required, created_by, company:companies(name, id)").eq("id", job_id).single().execute(),
+            db.table("users").select("full_name, email, profile_data").eq("id", candidate_id).single().execute()
+        ]
+        
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        job_resp, user_resp = results
+
+        if isinstance(job_resp, Exception) or isinstance(user_resp, Exception):
+            raise Exception("Failed to fetch application context")
 
         job = job_resp.data if job_resp.data else {}
         user = user_resp.data if user_resp.data else {}

@@ -138,11 +138,10 @@ async def get_assessment_quizzes(skill_id: Optional[str] = None):
     return await ai_service.get_available_quizzes(skill_id)
 
 
-@router.post("/quizzes/submit")
-async def submit_quiz_result(
-    quiz_id: str, results: Dict[str, Any], current_user=Depends(get_current_user)
-):
+@router.post("/calculate-score")
+async def trigger_score_calculation(current_user=Depends(get_current_user)):
     """
-    Submit quiz results and trigger score updates.
+    Trigger real-time Proof Score calculation based on latest profile data.
     """
-    return await ai_service.evaluate_quiz(current_user["id"], quiz_id, results)
+    from modules.ai.proof_service import ProofScoreService
+    return await ProofScoreService.calculate_proof_score(current_user["id"])

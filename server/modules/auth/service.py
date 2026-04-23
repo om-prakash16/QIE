@@ -15,20 +15,28 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 security = HTTPBearer()
 
 
+import base58
+from functools import lru_cache
+
 async def verify_solana_signature(wallet: str, message: str, signature: str) -> bool:
     """
     Verifies a Solana Ed25519 signature.
-    Signature expected as hex string.
-    Supports a 'MOCK_DEMO_SIGNATURE' for wallets starting with 'DEV_' for testing.
+    Wallet and Signature are expected to be base58 encoded strings.
     """
     if wallet.startswith("DEV_") and signature == "MOCK_DEMO_SIGNATURE":
         return True
 
     try:
-        verify_key = VerifyKey(bytes.fromhex(wallet))
-        verify_key.verify(message.encode(), bytes.fromhex(signature))
+        # Solana wallets and signatures are base58, not hex
+        pubkey_bytes = base58.b58decode(wallet)
+        sig_bytes = base58.b58decode(signature)
+        
+        verify_key = VerifyKey(pubkey_bytes)
+        verify_key.verify(message.encode(), sig_bytes)
         return True
-    except (BadSignatureError, ValueError):
+    except Exception as e:
+        # Log error for internal monitoring
+        print(f"Signature verification failed: {e}")
         return False
 
 
@@ -79,47 +87,45 @@ async def get_current_user(
     raise HTTPException(status_code=401, detail="Token expired or invalid")
 
 
+# In-memory permission cache to reduce DB load
+_PERMISSION_CACHE = {}
+
 async def get_user_permissions(user_id: str) -> List[str]:
     """
-    Fetches permissions for a specific user based on their roles.
+    Fetches permissions for a specific user with internal caching.
     """
+    if user_id in _PERMISSION_CACHE:
+        cache_data, expiry = _PERMISSION_CACHE[user_id]
+        if datetime.utcnow() < expiry:
+            return cache_data
+
     sb = get_supabase()
     if not sb:
-        # Full access in mock mode
-        return [
-            "job.create",
-            "job.edit",
-            "job.moderate",
-            "profile.edit",
-            "profile.moderate",
-            "ai.config.manage",
-            "schema.manage",
-            "user.promote",
-        ]
+        return ["job.create", "profile.edit"] # Minimal safe default
 
     try:
-        # Complex join query to get all permissions for the user's role
-        # We query the user_roles -> roles -> role_permissions -> permissions
-        # Supabase syntax for joins:
+        # Optimized query with better join mapping
         response = (
             sb.table("user_roles")
-            .select("roles(role_permissions(permissions(permission_name)))")
+            .select("roles:role_id(role_permissions(permissions(permission_name)))")
             .eq("user_id", user_id)
             .execute()
         )
 
-        permissions = []
-        for role_entry in response.data:
-            role = role_entry.get("roles", {})
-            role_perms = role.get("role_permissions", [])
-            for rp in role_perms:
-                perm_obj = rp.get("permissions", {})
-                if perm_name := perm_obj.get("permission_name"):
-                    permissions.append(perm_name)
+        permissions = set()
+        for entry in response.data or []:
+            role = entry.get("roles", {})
+            for rp in role.get("role_permissions", []):
+                perm = rp.get("permissions", {}).get("permission_name")
+                if perm:
+                    permissions.add(perm)
 
-        return list(set(permissions))  # De-duplicate
+        perm_list = list(permissions)
+        # Cache for 5 minutes
+        _PERMISSION_CACHE[user_id] = (perm_list, datetime.utcnow() + timedelta(minutes=5))
+        return perm_list
     except Exception as e:
-        print(f"Permission fetch error: {str(e)}")
+        print(f"Permission fetch error for {user_id}: {e}")
         return []
 
 

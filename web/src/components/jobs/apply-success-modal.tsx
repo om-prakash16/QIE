@@ -98,7 +98,7 @@ export function ApplySuccessModal({ isOpen, onClose, matchScore, jobTitle, jobId
                                 </div>
                                 <p className="text-xs text-muted-foreground">Verify your expertise now to jump to the top of the recruiter's proof ranking.</p>
                                 <Button 
-                                    onClick={() => router.push(`/dashboard/candidate/assessments/${jobId}`)}
+                                    onClick={() => router.push(`/dashboard/assessments/${jobId}`)}
                                     className="w-full h-14 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-[0.2em] rounded-2xl gap-2 shadow-xl shadow-primary/20"
                                 >
                                     Start Skill Quiz <ArrowRight className="w-4 h-4" />

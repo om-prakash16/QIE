@@ -1,197 +1,112 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
-from typing import Dict, Any, Optional
+from fastapi import APIRouter, HTTPException, Depends
+from typing import Dict, Any
 from modules.auth.service import get_current_user
 from core.supabase import get_supabase
+from modules.users.service import UserService
+from modules.users.schemas import FullProfileResponse
 
 router = APIRouter()
+user_service = UserService()
 
-# Profile Endpoints
-
-
-@router.get("/schema")
-async def get_profile_schema():
+@router.post("/create")
+async def create_new_user(email: str, wallet_address: str):
     """
-    Fetch dynamic schema fields for profile rendering.
+    Step 4: Create a new user identity. Trigger will handle BHT code.
     """
     db = get_supabase()
-    response = db.table("profile_schema").select("*").order("display_order").execute()
-    return response.data
+    res = db.table("users").insert({
+        "email": email,
+        "wallet_address": wallet_address
+    }).execute()
+    return res.data[0]
 
-
-@router.get("/")
-async def get_user_profile(current_user=Depends(get_current_user)):
+@router.post("/profile/update")
+async def update_profile_full(data: Dict[str, Any], current_user=Depends(get_current_user)):
     """
-    Fetch current logged-in user profile JSON.
+    Step 4: Comprehensive data insertion flow across normalized tables.
     """
-    db = get_supabase()
-    response = (
-        db.table("dynamic_profile_data")
-        .select("*")
-        .eq("user_id", current_user["id"])
-        .single()
-        .execute()
-    )
-    return response.data
-
-
-@router.post("/update")
-async def update_profile(data: Dict[str, Any], current_user=Depends(get_current_user)):
-    """
-    Update dynamic profile JSON data and synchronize with core tables.
-    """
-    db = get_supabase()
     user_id = current_user["id"]
+    db = get_supabase()
 
-    # 1. Identity Synchronization (users table)
-    first_name = data.get("firstName", "")
-    last_name = data.get("lastName", "")
-    if first_name or last_name:
-        full_name = f"{first_name} {last_name}".strip()
-        db.table("users").update({"full_name": full_name}).eq("id", user_id).execute()
+    # 1. Update Core Profile
+    if "profile" in data:
+        p = data["profile"]
+        db.table("profiles").upsert({
+            "user_id": user_id,
+            "full_name": p.get("full_name"),
+            "headline": p.get("headline"),
+            "bio": p.get("bio"),
+            "location": p.get("location")
+        }).execute()
 
-    # 2. Skill Nexus Synchronization (user_skills table)
-    skills_csv = data.get("skills", "")
-    if skills_csv:
-        # Parse and clean skills
-        new_skill_names = [s.strip() for s in skills_csv.split(",") if s.strip()]
-        
-        # Fetch existing skills to avoid duplicates
-        existing_skills = db.table("user_skills").select("skill_name").eq("user_id", user_id).execute()
-        existing_names = {s["skill_name"].lower() for s in existing_skills.data}
+    # 2. Update Experiences (Delete & Replace for simplicity in Step 4)
+    if "experiences" in data:
+        db.table("experiences").delete().eq("user_id", user_id).execute()
+        for exp in data["experiences"]:
+            exp["user_id"] = user_id
+            db.table("experiences").insert(exp).execute()
 
-        # Filter for truly new skills
-        skills_to_insert = []
-        for name in new_skill_names:
-            if name.lower() not in existing_names:
-                skills_to_insert.append({
-                    "user_id": user_id,
-                    "skill_name": name,
-                    "proficiency_level": 1,
-                    "is_verified": False
-                })
-        
-        if skills_to_insert:
-            db.table("user_skills").insert(skills_to_insert).execute()
+    # 3. Update Projects
+    if "projects" in data:
+        db.table("projects").delete().eq("user_id", user_id).execute()
+        for proj in data["projects"]:
+            proj["user_id"] = user_id
+            db.table("projects").insert(proj).execute()
 
-    # 3. Dynamic Profile Meta-data (JSON-B)
-    response = (
-        db.table("dynamic_profile_data")
-        .upsert(
-            {"user_id": user_id, "profile_data": data, "updated_at": "now()"}
-        )
-        .execute()
-    )
+    # 4. Update Education
+    if "education" in data:
+        db.table("education").delete().eq("user_id", user_id).execute()
+        for edu in data["education"]:
+            edu["user_id"] = user_id
+            db.table("education").insert(edu).execute()
+
+    # 5. Handle AI Scores update if provided (usually internal)
+    if "ai_scores" in data:
+        scores = data["ai_scores"]
+        db.table("ai_scores").upsert({
+            "user_id": user_id,
+            "proof_score": scores.get("proof_score", 0),
+            "technical_score": scores.get("technical_score", 0)
+        }).execute()
+
+    return {"status": "success", "message": "All relational tables synchronized."}
+
+@router.get("/portfolio/{user_code}", response_model=FullProfileResponse)
+async def get_public_portfolio(user_code: str):
+    """
+    Publicly accessible portfolio endpoint by user_code.
+    """
+    portfolio = await user_service.get_portfolio_by_code(user_code)
+    if not portfolio:
+        raise HTTPException(status_code=404, detail="Portfolio not found or private")
+    return portfolio
+
+@router.get("/search/{user_code}")
+async def search_candidate_by_code(user_code: str):
+    """
+    Search candidate by unique BHT code.
+    """
+    db = get_supabase()
+    response = db.table("users").select("id, user_code, full_name, visibility").eq("user_code", user_code).execute()
+    if not response.data:
+        raise HTTPException(status_code=404, detail="Candidate not found")
     
-    return {"status": "success", "data": response.data}
+    user = response.data[0]
+    if user["visibility"] == "private":
+         raise HTTPException(status_code=403, detail="Candidate profile is private")
+         
+    return user
 
-
-@router.post("/upload-file")
-async def upload_profile_file(
-    file: UploadFile = File(...), current_user=Depends(get_current_user)
-):
+@router.get("/cv")
+async def generate_dynamic_cv(current_user=Depends(get_current_user)):
     """
-    Upload resume or profile image to Supabase storage.
+    Step 7: Endpoint for real-time CV generation using aggregated data.
     """
-    # In a real app: upload to bucket and return public URL
+    from modules.users.cv_service import CVService
+    cv_data = await CVService.generate_cv_data(current_user["id"])
     return {
         "status": "success",
-        "filename": file.filename,
-        "url": f"https://best-hiring-tool.ai/storage/profiles/{current_user['id']}/{file.filename}",
-    }
-
-
-# Portfolio Endpoints
-
-
-@router.get("/portfolio")
-async def get_portfolio(
-    user_id: Optional[str] = None, current_user=Depends(get_current_user)
-):
-    """
-    Fetch candidate portfolio (projects, external links).
-    """
-    target_id = user_id or current_user["id"]
-    db = get_supabase()
-    response = db.table("portfolios").select("*").eq("user_id", target_id).execute()
-    return response.data
-
-
-# Skill Endpoints
-
-
-@router.get("/skills")
-async def get_user_skills(
-    user_id: Optional[str] = None, current_user=Depends(get_current_user)
-):
-    """
-    Fetch skills associated with a user.
-    """
-    target_id = user_id or current_user["id"]
-    db = get_supabase()
-    response = db.table("user_skills").select("*").eq("user_id", target_id).execute()
-    return response.data
-
-
-@router.post("/skills")
-async def add_user_skill(
-    skill_data: Dict[str, Any], current_user=Depends(get_current_user)
-):
-    """
-    Add a new skill to the user's profile.
-    """
-    db = get_supabase()
-    new_skill = {
-        "user_id": current_user["id"],
-        "skill_name": skill_data["skill_name"],
-        "proficiency_level": skill_data.get("proficiency_level", 1),
-        "is_verified": False,
-    }
-    response = db.table("user_skills").insert(new_skill).execute()
-
-    # Log activity
-    db.table("activity_events").insert(
-        {
-            "user_id": current_user["id"],
-            "event_type": "skill_added",
-            "metadata": {"skill_name": skill_data["skill_name"]},
-        }
-    ).execute()
-
-    return response.data
-
-
-@router.post("/skills/{skill_id}/verify")
-async def request_skill_verification(
-    skill_id: str, current_user=Depends(get_current_user)
-):
-    """
-    Submit a skill for moderation/verification.
-    """
-    db = get_supabase()
-
-    # 1. Check if skill exists
-    skill = (
-        db.table("user_skills")
-        .select("*")
-        .eq("id", skill_id)
-        .eq("user_id", current_user["id"])
-        .single()
-        .execute()
-    )
-    if not skill.data:
-        raise HTTPException(status_code=404, detail="Skill not found")
-
-    # 2. Add to moderation queue
-    moderation_entry = {
-        "entity_id": skill_id,
-        "entity_type": "skill",
-        "reason": f"Verification request for {skill.data['skill_name']}",
-        "priority": "normal",
-        "status": "pending",
-    }
-    db.table("moderation_queue").insert(moderation_entry).execute()
-
-    return {
-        "status": "pending",
-        "message": "Verification request submitted to moderation queue",
+        "message": "Dynamic CV generated from database state",
+        "cv_layout": cv_data,
+        "download_url": "/api/v1/profile/cv/download"
     }
