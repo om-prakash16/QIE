@@ -1,6 +1,6 @@
 <div align="center">
   <!-- Shark-Tier Professional Badges -->
-  <img src="https://img.shields.io/badge/AI_VERIFIED-PRO_SHARK-003366?style=for-the-badge&logo=ai&logoColor=white" alt="AI Verified" />
+  <img src="https://img.shields.io/badge/AI_VERIFIED-PRO_SHARK-003366?style=for-the-badge&logo=google-gemini&logoColor=white" alt="AI Verified" />
   <img src="https://img.shields.io/badge/SOLANA-HACKATHON_READY-14F195?style=for-the-badge&logo=solana&logoColor=black" alt="Solana Hackathon" />
   <img src="https://img.shields.io/badge/QIE-INTEGRATED-0055aa?style=for-the-badge&logo=blockchain&logoColor=white" alt="QIE Integrated" />
   <img src="https://img.shields.io/badge/SECURITY-HARDENED-steel?style=for-the-badge&logo=shield&logoColor=white" alt="Security Hardened" />
@@ -9,7 +9,7 @@
 
   <img src="https://img.shields.io/badge/FastAPI-009688?style=flat&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Next.js_15-black?style=flat&logo=next.js" alt="Next.js" />
-  <img src="https://img.shields.io/badge/Deployment-Verified-success?style=flat&logo=github-actions" alt="Deployment" />
+  <img src="https://img.shields.io/badge/Gemini_AI-8E75C2?style=flat&logo=google-gemini&logoColor=white" alt="Gemini AI" />
   <img src="https://img.shields.io/badge/License-MIT-gray?style=flat" alt="License" />
   
   <br />
@@ -19,7 +19,7 @@
   <h3>The Ultimate AI-Powered Career Operating System</h3>
   
   <p align="center">
-    <b>A disruptive decentralized ecosystem merging Artificial Intelligence with Web3 to replace resumes with "Proof Scores" — verified on-chain, ungameable, and shark-tier.</b>
+    <b>A disruptive decentralized ecosystem merging Artificial Intelligence with Web3 to replace resumes with "Proof Scores" — verified on-chain, ungameable, and enterprise-grade.</b>
   </p>
 
 </div>
@@ -32,21 +32,23 @@
 
 > *LinkedIn shows claims. Best Hiring Tool proves skills.*
 
-## 🏆 Hackathon-Winning Features
+## 🏆 Enterprise-Grade Features
 
-### 🚀 Solana Blinks / Actions (Twitter-Native Hiring) ⭐⭐⭐
-- **Direct Apply from Socials:** Recruiter shares a job on X (Twitter), and candidates apply directly via the tweet using Solana Actions. No extra clicks.
+### 🧠 Skill Graph System ⭐⭐⭐
+- **Semantic Competency Network:** Move beyond keyword matching. Our Skill Graph understands the relationship between technologies, experience, and projects.
+- **Project Ledger:** Every project added is automatically linked to the Skill Graph, amplifying "Proof Scores" through verifiable contributions.
+
+### 🛡️ Native AI Resume Verification ⭐⭐⭐
+- **Google Gemini Integration:** Powered by the native Google Gemini SDK for ultra-fast, high-accuracy resume analysis and verification.
+- **Proof-of-Work Extraction:** AI extracts deep metadata from GitHub and LinkedIn to validate every claim made by the candidate.
+
+### 🚀 Solana Blinks / Actions (Twitter-Native Hiring)
+- **Direct Apply from Socials:** Recruiters share jobs on X (Twitter), and candidates apply directly via the tweet using Solana Actions.
 - **Spec-Compliant Backend:** Full metadata support for Solana Action discovery and transaction serialization.
 
-### 🎭 Dynamic Profile Engine & Templates ⭐⭐⭐
-- **Admin-Managed Schema:** Administrators can inject new profile fields (e.g., "LeetCode URL") in real-time without writing code.
-- **Industry Templates:** Switch between Developer, Designer, and Student profile blueprints instantly to suit the candidate's career track.
-- **NFT Integrity:** `updateProfileCID()` mechanism updates the underlying on-chain profile metadata (IPFS hash) while keeping the same static SBT.
-
-### 🧠 AI Career Evolution Engine
-- **Intelligent Job Matching:** Vector embeddings via LangChain score profiles against job descriptions instantly.
-- **Career Path Simulator:** AI-driven roadmap predicting the candidate's next 3 professional milestones based on verified on-chain skill NFTs.
-- **Skill Timeline:** A holographic, interactive visualization of the developer's growth from intern to senior engineer.
+### 🎭 Deep Space UI & Experience
+- **Premium Aesthetics:** A motion-first, high-contrast design language optimized for readability and engagement.
+- **Holographic Skill Timeline:** A visual, interactive journey of a developer's growth from intern to industry leader.
 
 ---
 
@@ -54,10 +56,10 @@
 
 ```text
 Best Hiring Tool/
-├── web/                     # Next.js Frontend (Port: 3000)
+├── web/                     # Next.js 15 Frontend (Port: 3000)
 ├── server/                  # FastAPI AI Backend (Port: 8000)
 ├── programs/                # Rust Anchor Smart Contracts
-├── database/                # Schema Migrations
+├── database/                # Schema Migrations & SQL Audit Scripts
 ├── Makefile                 # Unified Command Runner
 └── .env.example             # Global Environment Template
 ```
@@ -77,6 +79,7 @@ make install
 make dev
 ```
 
+### 2. Manual Start
 - **AI Backend (8000)**:
   ```bash
   cd server
@@ -89,25 +92,16 @@ make dev
   npm run dev
   ```
 
-### 3. Docker Orchestration
-```bash
-# Start all services with unique container names
-make docker-up
-```
-
 ## 🛡️ Isolation & Conflict Prevention
 
 To maintain a professional multi-project workflow, Best Hiring Tool follows these rules:
 1. **Port 3000**: Standard Next.js development port.
 2. **Port 8000**: Standard FastAPI/Uvicorn port.
-3. **Container Prefix**: All Docker assets use the `the-best-hiring-tool_` prefix.
-4. **Network**: Isolated in `the-best-hiring-tool_talent_network`.
-
+3. **Container Prefix**: All Docker assets use the `best-hiring-tool_` prefix.
+4. **Network**: Isolated in `best-hiring-tool_network`.
 
 ---
 
 <p align="center">
-  Engineered with ❤️ for decentralized hiring.
+  Engineered with ❤️ for the future of decentralized hiring.
 </p>
-
-# QIE

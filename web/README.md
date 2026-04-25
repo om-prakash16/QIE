@@ -7,7 +7,7 @@
   
   <br />
 
-  <h1>🚀 NextGenCareers</h1>
+  <h1>🚀 Best Hiring Tool - Web</h1>
   <h3>The Ultimate Premium Job Portal Ecosystem</h3>
   
   <p align="center">
@@ -15,9 +15,9 @@
   </p>
 
   <div flex align="center">
-    <img src="https://img.shields.io/github/stars/om-prakash16/job-portal?style=social" alt="Stars" />
-    <img src="https://img.shields.io/github/forks/om-prakash16/job-portal?style=social" alt="Forks" />
-    <img src="https://img.shields.io/github/license/om-prakash16/job-portal?style=flat-square" alt="License" />
+    <img src="https://img.shields.io/github/stars/om-prakash16/Skillsutra?style=social" alt="Stars" />
+    <img src="https://img.shields.io/github/forks/om-prakash16/Skillsutra?style=social" alt="Forks" />
+    <img src="https://img.shields.io/github/license/om-prakash16/Skillsutra?style=flat-square" alt="License" />
   </div>
 </div>
 
@@ -25,16 +25,16 @@
 
 ## 🌟 Vision
 
-NextGenCareers is not just a job board; it's a premium talent matching ecosystem designed for the modern web. We combine blazing-fast performance with a sophisticated design language to connect world-class companies with top-tier talent.
+**Best Hiring Tool** is not just a job board; it's a premium talent matching ecosystem designed for the modern web. We combine blazing-fast performance with a sophisticated design language to connect world-class companies with top-tier talent through AI-verified proof of work.
 
 ## ✨ Key Features
 
-- **🎭 Motion-First UI**: Seamless, staggered entry animations and scroll-reveal effects powered by Framer Motion.
-- **🎯 Intelligent Search**: Multi-parameter job search with real-time filtering by category, location, and seniority.
-- **🏢 Enterprise Directory**: Comprehensive company profiles with real-time hiring status and culture insights.
-- **⚡ Peak Performance**: Leveraging Next.js 15 Server Components and Lenis for buttery-smooth scrolling.
-- **🔐 Secure Auth Ecosystem**: Robust multi-role authentication (Admin, Company, Candidate) with persistent sessions.
-- **🌗 Adaptive Dark Mode**: A meticulously crafted dark theme that respects system preferences and reduces eye strain.
+- **🎭 Deep Space UI**: A meticulously crafted "Deep Space" theme using Tailwind CSS 4 and Framer Motion for a premium, motion-first experience.
+- **🧠 Interactive Skill Graph**: A visual representation of candidate competencies, allowing recruiters to navigate talent pools semantically.
+- **🎯 Intelligent Search & Discovery**: Multi-parameter job and candidate search with real-time filtering and AI-driven matching scores.
+- **🏢 Enterprise Company Profiles**: Comprehensive directory with culture insights, tech stack analysis, and real-time hiring status.
+- **⚡ Next.js 15 Performance**: Leveraging Server Components, streaming, and Lenis for buttery-smooth scrolling and instant page transitions.
+- **🔐 Secure Role-Based Auth**: Robust multi-role authentication (Admin, Company, Candidate) with persistent sessions and protected routes.
 
 ## 🛠 Tech Stack
 
@@ -42,8 +42,8 @@ NextGenCareers is not just a job board; it's a premium talent matching ecosystem
 | :--- | :--- |
 | **Framework** | [Next.js 15](https://nextjs.org/) (App Router) |
 | **Core** | [React 19](https://react.dev/), [TypeScript](https://www.typescriptlang.org/) |
-| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/), [Shadcn UI](https://ui.shadcn.com/) |
-| **Animation** | [Framer Motion](https://www.framer.com/motion/), [Tailwind Animate](https://github.com/jamiebuilds/tailwind-animate) |
+| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/), [Vanilla CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) |
+| **Animation** | [Framer Motion](https://www.framer.com/motion/) |
 | **Scrolling** | [Lenis](https://lenis.studiofreight.com/) |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 
@@ -51,15 +51,16 @@ NextGenCareers is not just a job board; it's a premium talent matching ecosystem
 
 ### 1. Clone & Install
 ```bash
-git clone git@github.com:om-prakash16/job-portal.git
-cd job-portal
+git clone git@github.com:om-prakash16/Skillsutra.git
+cd web
 npm install
 ```
 
 ### 2. Configure Environment
-Create a `.env.local` file in the root directory:
+Create a `.env.local` file in the root of the `web/` directory:
 ```env
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### 3. Launch Development Server
@@ -73,9 +74,9 @@ Navigate to [http://localhost:3000](http://localhost:3000) to see the magic.
 ```text
 src/
 ├── app/           # Next.js App Router (Pages & Routes)
-├── components/    # Atomic UI components & Feature modules
+├── components/    # Atomic UI components & Feature modules (AI, Search, Layout)
 ├── context/       # Global State (Auth, Theme)
-├── hooks/         # Custom React Hooks
+├── hooks/         # Custom React Hooks (SyncManager, etc.)
 ├── lib/           # Utility functions & API definitions
 └── types/         # TypeScript definitions
 ```
