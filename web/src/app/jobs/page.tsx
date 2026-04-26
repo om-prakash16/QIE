@@ -52,7 +52,7 @@ export default function JobMarketplace() {
                  Marketplace v4.0.2 Protocol
                </Badge>
            </div>
-           <h1 className="text-6xl md:text-9xl font-black font-heading tracking-tighter uppercase italic leading-[0.8] text-white">
+           <h1 className="text-5xl md:text-9xl font-black font-heading tracking-tighter uppercase italic leading-[0.8] text-white">
              Find Your <br />
              <span className="text-primary not-italic">Next Impact</span>
            </h1>

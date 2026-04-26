@@ -189,10 +189,8 @@ export function Navbar() {
                 </div>
 
                 {/* Mobile Menu */}
-                <div className="md:hidden flex items-center gap-4">
-                    <ThemeToggle />
-                    <NotificationBell />
-                    <WalletMultiButton style={{ height: '36px', padding: '0 12px', fontSize: '12px', borderRadius: '8px' }} />
+                <div className="md:hidden flex items-center gap-2">
+                    <WalletMultiButton style={{ height: '32px', padding: '0 8px', fontSize: '10px', borderRadius: '8px' }} />
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant="ghost" size="icon">
@@ -201,6 +199,19 @@ export function Navbar() {
                         </SheetTrigger>
                         <SheetContent side="right" className="w-[300px] sm:w-[350px] px-6">
                             <div className="flex flex-col gap-8 mt-10">
+                                {/* Mobile Quick Actions */}
+                                <div className="flex items-center gap-4 p-4 glass rounded-2xl border-white/5">
+                                    <div className="flex-1 flex flex-col gap-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Appearance</p>
+                                        <ThemeToggle />
+                                    </div>
+                                    <div className="w-px h-10 bg-white/5" />
+                                    <div className="flex-1 flex flex-col gap-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Alerts</p>
+                                        <NotificationBell />
+                                    </div>
+                                </div>
+
                                 {/* Dashboard Links (if applicable) */}
                                 {isDashboard && (
                                     <div className="flex flex-col gap-2">

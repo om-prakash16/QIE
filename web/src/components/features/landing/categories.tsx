@@ -38,7 +38,7 @@ export function Categories() {
         <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-white/5 pb-10">
             <div className="space-y-4">
                 <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Intelligence Nodes</h2>
-                <h3 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
+                <h3 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
                     {titleParts[0]} <span className="text-primary not-italic">{titleParts.slice(1).join(" ")}</span>
                 </h3>
             </div>

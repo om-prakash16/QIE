@@ -100,12 +100,7 @@ async def analyze_resume_endpoint(
     Endpoint for the Landing Page /verify UI to parse uploaded PDFs.
     """
     try:
-        content = await file.read()
-        reader = PyPDF2.PdfReader(io.BytesIO(content))
-        text = ""
-        for page in reader.pages:
-            if page.extract_text():
-                text += page.extract_text() + "\n"
+        text = await extract_text_from_file(file)
                 
         from modules.ai.services.resume_service import ResumeService
         resume_service = ResumeService()
@@ -136,31 +131,53 @@ async def analyze_resume_endpoint(
 
 
 
-async def extract_text_from_pdf(file: UploadFile) -> str:
+async def extract_text_from_file(file: UploadFile) -> str:
     content = await file.read()
-    reader = PyPDF2.PdfReader(io.BytesIO(content))
-    text = ""
-    for page in reader.pages:
-        if page.extract_text():
-            text += page.extract_text() + "\n"
-    return text
+    filename = file.filename.lower() if file.filename else ""
+    
+    if filename.endswith(".pdf"):
+        reader = PyPDF2.PdfReader(io.BytesIO(content))
+        text = ""
+        for page in reader.pages:
+            if page.extract_text():
+                text += page.extract_text() + "\n"
+        return text
+    elif filename.endswith(".txt"):
+        return content.decode("utf-8")
+    else:
+        # Try to decode as text as fallback
+        try:
+            return content.decode("utf-8")
+        except:
+            return "Unsupported file format"
+
+from fastapi import Form
 
 @router.post("/compare-jd-cv")
 async def analyze_jd_cv_endpoint(
     resume: UploadFile = File(...),
-    jd: UploadFile = File(...)
+    jd: Optional[UploadFile] = File(None),
+    jd_text_input: Optional[str] = Form(None)
 ):
     """
     Endpoint to compare a Resume against a Job Description.
+    Supports JD as a file or raw text.
     """
     try:
-        resume_text = await extract_text_from_pdf(resume)
-        jd_text = await extract_text_from_pdf(jd)
+        resume_text = await extract_text_from_file(resume)
+        
+        final_jd_text = ""
+        if jd:
+            final_jd_text = await extract_text_from_file(jd)
+        elif jd_text_input:
+            final_jd_text = jd_text_input
+        else:
+            raise HTTPException(status_code=400, detail="Missing Job Description (file or text)")
         
         from modules.ai.services.resume_service import ResumeService
         resume_service = ResumeService()
         
-        result = await resume_service.compare_jd_cv(jd_text=jd_text, resume_text=resume_text)
+        result = await resume_service.compare_jd_cv(jd_text=final_jd_text, resume_text=resume_text)
         
         if "error" in result:
             raise HTTPException(status_code=500, detail=result["error"])
@@ -181,7 +198,7 @@ async def match_jd_candidates_endpoint(
     Upload a JD and get a list of best matching candidates from the network.
     """
     try:
-        jd_text = await extract_text_from_pdf(jd)
+        jd_text = await extract_text_from_file(jd)
         
         from modules.ai.services.resume_service import ResumeService
         resume_service = ResumeService()

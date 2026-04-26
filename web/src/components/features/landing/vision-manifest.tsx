@@ -37,7 +37,7 @@ export function VisionManifest() {
           {/* Headline Block */}
           <motion.div variants={itemVariants} className="max-w-4xl">
             <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-6">Manifesto 01 / The Status Quo</h2>
-            <h3 className="text-6xl md:text-8xl font-black italic tracking-tighter uppercase leading-none text-white">
+            <h3 className="text-5xl md:text-8xl font-black italic tracking-tighter uppercase leading-none text-white">
               Hiring is <span className="text-rose-600">Broken.</span>
             </h3>
             <p className="mt-8 text-xl md:text-2xl text-white/40 font-medium leading-relaxed italic max-w-2xl">
@@ -86,7 +86,7 @@ export function VisionManifest() {
           {/* Closing Statement */}
           <motion.div variants={itemVariants} className="text-right space-y-6 ml-auto max-w-3xl">
             <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary mb-6">Manifesto 02 / The Future</h2>
-            <h3 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
+            <h3 className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
               Reputation is the <span className="text-primary">New Currency.</span>
             </h3>
             <p className="mt-8 text-xl text-white/40 font-medium leading-relaxed italic max-w-xl ml-auto">

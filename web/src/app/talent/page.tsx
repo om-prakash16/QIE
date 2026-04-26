@@ -141,7 +141,7 @@ function TalentContent() {
                 <div className="container mx-auto max-w-7xl space-y-10">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
                         <div className="space-y-4">
-                            <h1 className="text-6xl font-black font-heading tracking-tighter italic uppercase leading-none">Neural Talent Synthesis</h1>
+                            <h1 className="text-5xl md:text-6xl font-black font-heading tracking-tighter italic uppercase leading-none">Neural Talent Synthesis</h1>
                             <div className="flex items-center gap-4">
                                 <div className="h-px w-24 bg-primary" />
                                 <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Connect with high-resonance verified technical nodes</p>
@@ -159,19 +159,35 @@ function TalentContent() {
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3">
-                                <div className="hidden sm:block h-10 w-px bg-white/5 mx-2" />
-                                <Button 
-                                    variant="premium"
-                                    className="h-14 px-8 rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
-                                    disabled={isMatching}
-                                    onClick={() => document.getElementById("jd-upload")?.click()}
-                                >
-                                    {isMatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                                    Match by Spec (JD)
-                                </Button>
-                                <input id="jd-upload" type="file" className="hidden" accept=".pdf" onChange={handleJdMatch} />
-                            </div>
+                             <div className="flex items-center gap-3">
+                                 <Sheet>
+                                     <SheetTrigger asChild>
+                                         <Button variant="outline" size="icon" className="lg:hidden h-14 w-14 glass border-white/5 rounded-2xl shrink-0">
+                                             <SlidersHorizontal className="w-5 h-5" />
+                                         </Button>
+                                     </SheetTrigger>
+                                     <SheetContent side="left" className="w-[320px] px-8 pt-16">
+                                         <div className="space-y-8">
+                                             <div className="flex items-center justify-between">
+                                                 <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/40">Neural Filters</h3>
+                                                 <SlidersHorizontal className="w-4 h-4 text-white/20" />
+                                             </div>
+                                             <TalentFilters />
+                                         </div>
+                                     </SheetContent>
+                                 </Sheet>
+                                 <div className="hidden sm:block h-10 w-px bg-white/5 mx-2" />
+                                 <Button 
+                                     variant="premium"
+                                     className="h-14 px-8 rounded-2xl shadow-2xl shadow-primary/20 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest"
+                                     disabled={isMatching}
+                                     onClick={() => document.getElementById("jd-upload")?.click()}
+                                 >
+                                     {isMatching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                     Match by Spec (JD)
+                                 </Button>
+                                 <input id="jd-upload" type="file" className="hidden" accept=".pdf" onChange={handleJdMatch} />
+                             </div>
                         </div>
                     </div>
                 </div>

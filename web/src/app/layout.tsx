@@ -9,6 +9,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { WalletProvider } from "@/components/providers/wallet-provider";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { CMSProvider } from "@/context/cms-context";
 import { API_BASE_URL } from "@/lib/api/api-client";
 
@@ -57,10 +58,11 @@ export default function RootLayout({
                     <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary/20 blur-[150px] rounded-full" />
                   </div>
                   <Navbar />
-                  <main className="flex-1 w-full relative min-h-screen pt-20">
+                  <main className="flex-1 w-full relative min-h-screen pt-20 pb-24 md:pb-0">
                     {children}
                   </main>
                   <Footer />
+                  <MobileNav />
                 </CMSProvider>
               </AuthProvider>
             </QueryProvider>

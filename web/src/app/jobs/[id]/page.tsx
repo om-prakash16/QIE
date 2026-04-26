@@ -90,7 +90,7 @@ export default function JobDetails() {
                     <Badge variant="outline" className="glass text-primary px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] rounded-full">
                         {job.companies?.company_name}
                     </Badge>
-                    <h1 className="text-6xl md:text-7xl font-black font-heading tracking-tighter text-gradient leading-none">{job.title}</h1>
+                    <h1 className="text-5xl md:text-7xl font-black font-heading tracking-tighter text-gradient leading-none">{job.title}</h1>
                 </div>
                 <div className="flex flex-wrap gap-8 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">
                     <span className="flex items-center gap-2.5"><MapPin className="w-4 h-4 text-primary" /> {job.location || 'Remote'}</span>

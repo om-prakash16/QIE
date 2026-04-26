@@ -124,7 +124,7 @@ export default function PricingPage() {
                         <h2 className="text-3xl font-bold font-heading">Compare Features</h2>
                     </div>
 
-                    <div className="bg-background rounded-xl border overflow-hidden shadow-sm">
+                    <div className="bg-background rounded-xl border overflow-x-auto shadow-sm">
                         <TooltipProvider>
                             <Table>
                                 <TableHeader>

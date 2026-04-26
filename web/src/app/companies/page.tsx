@@ -62,7 +62,7 @@ export default function CompaniesPage() {
             {/* Page Header */}
             <div className="container px-4 mx-auto mb-16 relative z-10 text-center">
                 <div className="max-w-4xl mx-auto space-y-4">
-                    <h1 className="text-5xl md:text-7xl font-black font-heading tracking-tighter uppercase text-white">
+                    <h1 className="text-4xl md:text-7xl font-black font-heading tracking-tighter uppercase text-white">
                         Partner <span className="text-gradient">Nodes</span>
                     </h1>
                     <p className="text-lg text-muted-foreground/80 font-medium max-w-2xl mx-auto">
