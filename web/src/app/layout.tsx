@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: "Best Hiring Tool | Verify Skills. Hire Intelligence.",
     description: "The professional-grade AI verification engine for elite talent. Replace resumes with verified proof scores.",
-    keywords: "blockchain, ai hiring, solana, best hiring, talent verification",
+    keywords: "blockchain, ai hiring, solana, best hiring tool, talent verification",
   };
 }
 

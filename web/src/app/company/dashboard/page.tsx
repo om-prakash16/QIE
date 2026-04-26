@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Briefcase, Users, CheckCircle2, XCircle, Plus, FileText, ArrowRight, Loader2, Sparkles, TrendingUp, Activity as ActivityIcon, Brain } from "lucide-react"
+import { Briefcase, Users, CheckCircle2, XCircle, Plus, FileText, ArrowRight, Loader2, Sparkles, TrendingUp, Activity as ActivityIcon, Brain, Code } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api/api-client"
@@ -137,6 +137,12 @@ export default function CompanyDashboardPage() {
                         <Link href="/company/applicants" className="block">
                             <Button variant="outline" className="w-full justify-between h-14 px-4 bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-primary/30 group px-5 rounded-2xl">
                                 <span className="flex items-center gap-4 text-xs font-bold"><Users className="w-4 h-4 text-indigo-500" /> Match Archive</span>
+                                <ArrowRight className="w-4 h-4 text-white/10 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                            </Button>
+                        </Link>
+                        <Link href="/company/api" className="block">
+                            <Button variant="outline" className="w-full justify-between h-14 px-4 bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-primary/30 group px-5 rounded-2xl">
+                                <span className="flex items-center gap-4 text-xs font-bold"><Code className="w-4 h-4 text-emerald-500" /> Enterprise API</span>
                                 <ArrowRight className="w-4 h-4 text-white/10 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                             </Button>
                         </Link>

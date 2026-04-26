@@ -30,6 +30,7 @@ import {
     Activity,
     ChevronRight,
     CreditCard,
+    ShieldCheck,
 } from "lucide-react"
 
 import { useAuth } from "@/context/auth-context"
@@ -77,7 +78,8 @@ const adminNavGroups = [
     {
         label: "Infrastructure",
         links: [
-            { href: "/admin/blockchain", label: "Blockchain Ledger", icon: Fingerprint },
+            { href: "/admin/profile", label: "Operational Nexus", icon: Fingerprint },
+            { href: "/admin/blockchain", label: "Blockchain Ledger", icon: ShieldAlert },
             { href: "/admin/features", label: "Feature Flags", icon: Zap },
             { href: "/admin/subscriptions", label: "SaaS Plans", icon: CreditCard },
             { href: "/admin/settings", label: "System Protocols", icon: Settings },
@@ -86,16 +88,14 @@ const adminNavGroups = [
 ]
 
 const userLinks = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
-    { href: "/dashboard/edit", label: "My Profile", icon: User },
-    { href: "/applications", label: "Applied Jobs", icon: Briefcase },
-    { href: "/dashboard/jobs", label: "Job Matches", icon: Brain },
-    { href: "/dashboard/saved", label: "Saved Jobs", icon: Bookmark },
-    { href: "/dashboard/skills", label: "Skills & NFTs", icon: Zap },
-    { href: "/dashboard/nfts", label: "NFT Portfolio", icon: Fingerprint },
-    { href: "/dashboard/career", label: "Career Planning", icon: BarChart3 },
-    { href: "/dashboard/interview", label: "Interview Prep", icon: Cpu },
-    { href: "/dashboard/community", label: "Community", icon: Users },
+    { href: "/user/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/user/profile", label: "My Profile", icon: User },
+    { href: "/user/applications", label: "Applications", icon: Briefcase },
+    { href: "/user/saved", label: "Saved Jobs", icon: Bookmark },
+    { href: "/user/skills", label: "Skills & Credentials", icon: Zap },
+    { href: "/user/credentials", label: "NFT Portfolio", icon: Fingerprint },
+    { href: "/user/insights", label: "AI Insights", icon: Brain },
+    { href: "/user/settings", label: "Settings", icon: Settings },
 ]
 
 const companyLinks = [
@@ -217,7 +217,7 @@ export function Sidebar({ role, className, variant = "default" }: SidebarProps) 
                             <ShieldCheck className={cn("w-5 h-5", role === "admin" ? "text-rose-400" : "text-primary")} />
                         </div>
                         <div>
-                            <p className="text-base font-black tracking-tighter text-gradient leading-none">Best Hiring</p>
+                            <p className="text-base font-black tracking-tighter text-gradient leading-none">Best Hiring Tool</p>
                             <p className={cn("text-[9px] uppercase tracking-[0.3em] font-black leading-tight mt-1",
                                 role === "admin" ? "text-rose-500/60" : "text-primary/60"
                             )}>

@@ -9,14 +9,14 @@ import { api, API_BASE_URL } from '@/lib/api/api-client';
 
 export function HeroSection() {
   const [content, setContent] = useState<any>({
-    title: 'Verify Skills. Hire Intelligence.',
-    subtitle: 'Best Hiring Tool leverages Gemini and Solana to verify professional expertise with on-chain precision. No more resume inflation.',
-    badge: 'The Future of Verified Talent is Here'
+    title: 'The Proven Force. The Ultimate Talent.',
+    subtitle: 'Best Hiring Tool utilizes Gemini intelligence and Proof-of-Work protocols to verify professional competence with mathematical precision. No more resume noise.',
+    badge: 'The Paradigm Shift in Verified Hiring'
   });
 
   const [terminalLogs, setTerminalLogs] = useState<string[]>([
-    "Initializing Best Hiring Protocol v4.0.0...",
-    "Connecting to Solana Mainnet Node...",
+    "Initializing Best Hiring Tool Protocol v4.0.0...",
+    "Connecting to Intelligence Nodes...",
     "Ready for AI verification."
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);

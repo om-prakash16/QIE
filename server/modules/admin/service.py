@@ -68,3 +68,43 @@ class AdminService:
             db.table("users").update({"status": "suspended" if action == "suspend" else "banned" if action == "ban" else "active"}).eq("id", target_id).execute()
         
         return {"status": "success", "action": action}
+
+    @staticmethod
+    async def run_seeder() -> Dict[str, Any]:
+        """
+        Execute the data seeding protocol.
+        """
+        try:
+            from scripts.seed_dummy_data import seed_data
+            seed_data()
+            return {"status": "Genesis Protocol executed successfully", "timestamp": "2026-04-25T23:45:00Z"}
+        except Exception as e:
+            return {"status": "failed", "error": str(e)}
+
+    @staticmethod
+    async def get_all_settings() -> List[Dict[str, Any]]:
+        """
+        Fetch all platform-wide settings.
+        """
+        db = get_supabase()
+        res = db.table("platform_settings").select("*").execute()
+        return res.data if res.data else []
+
+    @staticmethod
+    async def update_setting(data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Update or insert a platform setting.
+        """
+        db = get_supabase()
+        key = data.get("setting_key")
+        val = data.get("setting_value")
+        
+        # Check if exists
+        existing = db.table("platform_settings").select("*").eq("setting_key", key).execute()
+        
+        if existing.data:
+            res = db.table("platform_settings").update({"setting_value": val}).eq("setting_key", key).execute()
+        else:
+            res = db.table("platform_settings").insert({"setting_key": key, "setting_value": val}).execute()
+            
+        return res.data[0] if res.data else {}

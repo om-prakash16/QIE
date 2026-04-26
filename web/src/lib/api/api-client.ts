@@ -62,7 +62,8 @@ export const api = {
         unsave: (jobId: string) => fetchWithAuth(`/jobs/unsave/${jobId}`, { method: "DELETE" }),
         getSaved: () => fetchWithAuth("/jobs/saved"),
         listCompanyJobs: (companyId: string) => fetchWithAuth(`/jobs/company-metrics/${companyId}`),
-        submitAssessment: (id: string, data: any) => fetchWithAuth(`/jobs/applications/${id}/submit-assessment`, { method: "PATCH", body: JSON.stringify(data) })
+        submitAssessment: (id: string, data: any) => fetchWithAuth(`/jobs/applications/${id}/submit-assessment`, { method: "PATCH", body: JSON.stringify(data) }),
+        parseJD: (text: string) => fetchWithAuth("/jobs/parse-jd", { method: "POST", body: JSON.stringify({ text }) }),
     },
     applications: {
         user: () => fetchWithAuth("/applications/user"),

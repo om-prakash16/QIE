@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,6 +35,7 @@ app = FastAPI(
     title="Best Hiring Tool Protocol",
     description="Full-stack, enterprise-grade verification engine and talent network.",
     version="4.0.0",
+    default_response_class=ORJSONResponse,
 )
 
 
@@ -71,12 +72,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Trophy, Target } from "lucide-react"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile } from "@/types/profile"
 
 interface LeetcodeTabProps {
     data: UserProfile

@@ -1,6 +1,9 @@
 from pydantic import create_model
 from typing import Dict, Any, List, Optional, Type
 from core.supabase import get_supabase
+import asyncio
+from cachetools import TTLCache
+from datetime import datetime
 
 
 class DynamicValidationService:
@@ -87,36 +90,58 @@ class DynamicValidationService:
 
         return attributes
 class UserService:
+    # Cache for 2 minutes (120 seconds) with max 1000 items
+    _PROFILE_CACHE = TTLCache(maxsize=1000, ttl=120)
+
     @staticmethod
     async def get_full_profile(user_id: str) -> Dict[str, Any]:
         """
-        Fetches the complete normalized profile using multiple queries (Supabase pattern).
+        Fetches the complete normalized profile using parallel queries and TTL caching.
         """
+        if user_id in UserService._PROFILE_CACHE:
+            return UserService._PROFILE_CACHE[user_id]
+
         db = get_supabase()
         if not db: return {}
 
-        import asyncio
+        # Define wrapper functions for asyncio.to_thread
+        def run_q(table, select="*", order_by=None, desc=True, single=False):
+            q = db.table(table).select(select).eq("user_id", user_id)
+            if order_by:
+                q = q.order(order_by, desc=desc)
+            return q.single().execute() if single else q.execute()
 
-        # Execute queries sequentially (Supabase sync client)
-        user_res = db.table("users").select("*, profiles(*)").eq("id", user_id).execute()
-        skills_rel_res = db.table("user_skills_relational").select("*, skills(name, category)").eq("user_id", user_id).execute()
-        exp_res = db.table("experiences").select("*").eq("user_id", user_id).order("start_date", desc=True).execute()
-        proj_res = db.table("projects").select("*").eq("user_id", user_id).order("start_date", desc=True).execute()
-        edu_res = db.table("education").select("*").eq("user_id", user_id).order("start_date", desc=True).execute()
-        scores_res = db.table("ai_scores").select("*").eq("user_id", user_id).execute()
+        # Users table query is slightly different as it uses 'id' instead of 'user_id'
+        def run_user_q():
+            return db.table("users").select("*, profiles(*)").eq("id", user_id).execute()
+
+        try:
+            # Execute all queries in parallel via threads (since client is sync)
+            res_user, res_skills, res_exp, res_proj, res_edu, res_scores = await asyncio.gather(
+                asyncio.to_thread(run_user_q),
+                asyncio.to_thread(run_q, "user_skills_relational", "*, skills(name, category)"),
+                asyncio.to_thread(run_q, "experiences", "*", "start_date"),
+                asyncio.to_thread(run_q, "projects", "*", "start_date"),
+                asyncio.to_thread(run_q, "education", "*", "start_date"),
+                asyncio.to_thread(run_q, "ai_scores", "*")
+            )
+        except Exception as e:
+            print(f"Parallel fetch error: {e}")
+            # Fallback to sequential or return empty if fatal
+            return {}
         
-        user_data = user_res.data[0] if user_res.data else {}
-        skills_data = skills_rel_res.data if skills_rel_res.data else []
-        exp_data = exp_res.data if exp_res.data else []
-        proj_data = proj_res.data if proj_res.data else []
-        edu_data = edu_res.data if edu_res.data else []
-        scores_data = scores_res.data[0] if scores_res.data else {}
+        user_data = res_user.data[0] if res_user.data else {}
+        skills_data = res_skills.data if res_skills.data else []
+        exp_data = res_exp.data if res_exp.data else []
+        proj_data = res_proj.data if res_proj.data else []
+        edu_data = res_edu.data if res_edu.data else []
+        scores_data = res_scores.data[0] if res_scores.data else {}
 
         # Aggregate into a structured response
         profiles_raw = user_data.get("profiles", {})
         profiles_cleaned = profiles_raw[0] if isinstance(profiles_raw, list) and profiles_raw else (profiles_raw or {})
         
-        return {
+        result = {
             "profile": {
                 "user_id": user_id,
                 "user_code": user_data.get("user_code"),
@@ -133,6 +158,10 @@ class UserService:
             "education": edu_data,
             "ai_scores": scores_data
         }
+
+        # Update Cache
+        UserService._PROFILE_CACHE[user_id] = result
+        return result
 
     @staticmethod
     async def update_profile(user_id: str, data: Dict[str, Any]):
@@ -196,6 +225,10 @@ class UserService:
                     "skill_id": skill_id,
                     "proficiency_level": s_item.get("proficiency", "Intermediate")
                 }).execute()
+
+        # Invalidate Cache after update
+        if user_id in UserService._PROFILE_CACHE:
+            del UserService._PROFILE_CACHE[user_id]
 
         return {"status": "success"}
 

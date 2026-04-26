@@ -152,7 +152,7 @@ export function ProfileHeader({ user, profileId, action, isEditing, onUpdateAvat
                             </>
                         )}
                     </Button>
-                    <Link href="/profile" className="block w-full">
+                    <Link href="/user/profile" className="block w-full">
                         <Button className="w-full" variant="secondary">
                             <Eye className="w-4 h-4 mr-2" />
                             View Public Profile

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from typing import Dict, Any, Optional
 from modules.auth.service import require_permission, get_current_user
 from modules.auth.guards import require_company
@@ -15,6 +15,16 @@ from modules.activity.service import record_event
 
 router = APIRouter()
 job_service = JobService()
+
+
+@router.post("/parse-jd")
+async def parse_job_description(
+    text: str = Body(..., embed=True), user=Depends(require_company)
+):
+    """
+    AI JD Parser: Extracts title, skills, and description from raw text.
+    """
+    return await job_service.parse_jd_text(text)
 
 # Company Endpoints
 
@@ -142,7 +152,7 @@ async def get_user_applications(user_id: str):
         return []
     response = (
         db.table("applications")
-        .select("*, jobs(title, companies(name))")
+        .select("*, jobs(title, assessment_questions, companies(company_name))")
         .eq("candidate_id", user_id)
         .execute()
     )

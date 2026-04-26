@@ -8,6 +8,17 @@ from modules.users.schemas import FullProfileResponse
 router = APIRouter()
 user_service = UserService()
 
+@router.get("/", response_model=FullProfileResponse)
+async def get_my_profile(current_user=Depends(get_current_user)):
+    """
+    Step 4: Fetch the complete profile for the currently authenticated user.
+    """
+    user_id = current_user["sub"] # JWT subject is the user_id
+    profile = await user_service.get_full_profile(user_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return profile
+
 @router.post("/create")
 async def create_new_user(email: str, wallet_address: str):
     """

@@ -9,7 +9,7 @@ import { MapPin, Briefcase, CheckCircle2, Zap, ArrowUpRight } from 'lucide-react
 import Link from 'next/link';
 
 interface TalentCardProps {
-  talent: Talent;
+  talent: Talent & { match_score?: number };
 }
 
 export function TalentCard({ talent }: TalentCardProps) {
@@ -18,68 +18,87 @@ export function TalentCard({ talent }: TalentCardProps) {
   };
 
   return (
-    <Card className="group relative overflow-hidden bg-card/20 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all hover:shadow-[0_0_40px_-12px_rgba(var(--primary-rgb),0.2)]">
-      <div className="p-6 space-y-6">
+    <Card className="group relative overflow-hidden glass border-white/5 hover:border-primary/40 transition-all duration-500 rounded-[2.5rem] shadow-2xl hover:shadow-primary/5">
+      <div className="p-8 space-y-8 relative">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -z-10 rounded-full group-hover:bg-primary/10 transition-colors" />
         
         {/* Profile Header */}
         <div className="flex justify-between items-start">
-          <div className="flex gap-4">
+          <div className="flex gap-5">
             <div className="relative">
-                <Avatar className="w-14 h-14 border-2 border-primary/20">
-                    <AvatarImage src={talent.avatar} />
-                    <AvatarFallback className="bg-primary/10 text-primary font-bold">
-                        {getInitials(talent.name)}
-                    </AvatarFallback>
-                </Avatar>
+                <div className="w-16 h-16 rounded-[1.25rem] bg-gradient-to-tr from-primary/20 to-indigo-500/20 p-0.5 group-hover:scale-105 transition-transform duration-500 shadow-lg">
+                    <Avatar className="w-full h-full rounded-[1.2rem] border-none">
+                        <AvatarImage src={talent.avatar} />
+                        <AvatarFallback className="bg-black text-primary font-black italic">
+                            {getInitials(talent.name)}
+                        </AvatarFallback>
+                    </Avatar>
+                </div>
                 {talent.verified && (
-                    <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 fill-emerald-500/10" />
+                    <div className="absolute -bottom-1 -right-1 bg-black rounded-full p-1 border border-white/10 shadow-lg">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-500/10" />
                     </div>
                 )}
             </div>
-            <div>
-                <h3 className="font-bold text-lg leading-none tracking-tight group-hover:text-primary transition-colors flex items-center gap-1.5">
+            <div className="space-y-1">
+                <h3 className="font-black text-xl italic leading-none tracking-tight text-white group-hover:text-primary transition-colors flex items-center gap-2">
                     {talent.name}
-                    <ArrowUpRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-all" />
+                    <ArrowUpRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500" />
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1.5">{talent.title}</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">{talent.title}</p>
             </div>
           </div>
           
-          <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px] font-black uppercase tracking-tighter">
-             <Zap className="w-3 h-3 mr-1" />
-             {talent.availability}
-          </Badge>
+          {talent.match_score !== undefined ? (
+            <div className="flex flex-col items-end">
+                <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-1">Resonance</p>
+                <p className="text-2xl font-black italic text-primary leading-none">{Math.round(talent.match_score)}%</p>
+            </div>
+          ) : (
+            <Badge className="glass bg-white/5 text-white/50 border-white/10 text-[9px] font-black uppercase tracking-widest py-1.5 px-3 rounded-xl group-hover:border-primary/20 group-hover:text-primary transition-all">
+                <Zap className="w-3 h-3 mr-2" />
+                {talent.availability}
+            </Badge>
+          )}
         </div>
 
         {/* Visual Progress */}
-        <div className="space-y-2">
-            <div className="flex justify-between text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
-                <span>Profile Completion</span>
-                <span>{talent.completion}%</span>
+        <div className="space-y-3">
+            <div className="flex justify-between text-[9px] uppercase font-black tracking-[0.3em] text-white/20">
+                <span>Node Completion</span>
+                <span className="text-white/40">{talent.completion}%</span>
             </div>
-            <Progress value={talent.completion} className="h-1.5" />
+            <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div 
+                    className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)] transition-all duration-1000" 
+                    style={{ width: `${talent.completion}%` }}
+                />
+            </div>
         </div>
 
         {/* Talent Intelligence */}
-        <div className="flex flex-wrap gap-x-4 gap-y-2">
-            <div className="flex items-center text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
-                <MapPin className="w-3 h-3 mr-1.5 text-primary" />
+        <div className="flex items-center gap-6">
+            <div className="flex items-center text-[9px] uppercase font-black tracking-widest text-white/30">
+                <MapPin className="w-3.5 h-3.5 mr-2 text-primary/50" />
                 {talent.location}
             </div>
-            <div className="flex items-center text-[10px] uppercase font-bold tracking-widest text-muted-foreground/60">
-                <Briefcase className="w-3 h-3 mr-1.5 text-primary" />
-                {talent.experience} Experience
+            <div className="flex items-center text-[9px] uppercase font-black tracking-widest text-white/30">
+                <Briefcase className="w-3.5 h-3.5 mr-2 text-primary/50" />
+                {talent.experience}
             </div>
         </div>
 
         {/* Skill Matrix */}
-        <div className="pt-2 flex flex-wrap gap-1.5">
-            {talent.skills.slice(0, 4).map(skill => (
-                <Badge key={skill} variant="secondary" className="bg-background/50 text-[10px] py-0 px-2 font-medium">#{skill}</Badge>
+        <div className="pt-2 flex flex-wrap gap-2">
+            {talent.skills.slice(0, 3).map(skill => (
+                <Badge key={skill} variant="outline" className="glass border-white/10 text-[9px] font-black uppercase tracking-widest text-white/40 px-3 py-1 rounded-lg group-hover:border-primary/20 group-hover:text-primary/60 transition-colors">
+                    {skill}
+                </Badge>
             ))}
-            {talent.skills.length > 4 && (
-                <Badge variant="outline" className="text-[10px] py-0 px-2 border-primary/10">+{talent.skills.length - 4}</Badge>
+            {talent.skills.length > 3 && (
+                <Badge variant="outline" className="glass border-white/10 text-[9px] font-black uppercase tracking-widest text-white/20 px-3 py-1 rounded-lg">
+                    +{talent.skills.length - 3}
+                </Badge>
             )}
         </div>
       </div>

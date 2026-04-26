@@ -51,11 +51,11 @@ export function CommandSearch() {
 
     // Mock/Static Actions
     const staticActions = [
-        { id: '1', title: 'Mission Control', icon: <LayoutDashboard className="w-4 h-4"/>, href: '/dashboard', category: 'Navigation' },
+        { id: '1', title: 'Mission Control', icon: <LayoutDashboard className="w-4 h-4"/>, href: '/user/dashboard', category: 'Navigation' },
         { id: '2', title: 'Post New Mission', icon: <PlusCircle className="w-4 h-4"/>, href: '/company/post-job', category: 'Actions' },
         { id: '3', title: 'Reputation Nexus', icon: <User className="w-4 h-4"/>, href: '/user/profile', category: 'Personnel' },
-        { id: '4', title: 'System Settings', icon: <Settings className="w-4 h-4"/>, href: '/settings', category: 'Administration' },
-        { id: '5', title: 'Admin Intelligence', icon: <ShieldAlert className="w-4 h-4"/>, href: '/admin/dashboard', category: 'Administration' }
+        { id: '4', title: 'System Settings', icon: <Settings className="w-4 h-4"/>, href: '/user/settings', category: 'Administration' },
+        { id: '5', title: 'Admin Intelligence', icon: <ShieldAlert className="w-4 h-4"/>, href: '/admin', category: 'Administration' }
     ]
 
     const handleSearch = async (val: string) => {

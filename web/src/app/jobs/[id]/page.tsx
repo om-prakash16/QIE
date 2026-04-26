@@ -55,8 +55,15 @@ export default function JobDetails() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(`Applied successfully! AI Match Score: ${data.ai_match_score}%`);
+        toast.success(`Application Sent! AI Match: ${data.match_score}%`, {
+            description: "Your personalized skill assessment is now ready in your dashboard.",
+            duration: 5000,
+        });
         setApplied(true);
+        // Short delay before redirect to allow user to see the match score
+        setTimeout(() => {
+            router.push("/user/applications");
+        }, 3000);
       } else {
         throw new Error(data.detail);
       }

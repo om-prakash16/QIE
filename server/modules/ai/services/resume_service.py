@@ -1,10 +1,9 @@
 import os
-from typing import Dict, Any
-from langchain_core.prompts import PromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
+import json
+from typing import List, Dict, Any
 from core.supabase import get_supabase
 import google.generativeai as genai
-from modules.ai.models import ParsedResume
+from modules.ai.models import ParsedResume, JDMatchResult
 
 
 class ResumeService:
@@ -12,11 +11,10 @@ class ResumeService:
         self.api_key = os.getenv("GOOGLE_API_KEY")
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel("gemini-flash-latest")
+            self.model = genai.GenerativeModel("gemini-1.5-flash")
         else:
             self.model = None
             
-        self.parser = PydanticOutputParser(pydantic_object=ParsedResume)
         self.db = get_supabase()
 
     async def analyze_resume(self, user_id: str, resume_text: str) -> Dict[str, Any]:
@@ -27,67 +25,45 @@ class ResumeService:
         if not self.model:
             return {"error": "AI service not configured"}
 
-        prompt = PromptTemplate(
-            template="""Analyze the following resume for a professional profile.
-            1. Extract all technical skills separately.
-            2. Extract all soft skills (e.g. Leadership, Communication, Problem Solving).
-            3. Identify the primary role (e.g. Frontend Engineer, Rust Dev).
-            4. Calculate a Skill Score (0-100) based on deep knowledge evidence.
-            5. Calculate a Forensic Confidence Score (0-100) representing how verifiable and detailed the professional claims are.
-            6. Identify 3 critical missing skills for the primary role.
-            
-            {format_instructions}
-            
-            Resume Text:
-            {resume}
-            """,
-            input_variables=["resume"],
-            partial_variables={
-                "format_instructions": self.parser.get_format_instructions()
-            },
-        )
+        prompt = f"""Analyze the following resume for a professional profile.
+        
+        Fields to extract:
+        - skills: List of extracted technical skills
+        - soft_skills: List of extracted soft skills (e.g. Leadership, Communication)
+        - role: Primary professional role identified
+        - experience_years: Total years of professional experience (integer)
+        - education: List of educational degrees and institutions
+        - skill_score: AI-calculated skill score from 0-100
+        - forensic_confidence: AI confidence score for the verification (0-100)
+        - missing_skills: Top 3 missing skills for the identified role
+        - summary: Executive summary and career recommendations
+
+        Return ONLY a JSON object.
+
+        Resume Text:
+        {resume_text}
+        """
 
         try:
-            prompt_text = prompt.format(resume=resume_text)
-            response = self.model.generate_content(prompt_text)
+            response = self.model.generate_content(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
             output_text = response.text
-            
-            # Clean up potential markdown formatting if model returns it
-            if output_text.startswith("```json"):
-                output_text = output_text.split("```json")[1].split("```")[0].strip()
-            elif output_text.startswith("```"):
-                output_text = output_text.split("```")[1].split("```")[0].strip()
-                
-            parsed_data = self.parser.parse(output_text)
+            parsed_data = json.loads(output_text)
 
             # Map ParsedResume fields to Best Hiring Tool score model
             analysis_results = {
                 "user_id": user_id,
-                "skill_score": parsed_data.skill_score
-                if hasattr(parsed_data, "skill_score")
-                else 75,
-                "forensic_confidence": parsed_data.forensic_confidence
-                if hasattr(parsed_data, "forensic_confidence")
-                else 80,
-                "primary_role": parsed_data.role
-                if hasattr(parsed_data, "role")
-                else "Developer",
-                "extracted_skills": parsed_data.skills,
-                "soft_skills": parsed_data.soft_skills
-                if hasattr(parsed_data, "soft_skills")
-                else [],
-                "missing_skills": parsed_data.missing_skills
-                if hasattr(parsed_data, "missing_skills")
-                else [],
-                "ai_recommendations": parsed_data.summary
-                if hasattr(parsed_data, "summary")
-                else "Keep building projects.",
-                "experience_years": parsed_data.experience_years
-                if hasattr(parsed_data, "experience_years")
-                else 0,
-                "education": parsed_data.education
-                if hasattr(parsed_data, "education")
-                else [],
+                "skill_score": parsed_data.get("skill_score", 75),
+                "forensic_confidence": parsed_data.get("forensic_confidence", 80),
+                "primary_role": parsed_data.get("role", "Developer"),
+                "extracted_skills": parsed_data.get("skills", []),
+                "soft_skills": parsed_data.get("soft_skills", []),
+                "missing_skills": parsed_data.get("missing_skills", []),
+                "ai_recommendations": parsed_data.get("summary", "Keep building projects."),
+                "experience_years": parsed_data.get("experience_years", 0),
+                "education": parsed_data.get("education", []),
             }
 
             # Store in ai_scores table (Supabase)
@@ -145,3 +121,141 @@ class ResumeService:
             "missing_skills": gaps,
             "is_qualified": match_percentage >= 70,
         }
+
+    async def parse_job_description(self, jd_text: str) -> Dict[str, Any]:
+        """
+        Extracts structured job details (title, skills, description) from raw text.
+        """
+        if not self.model:
+            return {"error": "AI service not configured"}
+
+        prompt = f"""
+        Extract structured information from the following Job Description text.
+        
+        Fields to extract:
+        - title: A professional job title (e.g. Senior Backend Engineer)
+        - skills: A list of 5-10 specific technical skills (e.g. ["Python", "FastAPI"])
+        - description: A clean, structured version of the JD text (remove redundant headers).
+        - experience_level: One of: "Entry Level", "Mid Level", "Senior Level", "Director"
+        - job_type: One of: "Full-time", "Part-time", "Contract", "Freelance"
+        
+        Return ONLY a JSON object.
+        
+        JD Text:
+        {jd_text}
+        """
+
+        try:
+            response = self.model.generate_content(prompt)
+            output_text = response.text
+            
+            if "```json" in output_text:
+                output_text = output_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in output_text:
+                output_text = output_text.split("```")[1].split("```")[0].strip()
+                
+            import json
+            return json.loads(output_text)
+        except Exception as e:
+            print(f"JD Parse Error: {e}")
+            return {"error": str(e)}
+
+    async def compare_jd_cv(self, jd_text: str, resume_text: str) -> Dict[str, Any]:
+        """
+        Deep semantic comparison between a Job Description and a Resume using Gemini 1.5.
+        """
+        if not self.model:
+            return {"error": "AI service not configured"}
+
+        prompt = f"""Analyze the following Job Description (JD) and Resume (CV) for a deep industry-level compatibility match.
+        
+        Fields to extract:
+        - match_score: Overall match percentage (0-100)
+        - matching_skills: Skills found in both documents
+        - missing_skills: Required JD skills missing from resume
+        - experience_match: Analysis of how experience aligns with JD
+        - project_match: Analysis of relevant projects and their alignment
+        - industry_readiness: Overall readiness assessment and recommendations
+
+        Return ONLY a JSON object.
+
+        Job Description:
+        {jd_text}
+
+        Resume:
+        {resume_text}
+        """
+
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
+            output_text = response.text
+            return json.loads(output_text)
+            
+        except Exception as e:
+            print(f"JD-CV Comparison Error: {e}")
+            return {"error": str(e)}
+    async def match_candidates_to_jd(self, jd_text: str, limit: int = 5) -> List[Dict[str, Any]]:
+        """
+        AI-driven candidate matching against a Job Description.
+        """
+        if not self.model or not self.db:
+            return []
+
+        # 1. Extract requirements from JD
+        extract_prompt = f"""Identify the core requirements from this Job Description.
+        Extract the top 5 technical skills and the primary job title.
+        Return ONLY valid JSON with keys: "skills" (list of strings), "title" (string).
+        JD: {jd_text[:2000]}"""
+        
+        try:
+            extract_resp = self.model.generate_content(extract_prompt)
+            clean_json = extract_resp.text.replace("```json", "").replace("```", "").strip()
+            import json
+            reqs = json.loads(clean_json)
+            extracted_skills = reqs.get("skills", [])
+        except Exception as e:
+            print(f"JD Extraction Error: {e}")
+            extracted_skills = []
+
+        # 2. Query candidates from DB (initial pool)
+        from modules.search.service import SearchService
+        search_res = await SearchService.search(skills=extracted_skills)
+        candidates = search_res.get("candidates", [])
+
+        if not candidates:
+            return []
+
+        # 3. AI Re-Ranking (Score the top 10 candidates precisely)
+        top_pool = candidates[:10]
+        
+        ranking_prompt = f"""Score these {len(top_pool)} candidates against the following Job Description requirements.
+        Requirements: {extracted_skills}
+        
+        Candidates:
+        {json.dumps([{ "id": c["user_id"], "name": c["full_name"], "skills": c["skills"], "score": c["proof_score"] } for c in top_pool])}
+        
+        Return a JSON list of objects with "user_id" and "match_score" (0-100).
+        Return ONLY the JSON list.
+        """
+        
+        try:
+            rank_resp = self.model.generate_content(ranking_prompt)
+            rank_json = rank_resp.text.replace("```json", "").replace("```", "").strip()
+            scores = json.loads(rank_json)
+            
+            # Map scores back to candidate objects
+            score_map = {s["user_id"]: s["match_score"] for s in scores}
+            
+            for c in candidates:
+                c["match_score"] = score_map.get(c["user_id"], c["proof_score"]) # Fallback to proof score if AI missed it
+            
+            # Sort by match score
+            candidates.sort(key=lambda x: x.get("match_score", 0), reverse=True)
+            
+            return candidates[:limit]
+        except Exception as e:
+            print(f"Ranking Error: {e}")
+            return candidates[:limit]

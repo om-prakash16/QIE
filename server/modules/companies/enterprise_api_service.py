@@ -68,6 +68,24 @@ class EnterpriseApiService:
 
         return None
 
+    def list_api_keys(self, company_id: str) -> List[Dict[str, Any]]:
+        """
+        List all API keys for a specific company.
+        """
+        db = get_supabase()
+        if not db:
+            return []
+
+        resp = (
+            db.table("enterprise_api_keys")
+            .select("id, label, api_key_hash, scopes, is_active, last_used_at, created_at")
+            .eq("company_id", company_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+
+        return resp.data or []
+
     def revoke_api_key(self, key_id: str):
         """
         Deactivate an API key.

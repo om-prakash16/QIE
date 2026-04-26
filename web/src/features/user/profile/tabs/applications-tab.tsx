@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Building2 } from "lucide-react"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile } from "@/types/profile"
 
 interface ApplicationsTabProps {
     data: UserProfile

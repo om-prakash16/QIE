@@ -2,23 +2,25 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Plus, X, Check } from "lucide-react"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { Label } from "@/components/ui/label"
+import { UserProfile, Skill, ProficiencyLevel } from "@/types/profile"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
 
 interface SkillsTabProps {
     data: UserProfile
     isEditing?: boolean
-    onAddSkill?: (skill: { name: string, level: "Advanced" | "Intermediate" | "Beginner" }) => void
+    onAddSkill?: (skill: Skill) => void
     onDeleteSkill?: (name: string) => void
 }
 
 export function SkillsTab({ data, isEditing = false, onAddSkill, onDeleteSkill }: SkillsTabProps) {
-    const levels = ["Advanced", "Intermediate", "Beginner"] as const
+    const levels: ProficiencyLevel[] = ["Expert", "Advanced", "Intermediate", "Beginner"]
     const [isAdding, setIsAdding] = useState(false)
     const [newSkillName, setNewSkillName] = useState("")
-    const [newSkillLevel, setNewSkillLevel] = useState<"Advanced" | "Intermediate" | "Beginner">("Advanced")
+    const [newSkillLevel, setNewSkillLevel] = useState<ProficiencyLevel>("Advanced")
 
     const handleSaveSkill = () => {
         if (newSkillName.trim() && onAddSkill) {
@@ -29,80 +31,102 @@ export function SkillsTab({ data, isEditing = false, onAddSkill, onDeleteSkill }
     }
 
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Technical Skills</CardTitle>
-                    <CardDescription>
-                        Manage your technical expertise and proficiency levels.
+        <Card className="glass border-white/5 rounded-[2.5rem] overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            <CardHeader className="flex flex-row items-center justify-between pt-10 px-10">
+                <div className="space-y-2">
+                    <CardTitle className="text-2xl font-black uppercase italic tracking-tight">Architecture Matrix</CardTitle>
+                    <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+                        Manage your technical nodes and proficiency synthesis.
                     </CardDescription>
                 </div>
                 {isEditing && !isAdding && (
-                    <Button size="sm" onClick={() => setIsAdding(true)}>
+                    <Button size="sm" onClick={() => setIsAdding(true)} variant="premium" className="h-10 px-5 rounded-xl shadow-xl shadow-primary/20">
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Skill
+                        Add Node
                     </Button>
                 )}
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-12 px-10 pb-12 pt-6">
                 {isAdding && (
-                    <div className="flex items-center gap-2 p-4 border rounded-lg bg-muted/30 animate-in fade-in slide-in-from-top-2">
-                        <Input
-                            value={newSkillName}
-                            onChange={(e) => setNewSkillName(e.target.value)}
-                            placeholder="Skill (e.g. React)"
-                            className="h-9 w-[200px]"
-                            autoFocus
-                        />
-                        <Select
-                            value={newSkillLevel}
-                            onValueChange={(val: any) => setNewSkillLevel(val)}
-                        >
-                            <SelectTrigger className="h-9 w-[140px]">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Advanced">Advanced</SelectItem>
-                                <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                <SelectItem value="Beginner">Beginner</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Button size="sm" onClick={handleSaveSkill}>
-                            <Check className="w-4 h-4 mr-2" /> Save
-                        </Button>
-                        <Button size="icon" variant="ghost" onClick={() => setIsAdding(false)}>
-                            <X className="w-4 h-4" />
-                        </Button>
+                    <div className="flex items-center gap-4 p-6 glass border-primary/20 rounded-2xl animate-in fade-in slide-in-from-top-2">
+                        <div className="flex-1 space-y-2">
+                             <Label className="text-[9px] font-black uppercase tracking-widest text-primary/60 ml-1">Node Name</Label>
+                             <Input
+                                value={newSkillName}
+                                onChange={(e) => setNewSkillName(e.target.value)}
+                                placeholder="e.g. Rust, Solidity"
+                                className="h-12 glass border-white/10 rounded-xl focus:ring-primary/30 font-bold"
+                                autoFocus
+                            />
+                        </div>
+                        <div className="w-[180px] space-y-2">
+                            <Label className="text-[9px] font-black uppercase tracking-widest text-primary/60 ml-1">Resonance Level</Label>
+                            <Select
+                                value={newSkillLevel}
+                                onValueChange={(val: any) => setNewSkillLevel(val)}
+                            >
+                                <SelectTrigger className="h-12 glass border-white/10 rounded-xl">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent className="glass border-white/10">
+                                    <SelectItem value="Advanced">Advanced</SelectItem>
+                                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                    <SelectItem value="Beginner">Beginner</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="pt-6 flex gap-2">
+                            <Button size="sm" onClick={handleSaveSkill} className="h-12 px-6 rounded-xl">
+                                <Check className="w-4 h-4 mr-2" /> SAVE
+                            </Button>
+                            <Button size="icon" variant="ghost" onClick={() => setIsAdding(false)} className="h-12 w-12 rounded-xl hover:bg-white/5">
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
                     </div>
                 )}
 
                 {levels.map(level => {
                     const skillsInLevel = data.skills.filter((s: any) => s.level === level)
-                    // If editing, show empty levels so we can see structure? Or just list?
                     if (skillsInLevel.length === 0 && !isEditing) return null
 
+                    const levelColors = {
+                        Expert: "text-purple-400 border-purple-500/20 bg-purple-500/5",
+                        Advanced: "text-emerald-400 border-emerald-500/20 bg-emerald-500/5",
+                        Intermediate: "text-primary border-primary/20 bg-primary/5",
+                        Beginner: "text-amber-400 border-amber-500/20 bg-amber-500/5"
+                    }[level]
+
                     return (
-                        <div key={level}>
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">{level}</h3>
+                        <div key={level} className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 whitespace-nowrap">{level} SYNCHRONIZATION</h3>
+                                <div className="h-px w-full bg-white/5" />
                             </div>
-                            <div className="flex flex-wrap gap-3">
+                            <div className="flex flex-wrap gap-4">
                                 {skillsInLevel.map((skill: any) => (
                                     <div
                                         key={skill.name}
-                                        className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted border rounded-lg transition-colors cursor-default group"
+                                        className={cn(
+                                            "flex items-center gap-3 px-5 py-2.5 border rounded-2xl transition-all duration-300 cursor-default group hover:scale-105",
+                                            levelColors
+                                        )}
                                     >
-                                        <span className="text-sm font-medium">{skill.name}</span>
+                                        <span className="text-xs font-black tracking-tight">{skill.name}</span>
                                         {isEditing && onDeleteSkill && (
                                             <button
                                                 onClick={() => onDeleteSkill(skill.name)}
-                                                className="text-muted-foreground hover:text-destructive ml-1"
+                                                className="text-white/20 hover:text-rose-500 transition-colors ml-1"
                                             >
-                                                <X className="w-3 h-3" />
+                                                <X className="w-3.5 h-3.5" />
                                             </button>
                                         )}
                                     </div>
                                 ))}
+                                {skillsInLevel.length === 0 && (
+                                    <p className="text-[10px] text-white/10 italic font-black uppercase tracking-widest px-1">No data points.</p>
+                                )}
                             </div>
                         </div>
                     )

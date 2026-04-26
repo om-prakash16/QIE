@@ -1,6 +1,7 @@
 'use client';
 
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   Code2, 
   Cpu, 
@@ -22,49 +23,56 @@ const ICON_MAP: Record<string, any> = {
 export function Categories() {
   const { getVal, getJson } = useCMS();
   
-  const title = getVal("sectors", "title", "Market Sectors");
-  const subtitle = getVal("sectors", "subtitle", "Explore hiring trends across emerging tech stacks.");
+  const title = getVal("sectors", "title", "Intelligence Sectors");
+  const subtitle = getVal("sectors", "subtitle", "Explore professional resonance across emerging technical stacks.");
   const categories = getJson("sectors", "list") || [
     { name: 'Software Engineering', count: 1240, icon: 'Code2', color: 'indigo' },
-    { name: 'AI & Data Science', count: 850, icon: 'Cpu', color: 'purple' },
+    { name: 'AI & Neural Systems', count: 850, icon: 'Cpu', color: 'purple' },
     { name: 'Blockchain & Web3', count: 620, icon: 'Bitcoin', color: 'orange' },
   ];
 
   const titleParts = title.split(" ");
   return (
-    <section className="py-24 px-4 bg-muted/5">
-      <div className="container mx-auto max-w-7xl space-y-12">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-primary/10 pb-8">
+    <section className="py-32 px-4 relative overflow-hidden">
+      <div className="container mx-auto max-w-7xl space-y-16">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-8 border-b border-white/5 pb-10">
             <div className="space-y-4">
-                <h2 className="text-4xl font-black tracking-tighter uppercase italic text-primary/40">{titleParts[0]} <span className="text-foreground not-italic">{titleParts.slice(1).join(" ")}</span></h2>
-                <p className="text-muted-foreground font-medium uppercase tracking-widest text-xs">{subtitle}</p>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-primary">Intelligence Nodes</h2>
+                <h3 className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-none text-white">
+                    {titleParts[0]} <span className="text-primary not-italic">{titleParts.slice(1).join(" ")}</span>
+                </h3>
             </div>
-            <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl bg-background border border-primary/10 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                <Search className="w-3 h-3 text-primary" />
-                Live Indexing active
+            <div className="hidden md:flex items-center gap-3 px-6 py-3 rounded-2xl glass border-primary/20 text-[10px] font-black uppercase tracking-widest text-primary shadow-xl shadow-primary/5">
+                <Search className="w-4 h-4" />
+                Live Indexing Protocol Active
             </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {categories.map((cat: any, i: number) => {
                 const Icon = ICON_MAP[cat.icon] || Briefcase;
                 return (
                     <motion.div 
                         key={cat.name}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1, duration: 0.6 }}
                     >
-                        <Card className="group p-6 bg-card/20 backdrop-blur-xl border-primary/10 hover:border-primary/40 transition-all cursor-pointer hover:shadow-2xl hover:shadow-primary/10">
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                    <Icon className="w-6 h-6 text-primary" />
+                        <Card className="group p-10 glass border-white/5 hover:border-primary/40 transition-all duration-500 cursor-pointer hover:shadow-2xl hover:shadow-primary/10 rounded-[2.5rem] overflow-hidden relative">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl -z-10 rounded-full group-hover:bg-primary/10 transition-colors" />
+                            
+                            <div className="flex justify-between items-start mb-10">
+                                <div className="w-16 h-16 rounded-[1.25rem] bg-white/[0.03] border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-500 shadow-inner">
+                                    <Icon className="w-8 h-8 text-white/20 group-hover:text-primary transition-colors" />
                                 </div>
-                                <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">{cat.count && cat.count.toLocaleString()} Active Roles</span>
+                                <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-white/5 text-white/20 py-1.5 px-4 rounded-xl">
+                                    {cat.count && cat.count.toLocaleString()} ACTIVE NODES
+                                </Badge>
                             </div>
-                            <div className="space-y-1">
-                                <h3 className="text-lg font-black tracking-tighter uppercase">{cat.name}</h3>
-                                <div className="h-1 w-8 bg-primary rounded-full" />
+                            <div className="space-y-3">
+                                <h3 className="text-2xl font-black tracking-tight uppercase italic text-white group-hover:text-primary transition-colors">{cat.name}</h3>
+                                <div className="h-1 w-12 bg-primary/20 group-hover:w-20 group-hover:bg-primary transition-all duration-500 rounded-full" />
                             </div>
                         </Card>
                     </motion.div>

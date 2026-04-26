@@ -54,4 +54,16 @@ export const companyApi = {
     insights: {
         company: () => fetchWithAuth("/analytics/insights/company"),
     },
+    enterprise: {
+        listKeys: (companyId: string) => fetchWithAuth(`/company/api-keys?company_id=${companyId}`),
+        createKey: (companyId: string, label: string, scopes?: string[]) =>
+            fetchWithAuth(`/company/api-keys?company_id=${companyId}`, {
+                method: "POST",
+                body: JSON.stringify({ label, scopes }),
+            }),
+        revokeKey: (companyId: string, keyId: string) =>
+            fetchWithAuth(`/company/api-keys/${keyId}?company_id=${companyId}`, {
+                method: "DELETE",
+            }),
+    },
 };

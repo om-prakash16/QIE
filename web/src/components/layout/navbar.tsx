@@ -96,14 +96,14 @@ export function Navbar() {
                     ))}
                     {user && (
                         <Link
-                            href="/profile"
+                            href="/user/profile"
                             className={cn(
                                 "text-[10px] font-black uppercase tracking-widest transition-colors hover:text-primary relative py-2",
-                                pathname === "/profile" ? "text-primary" : "text-muted-foreground"
+                                pathname?.startsWith("/user/profile") ? "text-primary" : "text-muted-foreground"
                             )}
                         >
                             My Profile
-                            {pathname === "/profile" && (
+                            {pathname?.startsWith("/user/profile") && (
                                 <motion.div
                                     layoutId="nav-underline"
                                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
@@ -139,8 +139,8 @@ export function Navbar() {
                         </>
                     ) : (
                         <div className="flex items-center gap-4">
-                            <Link href={user.role === 'admin' ? "/admin/profile" : user.role === 'company' ? "/company/profile" : "/user/profile"} className="hidden lg:block">
-                                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest">My Profile</Button>
+                            <Link href={user.role === 'admin' ? "/admin" : user.role === 'company' ? "/company/dashboard" : "/user/dashboard"} className="hidden lg:block">
+                                <Button variant="ghost" size="sm" className="text-[10px] font-black uppercase tracking-widest">Dashboard</Button>
                             </Link>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -163,17 +163,19 @@ export function Navbar() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
                                         <DropdownMenuItem asChild>
-                                            <Link href="/user/dashboard">
+                                            <Link href={user.role === 'admin' ? "/admin" : user.role === 'company' ? "/company/dashboard" : "/user/dashboard"}>
                                                 Dashboard
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
                                             <Link href={user.role === 'admin' ? "/admin/profile" : user.role === 'company' ? "/company/profile" : "/user/profile"}>
-                                                Profile Builder
+                                                Profile
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            Settings
+                                        <DropdownMenuItem asChild>
+                                            <Link href={user.role === 'admin' ? "/admin/settings" : user.role === 'company' ? "/company/dashboard" : "/user/settings"}>
+                                                Settings
+                                            </Link>
                                         </DropdownMenuItem>
                                     </DropdownMenuGroup>
                                     <DropdownMenuSeparator />
@@ -239,8 +241,8 @@ export function Navbar() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-3 mt-4">
-                                        <Link href={user.role === 'admin' ? "/admin/profile" : user.role === 'company' ? "/company/profile" : "/user/profile"} className="w-full">
-                                            <Button className="w-full" variant="outline">My Profile</Button>
+                                        <Link href={user.role === 'admin' ? "/admin" : user.role === 'company' ? "/company/dashboard" : "/user/dashboard"} className="w-full">
+                                            <Button className="w-full" variant="outline">Dashboard</Button>
                                         </Link>
                                         <Button className="w-full" variant="destructive" onClick={logout}>Sign Out</Button>
                                     </div>

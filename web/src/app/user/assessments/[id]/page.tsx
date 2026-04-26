@@ -30,7 +30,8 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 
 export default function AssessmentRunnerPage() {
-    const { jobId } = useParams()
+    const { id } = useParams()
+    const jobId = id as string
     const router = useRouter()
     const { user } = useAuth()
     
@@ -57,9 +58,6 @@ export default function AssessmentRunnerPage() {
     // 3. Submit Results Mutation
     const submitMutation = useMutation({
         mutationFn: (data: { score: number, answers: string[] }) => {
-            // We need to find the application ID for this user/job
-            // For now we'll assume the backend can find it via jobId/userId if we update the endpoint
-            // or we fetch application first.
             return api.jobs.submitAssessment(jobId as string, data)
         },
         onSuccess: () => {
@@ -133,7 +131,7 @@ export default function AssessmentRunnerPage() {
                             <Brain className="w-10 h-10 text-primary" />
                         </div>
                         <div className="space-y-3">
-                            <h1 className="text-5xl font-black italic uppercase tracking-tighter">Skill Proof <span className="text-primary">Engagement</span></h1>
+                            <h1 className="text-5xl font-black italic uppercase tracking-tighter text-gradient leading-none">Skill Proof <span className="text-primary">Engagement</span></h1>
                             <p className="text-muted-foreground text-lg max-w-xl mx-auto">
                                 You are about to enter a high-resonance assessment for <span className="text-white font-bold">{job?.title}</span>.
                             </p>
@@ -209,14 +207,14 @@ export default function AssessmentRunnerPage() {
 
                         <div className="flex flex-col gap-4 pt-6">
                             <Button 
-                                onClick={() => router.push("/dashboard/candidate/applications")}
+                                onClick={() => router.push("/user/applications")}
                                 size="lg" 
                                 className="h-16 px-12 bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest rounded-2xl gap-3"
                             >
                                 <Zap className="w-5 h-5" /> View Career Proof
                             </Button>
                             <Button 
-                                onClick={() => router.push("/dashboard/candidate")}
+                                onClick={() => router.push("/user/dashboard")}
                                 variant="ghost" 
                                 className="text-[10px] font-black uppercase tracking-widest text-white/30"
                             >

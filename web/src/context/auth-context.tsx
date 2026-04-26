@@ -146,11 +146,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             const normalizedRole = (data.role || role).toLowerCase()
             if (normalizedRole === "admin") {
-                router.push("/admin/profile")
+                router.push("/admin")
             } else if (normalizedRole === "company") {
-                router.push("/company/profile")
+                router.push("/company/dashboard")
             } else {
-                router.push("/user/profile")
+                router.push("/user/dashboard")
             }
         } catch (err: any) {
             console.error("[auth] wallet login failed:", err)
@@ -206,11 +206,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             const normalizedRole = (data.role || role).toLowerCase()
             if (normalizedRole === "admin") {
-                router.push("/admin/profile")
+                router.push("/admin")
             } else if (normalizedRole === "company") {
-                router.push("/company/profile")
+                router.push("/company/dashboard")
             } else {
-                router.push("/user/profile")
+                router.push("/user/dashboard")
             }
         } catch (err: any) {
             console.error("[auth] demo login failed:", err)
@@ -238,11 +238,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             
             toast.success("Welcome back!")
             if (metaRole === "admin") {
-                router.push("/admin/profile")
+                router.push("/admin")
             } else if (metaRole === "company") {
-                router.push("/company/profile")
+                router.push("/company/dashboard")
             } else {
-                router.push("/user/profile")
+                router.push("/user/dashboard")
             }
         } catch (err: any) {
             console.error("[auth] login failed:", err)

@@ -71,3 +71,11 @@ class InterviewGenerationRequest(BaseModel):
     user_id: str
     job_id: str
     count: int = 10
+
+class JDMatchResult(BaseModel):
+    match_score: float = Field(description="Match percentage between 0 and 100")
+    matching_skills: List[str] = Field(description="Skills found in both resume and JD")
+    missing_skills: List[str] = Field(description="Required JD skills missing from resume")
+    experience_match: str = Field(description="Analysis of how experience aligns with JD")
+    project_match: str = Field(description="Analysis of relevant projects and their alignment")
+    industry_readiness: str = Field(description="Overall industry-level readiness assessment and recommendations")

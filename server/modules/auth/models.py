@@ -23,3 +23,8 @@ class CompanyInvite(BaseModel):
     company_id: str
     wallet_address: str
     role: str = "VIEWER"
+
+
+class ApiKeyCreate(BaseModel):
+    label: str
+    scopes: Optional[list[str]] = ["read.proof_score", "read.skills"]

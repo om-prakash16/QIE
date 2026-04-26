@@ -36,6 +36,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { api } from "@/lib/api/api-client"
+import { useAuth } from "@/context/auth-context"
 
 const formSchema = z.object({
     title: z.string().min(2, {
@@ -62,8 +63,31 @@ const formSchema = z.object({
 })
 
 export default function CreateJobPage() {
+    const { user } = useAuth()
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
+    const [isMagicLoading, setIsMagicLoading] = useState(false)
+
+    const handleMagicImport = async (text: string) => {
+        setIsMagicLoading(true);
+        const tid = toast.loading("AI is parsing your Job Description...");
+        try {
+            const parsed = await api.jobs.parseJD(text);
+            if (parsed.error) throw new Error(parsed.error);
+            
+            form.setValue("title", parsed.title || "");
+            form.setValue("description", parsed.description || "");
+            form.setValue("skills", (parsed.skills || []).join(", "));
+            form.setValue("type", parsed.job_type || "");
+            form.setValue("experience", parsed.experience_level || "");
+            
+            toast.success("Fields populated successfully!", { id: tid });
+        } catch (err: any) {
+            toast.error("Magic Import failed: " + (err.message || "Unknown error"), { id: tid });
+        } finally {
+            setIsMagicLoading(false);
+        }
+    };
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema) as any,
@@ -90,7 +114,8 @@ export default function CreateJobPage() {
                 required_skills: values.skills.split(",").map(s => s.trim()).filter(Boolean),
                 job_type: values.type,
                 experience_level: values.experience,
-                company_id: "pending" // Should be derived from recruiter profile context
+                company_id: "pending", // Backend will resolve this via created_by
+                created_by: user?.id
             }
             
             const response = await api.jobs.create(payload)
@@ -119,6 +144,33 @@ export default function CreateJobPage() {
                     <p className="text-muted-foreground">Find your next great hire.</p>
                 </div>
             </div>
+
+            {/* Magic JD Import */}
+            <Card className="bg-primary/5 border-primary/20 border-dashed">
+                <CardContent className="pt-6">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center animate-pulse">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-bold tracking-tight">Magic JD Import</h3>
+                                <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">AI-powered field extraction</p>
+                            </div>
+                        </div>
+                        <Button 
+                            type="button"
+                            onClick={() => {
+                                const raw = window.prompt("Paste your raw Job Description text here. AI will extract title, skills, and details.");
+                                if (raw) handleMagicImport(raw);
+                            }}
+                            className="bg-primary text-white hover:bg-primary/90 rounded-xl px-6 h-10 font-black tracking-widest text-[10px] gap-2"
+                        >
+                            <Brain className="w-4 h-4" /> START MAGIC IMPORT
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
 
             <Card>
                 <CardHeader>

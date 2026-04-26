@@ -7,8 +7,17 @@ from modules.notifications.service import NotificationService
 class JobService:
     def __init__(self):
         from modules.ai.services.matcher import JobMatcher
+        from modules.ai.services.resume_service import ResumeService
 
         self.matcher = JobMatcher()
+        self.ai = ResumeService()
+
+    async def parse_jd_text(self, text: str) -> Dict[str, Any]:
+        """
+        Use AI to extract structured fields from raw JD text.
+        """
+        return await self.ai.parse_job_description(text)
+
 
     async def create_job(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -17,11 +26,22 @@ class JobService:
         db = get_supabase()
         if not db:
             raise Exception("Database service unavailable")
+        
+        # Determine company_id if not provided
+        company_id = data.get("company_id")
+        if not company_id or company_id == "pending":
+            # Lookup first company owned by this user
+            user_id = data.get("created_by")
+            if user_id:
+                comp_res = db.table("companies").select("id").eq("created_by_user_id", user_id).limit(1).execute()
+                if comp_res.data:
+                    company_id = comp_res.data[0]["id"]
+        
         response = (
             db.table("jobs")
             .insert(
                 {
-                    "company_id": data.get("company_id"),
+                    "company_id": company_id,
                     "title": data.get("title"),
                     "description": data.get("description"),
                     "skills_required": data.get("required_skills", []),
@@ -34,6 +54,7 @@ class JobService:
                         for q in data.get("assessment_questions", [])
                     ],
                     "is_active": True,
+                    "created_by": data.get("created_by")
                 }
             )
             .execute()

@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Github, Play, Loader2 } from "lucide-react"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile } from "@/types/profile"
 import Link from "next/link"
 import { MOCK_GITHUB_REPOS, GithubRepo } from "@/lib/mock-api/github-data"
 import { RepoCard } from "./github/repo-card"

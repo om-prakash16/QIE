@@ -35,5 +35,18 @@ export const publicApi = {
     analytics: {
         public: () => fetchPublic("/analytics/public"),
     },
+    ai: {
+        matchByJd: (jdFile: File) => {
+            const formData = new FormData();
+            formData.append("jd", jdFile);
+            return fetch(`${API_BASE_URL}/ai/match-jd-candidates`, {
+                method: "POST",
+                body: formData,
+            }).then(res => {
+                if (!res.ok) throw new Error("JD Match Failed");
+                return res.json();
+            });
+        }
+    },
     health: () => fetchPublic("/"),
 };

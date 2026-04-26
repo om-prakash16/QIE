@@ -135,7 +135,69 @@ async def analyze_resume_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+
+async def extract_text_from_pdf(file: UploadFile) -> str:
+    content = await file.read()
+    reader = PyPDF2.PdfReader(io.BytesIO(content))
+    text = ""
+    for page in reader.pages:
+        if page.extract_text():
+            text += page.extract_text() + "\n"
+    return text
+
+@router.post("/compare-jd-cv")
+async def analyze_jd_cv_endpoint(
+    resume: UploadFile = File(...),
+    jd: UploadFile = File(...)
+):
+    """
+    Endpoint to compare a Resume against a Job Description.
+    """
+    try:
+        resume_text = await extract_text_from_pdf(resume)
+        jd_text = await extract_text_from_pdf(jd)
+        
+        from modules.ai.services.resume_service import ResumeService
+        resume_service = ResumeService()
+        
+        result = await resume_service.compare_jd_cv(jd_text=jd_text, resume_text=resume_text)
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+            
+        return {"status": "success", "match_result": result}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/match-jd-candidates")
+async def match_jd_candidates_endpoint(
+    jd: UploadFile = File(...)
+):
+    """
+    Upload a JD and get a list of best matching candidates from the network.
+    """
+    try:
+        jd_text = await extract_text_from_pdf(jd)
+        
+        from modules.ai.services.resume_service import ResumeService
+        resume_service = ResumeService()
+        
+        matches = await resume_service.match_candidates_to_jd(jd_text=jd_text)
+        
+        return {"status": "success", "matches": matches}
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/scores")
+
 async def get_proof_scores(
     user_id: Optional[str] = None, current_user=Depends(get_current_user)
 ):

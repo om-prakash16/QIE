@@ -62,7 +62,7 @@ export function NotificationDropdown({ onResetCount }: { onResetCount: () => voi
                         {mockNotifications.map((notif) => (
                             <Link 
                                 key={notif.id} 
-                                href="/dashboard/notifications" 
+                                href="/user/dashboard" 
                                 className={cn(
                                     "flex gap-3 p-4 border-b hover:bg-muted/50 transition-colors",
                                     !notif.isRead && "bg-primary/5"
@@ -97,7 +97,7 @@ export function NotificationDropdown({ onResetCount }: { onResetCount: () => voi
                 )}
             </ScrollArea>
             <div className="p-2 border-t mt-auto">
-                <Link href="/dashboard/activity">
+                <Link href="/user/dashboard">
                     <Button variant="ghost" className="w-full text-xs h-8">
                         View All Activity
                     </Button>

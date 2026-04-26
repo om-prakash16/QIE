@@ -14,87 +14,88 @@ import { LeetcodeTab } from "@/features/user/profile/tabs/leetcode-tab"
 import { ApplicationsTab } from "@/features/user/profile/tabs/applications-tab"
 import { SettingsTab } from "@/features/user/profile/tabs/settings-tab"
 import { DynamicProfileForm } from "@/components/features/profile/DynamicProfileForm"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile, Skill, Experience, Education, Project } from "@/types/profile"
+import { userApi } from "@/lib/api/user-api"
 
 import { Loader2, Edit, Save, X, Sparkles } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { supabase } from "@/lib/supabaseClient"
 import { useAuth } from "@/context/auth-context"
 import { toast } from "sonner"
 
-// Fetch user profile from Supabase
-const fetchUserProfile = async (userId: string): Promise<UserProfile> => {
-    const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle()
-
-    if (error) throw error
-
-    // If no profile exists yet (shouldn't happen with our register logic), 
-    // or if we're just getting started, return a skeleton
-    if (!data) {
-        return {
-            id: userId,
-            basic: { 
-                firstName: "New", 
-                lastName: "User", 
-                email: "", 
-                phone: "",
-                bio: "Add your bio...", 
-                location: "Remote", 
-                title: "Developer", 
-                avatar: "",
-                completion: 0,
-                experienceLevel: "Entry Level",
-                jobType: "Full-time",
-                languages: [],
-                joinDate: new Date().toLocaleDateString()
-            },
-            skills: [],
-            experience: [],
-            education: [],
-            projects: [],
-            github: { username: "", repos: [] },
-            leetcode: { username: "", totalSolved: 0, easy: 0, medium: 0, hard: 0, ranking: 0 },
-            applications: [],
-            settings: { notifications: true, visibility: "Public", theme: "system" }
-        }
+// Fetch user profile using userApi (relational data aggregation)
+const fetchUserProfile = async (): Promise<UserProfile> => {
+    const response = await userApi.profile.get()
+    
+    if (!response || !response.profile) {
+        throw new Error("Failed to load profile data")
     }
 
-    const nameParts = (data.full_name || "New User").split(" ")
+    const data = response
+    const p = data.profile
+    
+    const nameParts = (p.full_name || "New User").split(" ")
     const firstName = nameParts[0]
     const lastName = nameParts.slice(1).join(" ") || ""
 
-    // Map DB schema to Profile structure
+    // Map relational DB structure to frontend Profile structure
     return {
-        id: data.id,
+        id: p.user_id,
         basic: {
             firstName,
             lastName,
-            email: data.email || "",
-            phone: data.phone || "",
-            bio: data.bio || "Add your bio...",
-            location: data.location || "Remote",
-            title: data.role || "Developer",
-            avatar: data.avatar_url || "",
-            completion: data.completion_percent || 0,
-            experienceLevel: data.experience_level || "Junior",
-            jobType: data.job_type || "Full-time",
-            languages: data.languages || [],
-            joinDate: new Date(data.created_at).toLocaleDateString()
+            email: p.email || "",
+            phone: p.phone || "",
+            bio: p.bio || "Add your bio...",
+            location: p.location || "Remote",
+            title: p.headline || "Developer",
+            avatar: p.avatar_url || "",
+            completion: p.completion_percent || 0,
+            experienceLevel: p.experience_level || "Junior",
+            jobType: p.job_type || "Full-time",
+            languages: p.languages || [],
+            joinDate: p.created_at ? new Date(p.created_at).toLocaleDateString() : ""
         },
-        skills: data.skills || [], 
-        experience: data.experience || [],
-        education: data.education || [],
-        projects: data.projects || [],
-        github: { username: data.github_handle || "", repos: [] },
+        skills: (data.skills || []).map((s: any) => ({
+            name: s.name,
+            level: s.proficiency || "Intermediate",
+            category: s.category,
+            is_verified: s.verified
+        })),
+        experience: (data.experiences || []).map((e: any) => ({
+            id: e.id,
+            role: e.role,
+            company: e.company_name,
+            type: (e.type || "Full-time") as "Full-time" | "Part-time" | "Contract" | "Freelance",
+            startDate: e.start_date,
+            endDate: e.end_date || "Present",
+            description: e.description
+        })),
+        education: (data.education || []).map((e: any) => ({
+            id: e.id,
+            institution: e.institution,
+            degree: e.degree,
+            year: e.end_date ? new Date(e.end_date).getFullYear().toString() : "",
+            fieldOfStudy: e.field_of_study
+        })),
+        projects: (data.projects || []).map((p: any) => ({
+            id: p.id,
+            title: p.title,
+            description: p.description,
+            stack: p.stack || [],
+            link: p.project_url,
+            github: p.github_url
+        })),
+        github: { username: p.github_handle || "", repos: [] },
         leetcode: { username: "", totalSolved: 0, easy: 0, medium: 0, hard: 0, ranking: 0 },
         applications: [],
-        settings: { notifications: true, visibility: "Public", theme: "system" }
+        settings: { 
+            notifications: true, 
+            visibility: p.visibility === "private" ? "Private" : "Public", 
+            theme: "system" 
+        },
+        ai_scores: data.ai_scores
     }
 }
 
@@ -104,7 +105,7 @@ export default function ProfilePage() {
     const [isEditing, setIsEditing] = useState(false)
     const { data: userProfile, isLoading, refetch } = useQuery({
         queryKey: ["userProfile", user?.id],
-        queryFn: () => user?.id ? fetchUserProfile(user.id) : Promise.reject("No user ID"),
+        queryFn: fetchUserProfile,
         enabled: !!user?.id
     })
 
@@ -118,28 +119,54 @@ export default function ProfilePage() {
         
         setIsSaving(true)
         try {
-            const { error } = await supabase
-                .from('users')
-                .update({
+            // Map frontend structure back to relational backend format
+            const updatePayload = {
+                profile: {
                     full_name: `${profileData.basic.firstName} ${profileData.basic.lastName}`,
                     bio: profileData.basic.bio,
                     location: profileData.basic.location,
-                    avatar_url: profileData.basic.avatar,
-                    skills: profileData.skills,
-                    experience: profileData.experience,
-                    education: profileData.education,
-                    projects: profileData.projects,
-                    github_handle: profileData.github.username,
-                    role: profileData.basic.title,
-                })
-                .eq('id', user.id)
+                    headline: profileData.basic.title,
+                    experience_level: profileData.basic.experienceLevel,
+                    job_type: profileData.basic.jobType,
+                    languages: profileData.basic.languages,
+                    visibility: profileData.settings.visibility.toLowerCase()
+                },
+                skills: profileData.skills.map(s => ({
+                    name: s.name,
+                    proficiency: s.level,
+                    category: s.category
+                })),
+                experiences: profileData.experience.map(e => ({
+                    company_name: e.company,
+                    role: e.role,
+                    description: e.description,
+                    start_date: e.startDate,
+                    end_date: e.endDate === "Present" ? null : e.endDate
+                })),
+                projects: profileData.projects.map(p => ({
+                    title: p.title,
+                    description: p.description,
+                    stack: p.stack,
+                    project_url: p.link,
+                    github_url: p.github
+                })),
+                education: profileData.education.map(e => ({
+                    institution: e.institution,
+                    degree: e.degree,
+                    field_of_study: e.fieldOfStudy,
+                    end_date: e.year // Approximation
+                }))
+            }
 
-            if (error) throw error
-            toast.success("Profile saved successfully!")
+            const response = await userApi.profile.update(updatePayload)
+
+            if (response.status === "error") throw new Error(response.message)
+            
+            toast.success("Profile synchronized with network!")
             setIsEditing(false)
-            refetch() // Refresh data from server
+            refetch() 
         } catch (error: any) {
-            toast.error(`Error saving profile: ${error.message}`)
+            toast.error(`Sync failed: ${error.message}`)
         } finally {
             setIsSaving(false)
         }
@@ -163,7 +190,7 @@ export default function ProfilePage() {
     }
 
     // --- Handlers for Skills ---
-    const handleAddSkill = (newSkill: { name: string, level: "Advanced" | "Intermediate" | "Beginner" }) => {
+    const handleAddSkill = (newSkill: Skill) => {
         if (!profileData) return
         setProfileData({
             ...profileData,

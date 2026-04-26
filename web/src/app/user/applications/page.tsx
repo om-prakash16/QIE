@@ -19,8 +19,8 @@ export default function CandidateApplications() {
 
   const fetchApps = async () => {
     try {
-      const token = localStorage.getItem("sp_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/user?user_id=${user?.id}`, {
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/user?user_id=${user?.id}`, {
         headers: { "Authorization": `Bearer ${token}` }
       });
       const data = await res.json();
@@ -34,102 +34,135 @@ export default function CandidateApplications() {
 
   const getStatusColor = (status: string) => {
     switch(status.toLowerCase()) {
-        case 'applied': return 'bg-neutral-500/10 text-neutral-500 border-neutral-500/20';
-        case 'shortlisted': return 'bg-primary/10 text-primary border-primary/20';
+        case 'applied': return 'bg-white/5 text-white/50 border-white/10';
+        case 'shortlisted': return 'bg-primary/10 text-primary border-primary/20 shadow-[0_0_10px_rgba(var(--primary),0.2)]';
         case 'interview': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
-        case 'hired': return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
+        case 'hired': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
         case 'rejected': return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
         default: return 'bg-white/5 text-white border-white/10';
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-12 px-6 space-y-12">
-      <div>
-        <h1 className="text-5xl font-black font-heading tracking-tighter italic">Application Tracking</h1>
-        <p className="text-muted-foreground mt-2">Scale your career with real-time status and AI insights.</p>
+    <div className="max-w-7xl mx-auto py-20 px-4 md:px-8 space-y-16 relative">
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 blur-[150px] -z-10 rounded-full" />
+      
+      <div className="space-y-4">
+        <h1 className="text-6xl font-black font-heading tracking-tighter italic uppercase leading-none">Nexus Deployment Tracking</h1>
+        <div className="flex items-center gap-4">
+            <div className="h-px w-24 bg-primary" />
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30">Monitoring career resonance and pipeline synchronization</p>
+        </div>
       </div>
 
       {isLoading ? (
-        <div className="py-24 flex justify-center"><Loader2 className="w-12 h-12 animate-spin text-primary" /></div>
+        <div className="py-32 flex flex-col items-center justify-center gap-6">
+            <Loader2 className="w-10 h-10 animate-spin text-primary/50" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Synthesizing Application Data...</p>
+        </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-8">
             {apps.length === 0 ? (
-                <Card className="bg-white/5 border-white/10 p-12 text-center space-y-6">
-                    <div className="mx-auto w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center">
-                        <Briefcase className="w-8 h-8 text-neutral-500" />
+                <Card className="glass border-white/5 p-20 text-center space-y-8 rounded-[3rem]">
+                    <div className="mx-auto w-24 h-24 rounded-[2rem] bg-white/[0.03] border border-white/10 flex items-center justify-center shadow-inner">
+                        <Briefcase className="w-10 h-10 text-white/10" />
                     </div>
-                    <div className="space-y-2">
-                        <h3 className="text-xl font-bold italic font-heading tracking-tight">No Active Applications</h3>
-                        <p className="text-neutral-500">You haven't applied to any roles yet. Our AI is waiting to find your match.</p>
+                    <div className="space-y-3">
+                        <h3 className="text-2xl font-black italic uppercase tracking-tight">No Active Deployments</h3>
+                        <p className="text-[11px] font-black uppercase tracking-widest text-white/20 max-w-sm mx-auto leading-relaxed">
+                            Your professional matrix has not yet interfaced with the marketplace. 
+                        </p>
                     </div>
-                    <Link href="/jobs">
-                        <Button className="bg-white text-black hover:bg-neutral-200 font-black px-8">
-                            BROWSE MARKETPLACE <Search className="w-4 h-4 ml-2" />
+                    <Link href="/jobs" className="block">
+                        <Button variant="premium" className="h-14 px-10 rounded-2xl shadow-2xl shadow-primary/20 text-xs font-black uppercase tracking-[0.2em]">
+                            BROWSE MARKETPLACE <Search className="w-4 h-4 ml-3" />
                         </Button>
                     </Link>
                 </Card>
             ) : (
-                <div className="space-y-4">
-                    {apps.map(app => (
-                        <Card key={app.id} className="bg-white/5 border-white/10 backdrop-blur-xl group hover:border-primary/30 transition-all duration-300">
-                             <CardContent className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-black italic text-primary group-hover:bg-primary/10 transition-colors">
-                                        {app.jobs?.companies?.company_name?.[0] || 'C'}
-                                    </div>
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest">{app.jobs?.companies?.company_name}</p>
-                                        <h3 className="text-xl font-black italic tracking-tight">{app.jobs?.title}</h3>
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-8">
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-1">
-                                            <Zap className="w-3 h-3 fill-emerald-500 text-emerald-500" /> AI MATCH
-                                        </p>
-                                        <p className="text-lg font-black italic text-white">{app.ai_match_score}%</p>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest flex items-center gap-1">
-                                            <Clock className="w-3 h-3" /> APPLIED ON
-                                        </p>
-                                        <p className="text-lg font-black italic text-white uppercase">{new Date(app.created_at).toLocaleDateString()}</p>
+                <div className="grid gap-6">
+                    {apps.map((app, i) => (
+                        <motion.div
+                            key={app.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                        >
+                            <Card className="glass border-white/5 group hover:border-primary/30 transition-all duration-500 rounded-[2.5rem] overflow-hidden relative">
+                                <div className="absolute top-0 left-0 w-[2px] h-full bg-primary/20 group-hover:bg-primary transition-colors" />
+                                <CardContent className="p-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-10">
+                                    <div className="flex items-center gap-6">
+                                        <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center font-black italic text-2xl text-primary/50 group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-500 shadow-inner">
+                                            {app.jobs?.companies?.company_name?.[0] || 'C'}
+                                        </div>
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-black text-white/30 uppercase tracking-[0.3em]">{app.jobs?.companies?.company_name}</p>
+                                            <h3 className="text-2xl font-black italic tracking-tight text-white group-hover:text-primary transition-colors">{app.jobs?.title}</h3>
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Badge className={`px-4 py-1 uppercase tracking-widest font-black italic text-[10px] ${getStatusColor(app.status)}`}>
-                                            {app.status}
-                                        </Badge>
-                                    </div>
+                                    <div className="grid grid-cols-2 sm:flex sm:items-center gap-10 w-full lg:w-auto">
+                                        <div className="space-y-2">
+                                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] flex items-center gap-2">
+                                                <Zap className="w-3 h-3 text-emerald-500" /> RESONANCE
+                                            </p>
+                                            <p className="text-2xl font-black italic text-white flex items-baseline gap-1">
+                                                {app.ai_match_score}<span className="text-[10px] text-white/30">%</span>
+                                            </p>
+                                        </div>
 
-                                    <Link href={`/jobs/${app.job_id}`}>
-                                        <Button variant="ghost" size="icon" className="text-neutral-500 hover:text-white hover:bg-white/10">
-                                            <ArrowRight className="w-5 h-5" />
-                                        </Button>
-                                    </Link>
-                                </div>
-                             </CardContent>
-                        </Card>
+                                        <div className="space-y-2">
+                                            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] flex items-center gap-2">
+                                                <Calendar className="w-3 h-3" /> GENESIS
+                                            </p>
+                                            <p className="text-xs font-black text-white/60 uppercase tracking-widest">{new Date(app.created_at).toLocaleDateString()}</p>
+                                        </div>
+
+                                        <div className="flex items-center">
+                                            <Badge className={cn(
+                                                "px-5 py-2 uppercase tracking-[0.2em] font-black italic text-[9px] rounded-xl border",
+                                                getStatusColor(app.status)
+                                            )}>
+                                                {app.status}
+                                            </Badge>
+                                        </div>
+
+                                        <div className="flex items-center gap-3 ml-auto">
+                                            {app.jobs?.assessment_questions?.length > 0 && app.assessment_score === null && (
+                                                <Link href={`/user/assessments/${app.job_id}`}>
+                                                    <Button variant="premium" className="h-10 px-6 rounded-xl text-[9px] font-black tracking-widest animate-pulse">
+                                                        <Zap className="w-3.5 h-3.5 mr-2" /> TAKE ASSESSMENT
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                            <Link href={`/jobs/${app.job_id}`}>
+                                                <Button variant="ghost" size="icon" className="h-12 w-12 rounded-2xl bg-white/5 border border-white/5 text-white/30 hover:text-primary hover:bg-primary/10 hover:border-primary/20 transition-all">
+                                                    <ArrowRight className="w-5 h-5" />
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
                     ))}
                 </div>
             )}
         </div>
       )}
 
-      <Card className="bg-primary/5 border border-primary/20 p-8 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="space-y-1">
-              <h4 className="text-xl font-black italic tracking-tight flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-primary" /> Verified Pipeline Active
+      <Card className="glass border-primary/20 p-10 flex flex-col md:flex-row justify-between items-center gap-10 rounded-[3rem] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-primary/5 to-transparent pointer-events-none" />
+          <div className="space-y-2 relative z-10 text-center md:text-left">
+              <h4 className="text-2xl font-black italic tracking-tight flex items-center justify-center md:justify-start gap-3">
+                  <CheckCircle className="w-6 h-6 text-primary" /> Verified Pipeline Active
               </h4>
-              <p className="text-sm text-neutral-500">Your Proof Score and skill credentials are automatically synced with your applications.</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/30">Your Intelligence Profile is automatically synchronized with all active nodes.</p>
           </div>
-          <div className="flex gap-4">
+          <div className="relative z-10">
               <Link href="/user/profile">
-                  <Button variant="outline" className="border-white/10 hover:bg-white/5 font-black text-[10px] uppercase">
-                      UPDATE PROFILE
+                  <Button variant="outline" className="h-12 px-8 border-white/10 hover:bg-white/5 font-black text-[10px] uppercase tracking-widest rounded-2xl">
+                      UPDATE IDENTITY MATRIX
                   </Button>
               </Link>
           </div>

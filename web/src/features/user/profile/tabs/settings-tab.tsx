@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { UserProfile } from "@/types/profile"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 

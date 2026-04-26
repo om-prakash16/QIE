@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Pencil, Trash2, Building2 } from "lucide-react"
-import { UserProfile } from "@/lib/mock-api/user-profile"
+import { Plus, Pencil, Trash2, Building2, ArrowRight } from "lucide-react"
+import { UserProfile } from "@/types/profile"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
 
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -17,63 +19,69 @@ interface ExperienceTabProps {
 
 export function ExperienceTab({ data, isEditing, onAdd, onDelete, onUpdate }: ExperienceTabProps) {
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle>Work Experience</CardTitle>
-                    <CardDescription>Your professional career journey.</CardDescription>
+        <Card className="glass border-white/5 rounded-[2.5rem] overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+            <CardHeader className="flex flex-row items-center justify-between pt-10 px-10">
+                <div className="space-y-2">
+                    <CardTitle className="text-2xl font-black uppercase italic tracking-tight">Proof of Work</CardTitle>
+                    <CardDescription className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30">
+                        Immutable chronological ledger of professional deployments.
+                    </CardDescription>
                 </div>
                 {isEditing && (
-                    <Button size="sm" onClick={onAdd}>
+                    <Button size="sm" onClick={onAdd} variant="premium" className="h-10 px-5 rounded-xl shadow-xl shadow-primary/20">
                         <Plus className="w-4 h-4 mr-2" />
-                        Add Role
+                        Log New Role
                     </Button>
                 )}
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-10 px-10 pb-12 pt-6">
                 {data.experience.map((exp: any, index: any) => (
-                    <div key={exp.id} className={`relative flex gap-4 ${index !== data.experience.length - 1 ? "pb-6 border-b border-border/50" : ""}`}>
-                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center shrink-0 border border-border/50">
+                    <div key={exp.id} className={cn(
+                        "relative flex gap-6 group",
+                        index !== data.experience.length - 1 ? "pb-10 border-b border-white/5" : ""
+                    )}>
+                        <div className="w-16 h-16 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform duration-500">
                             {exp.logo ? (
-                                <span className="font-bold text-lg text-muted-foreground">{exp.company[0]}</span>
+                                <span className="font-black text-xl text-primary/40">{exp.company[0]}</span>
                             ) : (
-                                <Building2 className="w-6 h-6 text-muted-foreground" />
+                                <Building2 className="w-7 h-7 text-primary/30" />
                             )}
                         </div>
 
-                        <div className="flex-1 space-y-1">
+                        <div className="flex-1 space-y-4">
                             <div className="flex justify-between items-start">
                                 <div className="space-y-1 flex-1 mr-4">
                                     {isEditing ? (
-                                        <>
+                                        <div className="space-y-3">
                                             <Input
                                                 defaultValue={exp.role}
                                                 onChange={(e) => onUpdate?.(exp.id, 'role', e.target.value)}
-                                                className="font-semibold h-8"
-                                                placeholder="Role"
+                                                className="font-bold h-10 glass border-white/10 rounded-lg text-sm"
+                                                placeholder="Role Title"
                                             />
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-3">
                                                 <Input
                                                     defaultValue={exp.company}
                                                     onChange={(e) => onUpdate?.(exp.id, 'company', e.target.value)}
-                                                    className="h-8 text-sm"
+                                                    className="h-9 glass border-white/10 rounded-lg text-xs"
                                                     placeholder="Company"
                                                 />
                                                 <Input
                                                     defaultValue={exp.type}
                                                     onChange={(e) => onUpdate?.(exp.id, 'type', e.target.value)}
-                                                    className="h-8 text-sm w-32"
-                                                    placeholder="Type"
+                                                    className="h-9 glass border-white/10 rounded-lg text-xs w-32"
+                                                    placeholder="Contract Type"
                                                 />
                                             </div>
-                                        </>
+                                        </div>
                                     ) : (
                                         <>
-                                            <h3 className="font-semibold text-base">{exp.role}</h3>
-                                            <div className="flex items-center gap-2 text-sm text-foreground/80">
-                                                <span>{exp.company}</span>
-                                                <span>•</span>
-                                                <span className="text-muted-foreground">{exp.type}</span>
+                                            <h3 className="font-black text-lg text-white tracking-tight leading-none">{exp.role}</h3>
+                                            <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest pt-1">
+                                                <span className="text-primary">{exp.company}</span>
+                                                <span className="text-white/10">•</span>
+                                                <span className="text-white/30">{exp.type}</span>
                                             </div>
                                         </>
                                     )}
@@ -84,7 +92,7 @@ export function ExperienceTab({ data, isEditing, onAdd, onDelete, onUpdate }: Ex
                                             variant="ghost"
                                             size="icon"
                                             onClick={() => onDelete?.(exp.id)}
-                                            className="h-8 w-8 text-destructive hover:text-destructive"
+                                            className="h-10 w-10 text-white/20 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
@@ -93,20 +101,33 @@ export function ExperienceTab({ data, isEditing, onAdd, onDelete, onUpdate }: Ex
                             </div>
 
                             {isEditing ? (
-                                <div className="flex gap-2 mt-2">
-                                    <Input defaultValue={exp.startDate} className="h-8 text-sm w-32" placeholder="Start Date" />
-                                    <Input defaultValue={exp.endDate} className="h-8 text-sm w-32" placeholder="End Date" />
+                                <div className="flex gap-4">
+                                    <div className="space-y-1 flex-1">
+                                         <Label className="text-[9px] font-black uppercase text-white/30 ml-1">Genesis</Label>
+                                         <Input defaultValue={exp.startDate} className="h-9 glass border-white/10 rounded-lg text-xs" placeholder="YYYY" />
+                                    </div>
+                                    <div className="space-y-1 flex-1">
+                                         <Label className="text-[9px] font-black uppercase text-white/30 ml-1">Termination</Label>
+                                         <Input defaultValue={exp.endDate} className="h-9 glass border-white/10 rounded-lg text-xs" placeholder="YYYY / Present" />
+                                    </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">
-                                    {exp.startDate} - {exp.endDate}
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/20 flex items-center gap-2">
+                                    {exp.startDate} <ArrowRight className="w-2 h-2" /> {exp.endDate}
                                 </p>
                             )}
 
                             {isEditing ? (
-                                <Textarea defaultValue={exp.description} className="mt-2 text-sm" />
+                                <div className="space-y-1">
+                                     <Label className="text-[9px] font-black uppercase text-white/30 ml-1">Deployment Specs</Label>
+                                     <Textarea 
+                                        defaultValue={exp.description} 
+                                        className="min-h-[100px] glass border-white/10 rounded-xl text-sm p-4" 
+                                        onChange={(e) => onUpdate?.(exp.id, 'description', e.target.value)}
+                                    />
+                                </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground/90 mt-2 leading-relaxed">
+                                <p className="text-sm text-white/50 leading-relaxed italic font-medium">
                                     {exp.description}
                                 </p>
                             )}

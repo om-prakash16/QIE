@@ -6,6 +6,27 @@ from modules.admin.service import AdminService
 router = APIRouter()
 admin_service = AdminService()
 
+@router.post("/genesis/seed")
+async def seed_platform(admin=Depends(require_admin)):
+    """
+    Genesis Protocol: Seed the platform with initial enterprise data.
+    """
+    return await admin_service.run_seeder()
+
+@router.get("/settings")
+async def get_system_settings(admin=Depends(require_admin)):
+    """
+    Fetch platform-wide configuration settings.
+    """
+    return await admin_service.get_all_settings()
+
+@router.patch("/settings")
+async def update_system_setting(setting: Dict[str, Any], admin=Depends(require_admin)):
+    """
+    Update a specific platform-wide configuration.
+    """
+    return await admin_service.update_setting(setting)
+
 @router.get("/dashboard")
 async def get_admin_dashboard(admin=Depends(require_admin)):
     """
