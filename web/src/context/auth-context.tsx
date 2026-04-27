@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabaseClient"
 import type { Session } from "@supabase/supabase-js"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
+import bs58 from "bs58"
 
 type UserRole = "user" | "company" | "admin"
 
@@ -16,6 +17,7 @@ interface User {
     email: string
     role: UserRole
     wallet_address: string
+    user_code?: string
     profile_data: any
     dynamic_profile_data?: any
 }
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const { data: profile } = await supabase
                 .from("users")
-                .select("role, full_name, wallet_address, profile_data, dynamic_profile_data")
+                .select("role, full_name, wallet_address, user_code, profile_data, dynamic_profile_data")
                 .eq("id", session.user.id)
                 .single()
 
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 email: session.user.email || "",
                 role,
                 wallet_address: profile?.wallet_address || "",
+                user_code: profile?.user_code || "",
                 profile_data: profile?.profile_data || {},
                 dynamic_profile_data: profile?.dynamic_profile_data || {},
             })
@@ -110,10 +113,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
             const address = publicKey.toBase58()
             const message = `Sign in to Best Hiring Tool\n\nWallet: ${address}\nTime: ${Date.now()}`
-            const signature = await signMessage(new TextEncoder().encode(message))
-            const sigHex = Array.from(signature)
-                .map((b) => b.toString(16).padStart(2, "0"))
-                .join("")
+            const encodedMessage = new TextEncoder().encode(message)
+            const signatureBytes = await signMessage(encodedMessage)
+
+            // Encode signature as base58 — matches what the backend expects
+            const signatureB58 = bs58.encode(signatureBytes)
 
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wallet-login`, {
                 method: "POST",
@@ -121,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 body: JSON.stringify({
                     wallet_address: address,
                     message,
-                    signature: sigHex,
+                    signature: signatureB58,
                     requested_role: role,
                 }),
             })
@@ -130,15 +134,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
             localStorage.setItem("auth_token", data.access_token)
-            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax${isLocalhost ? "" : "; Secure"}`
             setToken(data.access_token)
             
+            // Use the real user data from the response instead of hardcoded values
             setUser({
-                id: "wallet-user",
-                name: `${address.slice(0, 4)}...${address.slice(-4)}`,
+                id: data.user_id,
+                name: data.name || `${address.slice(0, 4)}...${address.slice(-4)}`,
                 email: "",
                 role: data.role as UserRole,
-                wallet_address: address,
+                wallet_address: data.wallet_address || address,
+                user_code: data.user_code || "",
                 profile_data: {},
             })
 
@@ -190,15 +197,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (!res.ok) throw new Error(data.detail || "Authentication failed")
 
             localStorage.setItem("auth_token", data.access_token)
-            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400`
+            const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+            document.cookie = `auth_token=${data.access_token}; path=/; max-age=86400; SameSite=Lax${isLocalhost ? "" : "; Secure"}`
             setToken(data.access_token)
             
+            // Use real user data from response
             setUser({
-                id: "demo-user",
-                name: `Demo User (${mockWallet.slice(4)})`,
+                id: data.user_id,
+                name: data.name || `Demo User (${mockWallet.slice(4)})`,
                 email: "",
                 role: data.role as UserRole,
-                wallet_address: mockWallet,
+                wallet_address: data.wallet_address || mockWallet,
+                user_code: data.user_code || "",
                 profile_data: {},
             })
 
@@ -255,6 +265,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const logout = async () => {
         localStorage.removeItem("auth_token")
+        document.cookie = "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax"
         setToken(null)
         setUser(null)
         await supabase.auth.signOut()

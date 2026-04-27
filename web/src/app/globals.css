@@ -99,8 +99,8 @@
   --primary: 221.2 83.2% 53.3%;
   --primary-foreground: 210 40% 98%;
 
-  --secondary: 240 4.8% 95.9%;
-  --secondary-foreground: 240 5.9% 10%;
+  --secondary: 262.1 83.3% 57.8%;
+  --secondary-foreground: 210 40% 98%;
 
   --muted: 240 4.8% 95.9%;
   --muted-foreground: 240 3.8% 46.1%;
@@ -117,9 +117,9 @@
 
   --radius: 1rem; /* More modern rounded corners */
   
-  --glass-background: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --gradient-to: 260 80% 55%; /* Vibrant purple for light mode gradients */
+  --glass-background: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --gradient-to: 221.2 83.2% 53.3%; 
 }
 
 .dark {

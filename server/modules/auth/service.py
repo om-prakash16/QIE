@@ -1,5 +1,7 @@
 import os
+import re
 import jwt
+import logging
 from datetime import datetime, timedelta
 from nacl.signing import VerifyKey
 from nacl.exceptions import BadSignatureError
@@ -8,35 +10,92 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from core.supabase import get_supabase
 from typing import List, Optional
 
+logger = logging.getLogger(__name__)
+
 SECRET_KEY = os.getenv("JWT_SECRET", "supersecret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
+REPLAY_WINDOW_SECONDS = 300  # 5 minutes
+
+if SECRET_KEY == "supersecret":
+    logger.error(
+        "CRITICAL SECURITY WARNING: JWT_SECRET is using the default value 'supersecret'. "
+        "THIS IS A MAJOR VULNERABILITY IN PRODUCTION. Please set a strong JWT_SECRET in your .env!"
+    )
 
 security = HTTPBearer()
 
 
 import base58
-from functools import lru_cache
+
+
+def _decode_signature(signature: str) -> bytes:
+    """
+    Auto-detect and decode a signature from either hex or base58 format.
+    Phantom wallets produce raw bytes that the frontend may encode as either.
+    """
+    # Check if it looks like a hex string (even length, only hex chars)
+    if all(c in "0123456789abcdefABCDEF" for c in signature) and len(signature) % 2 == 0:
+        try:
+            return bytes.fromhex(signature)
+        except ValueError:
+            pass
+
+    # Fall back to base58
+    try:
+        return base58.b58decode(signature)
+    except Exception:
+        pass
+
+    raise ValueError(f"Cannot decode signature: not valid hex or base58")
+
+
+def _extract_timestamp_from_message(message: str) -> Optional[int]:
+    """
+    Extract the Unix timestamp from the signed message.
+    Expected format includes 'Time: <unix_ms>' somewhere in the message.
+    """
+    match = re.search(r"Time:\s*(\d+)", message)
+    if match:
+        return int(match.group(1))
+    return None
+
 
 async def verify_solana_signature(wallet: str, message: str, signature: str) -> bool:
     """
     Verifies a Solana Ed25519 signature.
-    Wallet and Signature are expected to be base58 encoded strings.
+    - Accepts both hex and base58 encoded signatures.
+    - Validates message timestamp to prevent replay attacks.
+    - Allows DEV_ mock wallets for demo mode.
     """
+    # Allow demo/dev wallets through
     if wallet.startswith("DEV_") and signature == "MOCK_DEMO_SIGNATURE":
         return True
 
+    # Replay attack prevention: check timestamp freshness
+    ts = _extract_timestamp_from_message(message)
+    if ts is not None:
+        # Timestamp is in milliseconds from frontend
+        age_seconds = abs((datetime.utcnow().timestamp() * 1000 - ts) / 1000)
+        if age_seconds > REPLAY_WINDOW_SECONDS:
+            logger.warning(
+                f"Replay attack blocked: message is {age_seconds:.0f}s old "
+                f"(max {REPLAY_WINDOW_SECONDS}s) for wallet {wallet[:8]}..."
+            )
+            return False
+
     try:
-        # Solana wallets and signatures are base58, not hex
         pubkey_bytes = base58.b58decode(wallet)
-        sig_bytes = base58.b58decode(signature)
-        
+        sig_bytes = _decode_signature(signature)
+
         verify_key = VerifyKey(pubkey_bytes)
         verify_key.verify(message.encode(), sig_bytes)
         return True
+    except BadSignatureError:
+        logger.warning(f"Invalid signature for wallet {wallet[:8]}...")
+        return False
     except Exception as e:
-        # Log error for internal monitoring
-        print(f"Signature verification failed: {e}")
+        logger.error(f"Signature verification error for {wallet[:8]}...: {e}")
         return False
 
 

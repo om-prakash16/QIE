@@ -128,7 +128,7 @@ export default function VerifyPage() {
     }
 
     return (
-        <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col items-center relative overflow-hidden bg-background text-white">
+        <div className="min-h-screen pt-32 pb-20 px-6 flex flex-col items-center relative overflow-hidden bg-background text-foreground">
             <div className="absolute top-[10%] -left-[10%] w-[60%] h-[60%] bg-primary/10 blur-[150px] rounded-full pointer-events-none opacity-40 animate-pulse" />
             <div className="absolute bottom-[10%] right-[10%] w-[50%] h-[50%] bg-secondary/10 blur-[180px] rounded-full pointer-events-none opacity-30" />
 
@@ -160,7 +160,7 @@ export default function VerifyPage() {
                     
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="flex items-center gap-3 mb-6">
-                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-black text-xs">01</div>
+                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary-foreground bg-primary font-black text-xs">01</div>
                             <h3 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Your Resume</h3>
                         </div>
 
@@ -170,8 +170,8 @@ export default function VerifyPage() {
                                     <div className="p-4 rounded-2xl bg-primary/10 group-hover/dropzone:scale-110 transition-transform duration-500">
                                         <UploadCloud className="w-10 h-10 text-primary" />
                                     </div>
-                                    <h4 className="text-base font-black uppercase tracking-tight mt-6 mb-2">Drop CV Here</h4>
-                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">PDF Format Only</p>
+                                    <h4 className="text-base font-black uppercase tracking-tight mt-6 mb-2 text-foreground">Drop CV Here</h4>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">PDF Format Only</p>
                                     <input 
                                         type="file" 
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30" 
@@ -233,19 +233,19 @@ export default function VerifyPage() {
                     <div className="relative z-10 flex flex-col h-full">
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary font-black text-xs">02</div>
+                                <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center text-secondary-foreground bg-secondary font-black text-xs">02</div>
                                 <h3 className="text-sm font-black uppercase tracking-[0.2em] text-foreground">Compare JD</h3>
                             </div>
                             <div className="flex bg-white/5 p-1 rounded-lg border border-white/10">
                                 <button 
                                     onClick={() => setJdInputMode("file")}
-                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-md transition-all ${jdInputMode === "file" ? "bg-secondary text-white shadow-lg" : "text-muted-foreground hover:text-white"}`}
+                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-md transition-all ${jdInputMode === "file" ? "bg-secondary text-secondary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
                                 >
                                     File
                                 </button>
                                 <button 
                                     onClick={() => setJdInputMode("text")}
-                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-md transition-all ${jdInputMode === "text" ? "bg-secondary text-white shadow-lg" : "text-muted-foreground hover:text-white"}`}
+                                    className={`px-3 py-1.5 text-[9px] font-black uppercase tracking-tighter rounded-md transition-all ${jdInputMode === "text" ? "bg-secondary text-secondary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
                                 >
                                     Text
                                 </button>
@@ -290,7 +290,7 @@ export default function VerifyPage() {
                             ) : (
                                 <div className="flex-1 flex flex-col">
                                     <textarea 
-                                        className="w-full flex-1 bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-medium focus:ring-1 focus:ring-secondary/50 outline-none resize-none custom-scrollbar text-foreground placeholder:text-muted-foreground/30"
+                                        className="w-full flex-1 bg-white/5 border border-white/10 rounded-2xl p-5 text-sm font-medium focus:ring-1 focus:ring-secondary/50 outline-none resize-none custom-scrollbar text-foreground placeholder:text-muted-foreground"
                                         placeholder="Paste the Job Description text here to compare it against your resume..."
                                         value={jdText}
                                         onChange={(e) => {

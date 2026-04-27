@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { decodeJwt } from 'jose'
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -103,10 +104,13 @@ export async function updateSession(request: NextRequest) {
   const customToken = request.cookies.get('auth_token')?.value
   if (customToken) {
     try {
-      const { decodeJwt } = await import('jose')
-      const payload = decodeJwt(customToken)
+      // Note: We use decodeJwt (no verification) because the secret is primarily on the backend.
+      // Verification should be done in the API. Middleware here is for UX redirection.
+      const payload = decodeJwt(customToken) as any
       if (payload && payload.roles && Array.isArray(payload.roles)) {
          role = payload.roles[0]
+      } else if (payload && payload.role) {
+         role = payload.role
       }
     } catch (e) {
       console.error("Middleware JWT Decode Error:", e)
@@ -148,7 +152,7 @@ export async function updateSession(request: NextRequest) {
   // ─── AUTHENTICATION GUARD ─────────────────────────────────────────
   // Protected routes require a session
   if (!role && !user && (isAdminRoute || isCompanyRoute || isUserRoute)) {
-    const redirectUrl = new URL('/auth/login', request.url)
+    const redirectUrl = new URL('/login', request.url)
     redirectUrl.searchParams.set('redirectedFrom', path)
     return NextResponse.redirect(redirectUrl)
   }
