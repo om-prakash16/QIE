@@ -13,6 +13,15 @@ SECRET_KEY = os.getenv("JWT_SECRET", "supersecret")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 1440  # 24 hours
 
+# Role Hierarchy for RBAC
+ROLE_HIERARCHY = {
+    "SUPER_ADMIN": 100,
+    "ADMIN": 80,
+    "COMPANY_OWNER": 60,
+    "RECRUITER": 40,
+    "USER": 10
+}
+
 security = HTTPBearer()
 
 
@@ -125,3 +134,25 @@ def require_permission(permission: str):
         return user
 
     return permission_checker
+
+
+def require_role(min_role: str):
+    """
+    Dependency to enforce a minimum role hierarchy (RBAC).
+    Example: require_role("COMPANY_OWNER") will allow COMPANY_OWNER, ADMIN, SUPER_ADMIN
+    """
+    async def role_checker(user=Depends(get_current_user)):
+        user_roles = user.get("roles", ["USER"])
+        
+        # User has multiple roles potentially; get their highest hierarchy level
+        user_level = max([ROLE_HIERARCHY.get(r.upper(), 0) for r in user_roles], default=0)
+        required_level = ROLE_HIERARCHY.get(min_role.upper(), 100)
+
+        if user_level < required_level:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access denied. Required role level: {min_role}",
+            )
+        return user
+
+    return role_checker
