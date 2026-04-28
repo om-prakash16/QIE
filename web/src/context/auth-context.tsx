@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Encode signature as base58 — matches what the backend expects
             const signatureB58 = bs58.encode(signatureBytes)
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wallet-login`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -182,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const message = `Sign in to Best Hiring Tool (DEMO MODE)\n\nRole: ${role}\nWallet: ${mockWallet}\nTime: ${Date.now()}`
             
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/wallet-login`, {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

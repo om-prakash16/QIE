@@ -26,7 +26,7 @@ export default function JobDetails() {
 
   const fetchJob = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/details/${id}`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/jobs/${id}`);
       const data = await res.json();
       setJob(data);
     } catch (err) {
@@ -44,7 +44,7 @@ export default function JobDetails() {
     setIsApplying(true);
     try {
       const token = localStorage.getItem("auth_token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/apply`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/applications/${id}/apply`, {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",

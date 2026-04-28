@@ -31,8 +31,12 @@ class UserService:
             "ai_scores": data["ai_scores"]
         }
 
-    async def update_user_profile(self, user_id: str, data: Dict[str, Any]):
-        return self.repository.update_profile(user_id, data)
+    async def update_profile(self, user_id: str, data: Dict[str, Any]):
+        # Sanitize data to prevent role escalation or identity theft
+        protected_fields = {"roles", "role", "id", "sub", "wallet_address"}
+        sanitized_data = {k: v for k, v in data.items() if k not in protected_fields}
+        
+        return self.repository.update(user_id, sanitized_data)
 
     async def get_public_portfolio(self, user_code: str) -> Optional[Dict[str, Any]]:
         user = self.repository.get_by_user_code(user_code)

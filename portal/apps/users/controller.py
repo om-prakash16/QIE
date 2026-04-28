@@ -18,4 +18,4 @@ class UserController:
         return portfolio
 
     async def update_profile(self, user_id: str, data: dict):
-        return await self.service.update_user_profile(user_id, data)
+        return await self.service.update_profile(user_id, data)
