@@ -6,9 +6,9 @@ from portal.core.supabase import get_supabase
 matching_controller = MatchingController()
 notification_service = NotificationService()
 
-async def scout_candidates_for_job(job_id: str, company_id: str):
+async def scout_candidates_for_job(ctx: dict, job_id: str, company_id: str):
     """
-    Autonomous task to find and suggest candidates for a new job.
+    Autonomous task to find top candidates for a new job and notify the owner.
     """
     print(f"Autonomous Scouting Agent: Starting search for Job {job_id}")
     
