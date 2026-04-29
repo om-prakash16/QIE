@@ -21,6 +21,7 @@ from modules.admin.api.router import router as admin_router
 from modules.cms.router import router as cms_router
 from modules.career.router import router as career_router
 from modules.users.api.identity_router import router as identity_router
+from modules.users.api.settings_router import router as settings_router
 from modules.chat.router import router as chat_router
 from modules.enterprise.router import router as enterprise_router
 from modules.skill_graph.router import router as skill_graph_router
@@ -116,6 +117,9 @@ app.include_router(
 )
 app.include_router(
     competitions_router, prefix="/api/v1/competitions", tags=["Competitions"]
+)
+app.include_router(
+    settings_router, prefix="/api/v1/profile/settings", tags=["User Settings"]
 )
 
 

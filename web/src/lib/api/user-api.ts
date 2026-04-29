@@ -21,6 +21,14 @@ export const userApi = {
                 headers: { "Content-Type": "multipart/form-data" },
             }),
     },
+    settings: {
+        get: () => fetchWithAuth("/profile/settings"),
+        update: (data: any) =>
+            fetchWithAuth("/profile/settings/update", {
+                method: "PATCH",
+                body: JSON.stringify(data),
+            }),
+    },
     skills: {
         get: (userId?: string) =>
             fetchWithAuth(`/profile/skills${userId ? `?user_id=${userId}` : ""}`),

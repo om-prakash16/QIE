@@ -63,7 +63,21 @@ class JobService:
         if not response.data:
             raise Exception("Failed to create job")
 
-        return response.data[0]
+        job = response.data[0]
+
+        # Emit JOB_POSTED event for alert subscriptions
+        try:
+            from core.events import bus
+            await bus.emit("JOB_POSTED", {
+                "job_id": job["id"],
+                "title": job["title"],
+                "company_id": job["company_id"],
+                "skills_required": job["skills_required"]
+            })
+        except Exception as e:
+            print(f"[ERROR] Failed to emit JOB_POSTED event: {e}")
+
+        return job
 
     async def get_jobs_with_scores(self, user_id: str) -> List[Dict[str, Any]]:
         """

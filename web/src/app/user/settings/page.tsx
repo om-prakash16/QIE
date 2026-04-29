@@ -1,35 +1,69 @@
 "use client"
 
-import { useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/context/auth-context"
-import { supabase } from "@/lib/supabaseClient"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { userApi } from "@/lib/api/user-api"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTheme } from "next-themes"
-import { Loader2, Shield, Bell, Eye, Palette, Key, Trash2, Lock, Smartphone, Globe } from "lucide-react"
+import { Loader2, Shield, Bell, Eye, Palette, Lock, Smartphone, Trash2 } from "lucide-react"
 import { toast } from "sonner"
-import { useEffect } from "react"
 
 export default function UserSettingsPage() {
     const { user, logout } = useAuth()
     const { theme, setTheme } = useTheme()
     const [mounted, setMounted] = useState(false)
+    const queryClient = useQueryClient()
 
     useEffect(() => { setMounted(true) }, [])
 
-    if (!user) {
+    // 1. Fetch User Settings
+    const { data: settings, isLoading } = useQuery({
+        queryKey: ["user-settings"],
+        queryFn: () => userApi.settings.get(),
+        enabled: !!user
+    })
+
+    // 2. Update Mutation
+    const updateMutation = useMutation({
+        mutationFn: (newData: any) => userApi.settings.update(newData),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["user-settings"] })
+            toast.success("Security protocols synchronized.")
+        },
+        onError: () => {
+            toast.error("Handshake failed. Protocol mismatch.")
+        }
+    })
+
+    const handlePrefChange = (prefKey: string, value: boolean) => {
+        const currentPrefs = settings?.notification_prefs || {}
+        updateMutation.mutate({
+            notification_prefs: {
+                ...currentPrefs,
+                [prefKey]: value
+            }
+        })
+    }
+
+    const handleVisibilityChange = (value: string) => {
+        updateMutation.mutate({ profile_visibility: value })
+    }
+
+    if (!user || isLoading) {
         return (
             <div className="flex h-[60vh] items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         )
     }
+
+    const notification_prefs = settings?.notification_prefs || {}
 
     return (
         <div className="max-w-4xl mx-auto py-12 px-4 md:px-8 space-y-16 relative">
@@ -60,24 +94,47 @@ export default function UserSettingsPage() {
                 <CardContent className="p-10 space-y-8">
                     <div className="flex items-center justify-between">
                         <div className="space-y-1.5">
-                            <Label className="text-sm font-black uppercase tracking-wide text-white">Email Notifications</Label>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Receive alerts about new job matches and applications</p>
+                            <Label className="text-sm font-black uppercase tracking-wide text-white">Application Updates</Label>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Alerts for view, interview, and feedback status.</p>
                         </div>
-                        <Switch defaultChecked className="data-[state=checked]:bg-primary" />
+                        <Switch 
+                            checked={!!notification_prefs.application_updates} 
+                            onCheckedChange={(v) => handlePrefChange('application_updates', v)}
+                            className="data-[state=checked]:bg-primary" 
+                        />
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="space-y-1.5">
-                            <Label className="text-sm font-black uppercase tracking-wide text-white">Push Notifications</Label>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Real-time alerts in your browser</p>
+                            <Label className="text-sm font-black uppercase tracking-wide text-white">AI Job Recommendations</Label>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Proactive alerts for roles with high skill resonance.</p>
                         </div>
-                        <Switch className="data-[state=checked]:bg-primary" />
+                        <Switch 
+                            checked={!!notification_prefs.ai_recommendations} 
+                            onCheckedChange={(v) => handlePrefChange('ai_recommendations', v)}
+                            className="data-[state=checked]:bg-primary" 
+                        />
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="space-y-1.5">
-                            <Label className="text-sm font-black uppercase tracking-wide text-white">Marketing Emails</Label>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Product updates and career insights</p>
+                            <Label className="text-sm font-black uppercase tracking-wide text-white">Skill Verification</Label>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Results from automated GitHub audits and quizzes.</p>
                         </div>
-                        <Switch className="data-[state=checked]:bg-primary" />
+                        <Switch 
+                            checked={!!notification_prefs.skill_verification} 
+                            onCheckedChange={(v) => handlePrefChange('skill_verification', v)}
+                            className="data-[state=checked]:bg-primary" 
+                        />
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-1.5">
+                            <Label className="text-sm font-black uppercase tracking-wide text-white">Interview Requests</Label>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Direct scheduling invites from verified recruiters.</p>
+                        </div>
+                        <Switch 
+                            checked={!!notification_prefs.interview_requests} 
+                            onCheckedChange={(v) => handlePrefChange('interview_requests', v)}
+                            className="data-[state=checked]:bg-primary" 
+                        />
                     </div>
                 </CardContent>
             </Card>
@@ -101,7 +158,7 @@ export default function UserSettingsPage() {
                             <Label className="text-sm font-black uppercase tracking-wide text-white">Profile Visibility</Label>
                             <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Control the exposure of your profile to recruiters</p>
                         </div>
-                        <Select defaultValue="public">
+                        <Select value={settings?.profile_visibility || 'public'} onValueChange={handleVisibilityChange}>
                             <SelectTrigger className="w-full md:w-[240px] h-12 glass border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest">
                                 <SelectValue />
                             </SelectTrigger>
@@ -111,13 +168,6 @@ export default function UserSettingsPage() {
                                 <SelectItem value="private" className="text-xs font-bold uppercase tracking-widest">Private — Hidden</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="flex items-center justify-between">
-                        <div className="space-y-1.5">
-                            <Label className="text-sm font-black uppercase tracking-wide text-white">Show Profile to Search Engines</Label>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Allow indexing by Google, Bing, etc.</p>
-                        </div>
-                        <Switch defaultChecked className="data-[state=checked]:bg-emerald-500" />
                     </div>
                 </CardContent>
             </Card>
@@ -173,24 +223,12 @@ export default function UserSettingsPage() {
                         <div className="flex items-center gap-4">
                             <Lock className="w-5 h-5 text-white/20" />
                             <div className="space-y-1">
-                                <p className="text-sm font-black uppercase tracking-wide text-white">Password</p>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Last changed 30 days ago</p>
+                                <p className="text-sm font-black uppercase tracking-wide text-white">Wallet Connection</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Authenticated via Solana Protocol</p>
                             </div>
                         </div>
-                        <Button variant="outline" size="sm" className="glass border-white/10 text-[10px] font-black uppercase tracking-widest rounded-xl h-10 px-6">
-                            Change
-                        </Button>
-                    </div>
-                    <div className="flex items-center justify-between p-6 glass rounded-2xl border-white/5">
-                        <div className="flex items-center gap-4">
-                            <Smartphone className="w-5 h-5 text-white/20" />
-                            <div className="space-y-1">
-                                <p className="text-sm font-black uppercase tracking-wide text-white">Two-Factor Authentication</p>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Add an extra layer of security</p>
-                            </div>
-                        </div>
-                        <Badge variant="outline" className="border-amber-500/20 text-amber-400 bg-amber-500/5 text-[9px] font-black uppercase tracking-widest">
-                            Not Enabled
+                        <Badge variant="outline" className="border-emerald-500/20 text-emerald-400 bg-emerald-500/5 text-[9px] font-black uppercase tracking-widest">
+                            Secure
                         </Badge>
                     </div>
                 </CardContent>
@@ -217,15 +255,6 @@ export default function UserSettingsPage() {
                         </div>
                         <Button variant="outline" className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-widest h-12 px-8 rounded-xl" onClick={logout}>
                             Sign Out Everywhere
-                        </Button>
-                    </div>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 glass rounded-2xl border-rose-500/10">
-                        <div className="space-y-1.5">
-                            <p className="text-sm font-black uppercase tracking-wide text-white">Delete Account</p>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-white/20">Permanently delete your account and all data</p>
-                        </div>
-                        <Button variant="outline" className="border-rose-500/20 text-rose-400 hover:bg-rose-500/10 text-[10px] font-black uppercase tracking-widest h-12 px-8 rounded-xl">
-                            Delete Account
                         </Button>
                     </div>
                 </CardContent>
