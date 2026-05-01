@@ -1,100 +1,64 @@
-from fastapi import APIRouter, HTTPException, Depends, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-from core.supabase import get_supabase
-from modules.auth.core.service import get_current_user
-from modules.ai.services.fraud_service import AIFraudService
+
+from core.response import success_response
+from core.dependencies import get_db, get_validated_wallet
+from modules.ai.services.fraud_service import fraud_service
 
 router = APIRouter()
-fraud_service = AIFraudService()
 
-
-class TelemetryPayload(BaseModel):
+class TelemetrySubmission(BaseModel):
     assessment_id: str
     events: List[Dict[str, Any]]
 
-
-# In-memory store for Hackathon dynamic simulation (since we don't have a trust_scores table yet)
-_in_memory_fraud_logs = {}
-
-
 @router.post("/telemetry")
-async def ingest_fraud_telemetry(
-    payload: TelemetryPayload, current_user=Depends(get_current_user)
+async def ingest_telemetry(
+    data: TelemetrySubmission,
+    wallet: str = Depends(get_validated_wallet)
 ):
     """
-    Ingest raw telemetry events from the candidate's browser during an assessment.
-    Updates the candidate's active Trust Score based on anomalies.
+    Ingest real-time browser telemetry during an assessment.
+    Runs forensic AI analysis and updates the trust score in the database.
     """
-    user_id = current_user.get("sub") or current_user.get("id")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    report = await fraud_service.process_telemetry(
+        wallet=wallet,
+        assessment_id=data.assessment_id,
+        telemetry_events=data.events
+    )
+    return success_response(data=report)
 
-    score, audit_log = fraud_service.analyze_telemetry(payload.events)
-
-    # Save dynamically to memory for demo purposes
-    if user_id not in _in_memory_fraud_logs:
-        _in_memory_fraud_logs[user_id] = {"trust_score": 100, "audit_log": []}
-
-    # Apply deductions incrementally
-    deduction = 100 - score
-    current_score = _in_memory_fraud_logs[user_id]["trust_score"]
-
-    _in_memory_fraud_logs[user_id]["trust_score"] = max(0, current_score - deduction)
-    if audit_log:
-        _in_memory_fraud_logs[user_id]["audit_log"].extend(audit_log)
-
-    return {"status": "success", "message": "Telemetry processed."}
-
-
-@router.get("/report")
-async def get_fraud_report(
-    wallet_address: Optional[str] = Query(None, description="Candidate wallet"),
-    current_user=Depends(get_current_user),
+@router.get("/status/{assessment_id}")
+async def get_fraud_status(
+    assessment_id: str,
+    wallet: str = Depends(get_validated_wallet)
 ):
     """
-    Called by the Recruiter Dashboard to fetch the candidate's Shield Status and Audit Log.
+    Get the fraud analysis report for a specific assessment.
     """
-    db = get_supabase()
+    report = await fraud_service.get_assessment_trust_report(assessment_id)
+    if not report:
+        # If not found, return a default clean state
+        return success_response(data={
+            "assessment_id": assessment_id,
+            "trust_score": 100,
+            "status": "No data",
+            "shield": "Gray"
+        })
+    
+    return success_response(data=report)
 
-    # Resolve the internal UUID based on the provided wallet
-    user_id = None
-    if wallet_address and db:
-        resp = (
-            db.table("users")
-            .select("id")
-            .eq("wallet_address", wallet_address)
-            .single()
-            .execute()
-        )
-        if resp.data:
-            user_id = resp.data.get("id")
-
-    # Default to current user if no wallet provided
-    user_id = user_id or current_user.get("sub") or current_user.get("id")
-
-    # Fetch from our dynamic simulation
-    report = _in_memory_fraud_logs.get(user_id, {"trust_score": 100, "audit_log": []})
-
-    score = report["trust_score"]
-    shield_color = fraud_service.determine_shield_status(score)
-    status_text = fraud_service.determine_trust_status(score)
-
-    # For a perfect score, return a positive log
-    if score == 100 and not report["audit_log"]:
-        report["audit_log"].append(
-            {
-                "timestamp": "N/A",
-                "severity": "info",
-                "message": "Clean telemetry. Verified authentic work.",
-                "penalty": 0,
-            }
-        )
-
-    return {
-        "wallet_address": wallet_address,
-        "trust_score": score,
-        "shield": shield_color,
-        "status": status_text,
-        "audit_log": report["audit_log"],
-    }
+@router.get("/candidate-trust")
+async def get_candidate_trust(
+    wallet: str = Depends(get_validated_wallet)
+):
+    """
+    Get the aggregate trust score for the authenticated candidate.
+    """
+    db = await get_db()
+    res = db.table("users").select("trust_score").eq("wallet_address", wallet).single().execute()
+    
+    return success_response(data={
+        "wallet_address": wallet,
+        "trust_score": res.data.get("trust_score", 100) if res.data else 100
+    })

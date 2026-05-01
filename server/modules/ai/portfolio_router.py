@@ -1,122 +1,81 @@
-from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
-from typing import Dict, Any, Optional
-from core.supabase import get_supabase
-from modules.auth.core.service import get_current_user
+import os
+import logging
+from fastapi import APIRouter, Depends
+from typing import Optional
+from core.response import success_response
+from core.dependencies import get_db, get_validated_wallet
+import google.generativeai as genai
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-
-class PortfolioBuildRequest(BaseModel):
-    wallet_address: Optional[str] = None
-
-
 @router.post("/build")
 async def extract_and_build_portfolio(
-    req: PortfolioBuildRequest, current_user=Depends(get_current_user)
+    wallet: str = Depends(get_validated_wallet)
 ):
     """
-    AI Portfolio Builder Endpoint
-    Ingests candidate profile, proof score, and generates a structured marketing portfolio.
+    AI Portfolio Builder Endpoint.
+    Generates a structured marketing portfolio based on verified profile and proof-score.
     """
-    wallet = req.wallet_address or current_user.get("wallet_address")
-    if not wallet:
-        raise HTTPException(status_code=400, detail="Wallet address required")
-
-    db = get_supabase()
-    if not db:
-        return _mock_portfolio_generation(wallet)
+    db = await get_db()
 
     # 1. Fetch Candidate Data
-    user_resp = (
-        db.table("users").select("*").eq("wallet_address", wallet).single().execute()
-    )
+    user_resp = db.table("users").select("*").eq("wallet_address", wallet).single().execute()
     if not user_resp.data:
-        # Fallback to mock if user not found for hackathon purposes
-        return _mock_portfolio_generation(wallet)
+        return success_response(data={"error": "User profile not found"}, status_code=404)
 
     user_data = user_resp.data
+    full_name = user_data.get("full_name", "Verified Talent")
+    proof_score = user_data.get("reputation_score", 500)
+    skills = user_data.get("profile_data", {}).get("skills", ["Software Engineering"])
+    github_handle = user_data.get("dynamic_fields", {}).get("github_handle", "dev")
 
-    # 2. Fetch Reputation/Proof Score
-    rep_resp = (
-        db.table("reputation_history")
-        .select("total_score, skills_score, github_score")
-        .eq("wallet_address", wallet)
-        .order("recorded_at", desc=True)
-        .limit(1)
-        .execute()
-    )
+    # 2. AI Generation
+    api_key = os.getenv("GOOGLE_API_KEY")
+    portfolio_content = ""
 
-    proof_data = (
-        rep_resp.data[0]
-        if rep_resp.data
-        else {"total_score": 0, "skills_score": 0, "github_score": 0}
-    )
+    if api_key:
+        try:
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            
+            prompt = f"""Generate a professional engineering portfolio summary for {full_name}.
+            Proof-Score: {proof_score}/1000
+            Skills: {', '.join(skills)}
+            GitHub: github.com/{github_handle}
+            
+            Format as clean Markdown. Include sections: Executive Summary, Verified Achievements, and Tech Stack.
+            Highlight the fact that their skills are AI-verified.
+            """
+            
+            response = model.generate_content(prompt)
+            portfolio_content = response.text
+        except Exception as e:
+            logger.error(f"AI Portfolio Generation failed: {e}")
 
-    # 3. Simulated AI Generation (LangChain/LLM Logic goes here)
-    # For hackathon/demo safety, we use deterministic dynamic generation
-    # instead of hitting the OpenAI API directly, which avoids rate limits.
-
-    full_name = user_data.get("full_name") or "Verified Builder"
-    skills = user_data.get("profile_data", {}).get(
-        "skills", ["Rust", "Python", "Solana"]
-    )
-    github_handle = user_data.get("dynamic_fields", {}).get(
-        "github_handle", "developer"
-    )
-
-    generated_markdown = f"""
+    if not portfolio_content:
+        # Fallback Template
+        portfolio_content = f"""
 # {full_name} | Verified Talent
-
-**Proof-Score:** {proof_data.get("total_score", "N/A")} ✨ 
-**Top Skills:** {", ".join(skills)}
+**Proof-Score:** {proof_score}/1000 ✨
 
 ## Executive Summary
-{full_name} is an AI-verified engineer with a strong track record of architectural execution and clean code delivery. Based on deep AST analysis of `github.com/{github_handle}`, the system verified advanced capability in backend design and cryptographic implementations.
+{full_name} is an AI-verified professional with proven expertise in {', '.join(skills[:3])}.
 
 ## Key Verified Achievements
-*   **Proof-Score Premium:** Ranks in the top percentile due to exceptionally high logic-structure scores on real-world simulations.
-*   **Code Integrity:** Maintained a {proof_data.get("github_score", "90")}% AI-rated code quality standard across major open-source contributions.
-*   **Skill Mastery:** Proven expertise in {skills[0] if skills else "Backend Systems"} validated via 3 rigorous, unassisted assessments.
+- **High Integrity:** Verified Proof-Score of {proof_score} based on real-world simulations.
+- **Skill Mastery:** Proven technical competence in {len(skills)} verified domains.
 
 ---
-*Auto-generated by Best Hiring Tool AI Intelligence Core*
-"""
+*Auto-generated by Best Hiring Tool AI*
+        """
 
-    return {
-        "status": "success",
+    return success_response(data={
         "wallet_address": wallet,
         "portfolio": {
             "type": "markdown",
-            "content": generated_markdown.strip(),
-            "last_updated": "2026-04-17T12:00:00Z",
-        },
-    }
-
-
-def _mock_portfolio_generation(wallet: str) -> Dict[str, Any]:
-    """Fallback generator when DB is offline or user data is fresh."""
-    mock_md = f"""
-# Verified Senior Block-End Engineer
-
-**Proof-Score:** 940/1000 ✨
-**Top Skills:** Rust, Anchor, TypeScript, React
-
-## Executive Summary
-A top-tier technologist dynamically mapped as a 98% match for Web3 leadership roles. Displays exceptional zero-knowledge implementation skills and high problem-solving throughput.
-
-## Key Verified Achievements
-*   **Decentralized Mastery:** Ranked #1 on the platform for Solana smart contract architecture.
-*   **Simulation Driven:** Scored a perfect 100 on the "DeFi AMM Builder" AI Simulation task, demonstrating outstanding structural logic.
----
-*Auto-generated by Best Hiring Tool AI Intelligence Core for wallet {wallet[:8]}...*
-"""
-    return {
-        "status": "success",
-        "wallet_address": wallet,
-        "portfolio": {
-            "type": "markdown",
-            "content": mock_md.strip(),
-            "last_updated": "2026-04-17T12:00:00Z",
-        },
-    }
+            "content": portfolio_content.strip(),
+            "last_updated": "2026-05-01T00:00:00Z"
+        }
+    })

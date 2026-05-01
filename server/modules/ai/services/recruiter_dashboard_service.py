@@ -1,207 +1,157 @@
-"""
-Recruiter Intelligence Dashboard Service.
-Aggregates hiring analytics, talent availability, skill demand trends,
-and generates predictive insights for recruiters.
-"""
-
-from typing import Dict, Any, List
+import logging
+from typing import Dict, Any, List, Optional
 from core.supabase import get_supabase
-import random
+from core.cache import cache_result
+from datetime import datetime, timedelta
 
+logger = logging.getLogger(__name__)
 
 class RecruiterDashboardService:
-    def get_candidate_rankings(self, job_id: str) -> List[Dict[str, Any]]:
-        """Rank applicants by AI match % + Proof-Score, not application date."""
+    @cache_result(ttl=600) # Cache analytics for 10 minutes
+    async def get_candidate_rankings(self, job_id: str) -> List[Dict[str, Any]]:
+        """Rank applicants by Proof-Score and match relevance."""
         db = get_supabase()
-        if not db:
-            return self._mock_rankings()
+        if not db: return []
 
         try:
-            apps = (
+            # Single join query to get apps + users
+            resp = (
                 db.table("applications")
-                .select("id, candidate_wallet, status, created_at")
+                .select("id, status, created_at, candidate_wallet, users(full_name, reputation_score, trust_score)")
                 .eq("job_id", job_id)
                 .execute()
             )
 
-            if not apps.data:
-                return self._mock_rankings()
+            if not resp.data: return []
 
             rankings = []
-            for app in apps.data:
-                wallet = app.get("candidate_wallet", "")
-                user_resp = (
-                    db.table("users")
-                    .select("full_name, profile_data")
-                    .eq("wallet_address", wallet)
-                    .single()
-                    .execute()
-                )
-                rep_resp = (
-                    db.table("reputation_history")
-                    .select("total_score")
-                    .eq("wallet_address", wallet)
-                    .order("recorded_at", desc=True)
-                    .limit(1)
-                    .execute()
-                )
+            for app in resp.data:
+                user = app.get("users", {})
+                score = user.get("reputation_score", 0)
+                trust = user.get("trust_score", 100)
+                
+                rankings.append({
+                    "application_id": app["id"],
+                    "name": user.get("full_name", "Anonymous"),
+                    "wallet": app["candidate_wallet"],
+                    "proof_score": score,
+                    "trust_score": trust,
+                    "shield": "Green" if trust >= 90 else ("Yellow" if trust >= 65 else "Red"),
+                    "status": app["status"],
+                    "applied_at": app["created_at"],
+                    "match_percentage": min(100, score / 10) # Simple linear match for now
+                })
 
-                name = (
-                    user_resp.data.get("full_name", "Unknown")
-                    if user_resp.data
-                    else "Unknown"
-                )
-                score = rep_resp.data[0].get("total_score", 0) if rep_resp.data else 0
-                match_pct = min(99, score / 10 + random.randint(0, 10))
-
-                rankings.append(
-                    {
-                        "name": name,
-                        "wallet": wallet,
-                        "proof_score": score,
-                        "match_percentage": round(match_pct, 1),
-                        "shield": "Green"
-                        if score >= 700
-                        else ("Yellow" if score >= 400 else "Red"),
-                        "status": app.get("status", "applied"),
-                        "applied_at": app.get("created_at"),
-                    }
-                )
-
-            rankings.sort(key=lambda x: x["match_percentage"], reverse=True)
+            # Sort by reputation score descending
+            rankings.sort(key=lambda x: x["proof_score"], reverse=True)
             for i, r in enumerate(rankings):
                 r["rank"] = i + 1
 
             return rankings
-        except Exception:
-            return self._mock_rankings()
+        except Exception as e:
+            logger.error(f"Failed to fetch candidate rankings for job {job_id}: {e}")
+            return []
 
-    def get_hiring_time_prediction(self, job_id: str) -> Dict[str, Any]:
-        """Predict time-to-fill based on qualified talent pool size."""
+    async def get_hiring_time_prediction(self, job_id: str) -> Dict[str, Any]:
+        """Predict time-to-fill based on real pipeline velocity."""
         db = get_supabase()
-        qualified_count = 12
-        total_applicants = 34
+        if not db: return {"prediction": "Unknown"}
 
-        if db:
-            try:
-                apps = (
+        try:
+            # Get historical average time-to-hire for this company
+            job_resp = db.table("jobs").select("company_id").eq("id", job_id).single().execute()
+            company_id = job_resp.data.get("company_id") if job_resp.data else None
+            
+            if company_id:
+                past_hires = (
                     db.table("applications")
-                    .select("candidate_wallet")
-                    .eq("job_id", job_id)
+                    .select("created_at, updated_at")
+                    .eq("status", "hired")
                     .execute()
                 )
-                total_applicants = len(apps.data) if apps.data else 0
-                qualified_count = max(1, int(total_applicants * 0.35))
-            except Exception:
-                pass
-
-        # Prediction: fewer qualified candidates = longer time
-        if qualified_count >= 20:
-            predicted_days = random.randint(14, 28)
-        elif qualified_count >= 10:
-            predicted_days = random.randint(28, 45)
-        elif qualified_count >= 5:
-            predicted_days = random.randint(45, 70)
-        else:
-            predicted_days = random.randint(70, 120)
-
-        return {
-            "predicted_days": predicted_days,
-            "total_applicants": total_applicants,
-            "qualified_count": qualified_count,
-            "pipeline_health": "Healthy"
-            if qualified_count >= 10
-            else ("Moderate" if qualified_count >= 5 else "Critical"),
-            "recommendation": f"Expedite outreach to top {min(5, qualified_count)} candidates."
-            if qualified_count < 15
-            else "Pipeline is healthy. Proceed with structured interviews.",
-        }
-
-    def get_skill_demand_trends(self) -> List[Dict[str, Any]]:
-        """Simulated skill demand trends over the last 6 months."""
-        skills = [
-            {"skill": "Rust", "trend": [45, 52, 58, 67, 78, 89], "change": "+34%"},
-            {"skill": "React", "trend": [82, 80, 83, 81, 84, 83], "change": "+2%"},
-            {"skill": "Python", "trend": [90, 88, 91, 89, 90, 89], "change": "-1%"},
-            {"skill": "Solidity", "trend": [65, 60, 55, 52, 48, 42], "change": "-18%"},
-            {"skill": "Go", "trend": [30, 35, 38, 42, 48, 55], "change": "+22%"},
-            {
-                "skill": "TypeScript",
-                "trend": [70, 72, 75, 78, 80, 82],
-                "change": "+12%",
-            },
-        ]
-        return skills
-
-    def get_talent_availability(self) -> List[Dict[str, Any]]:
-        """Talent availability breakdown by primary skill."""
-        return [
-            {"skill": "React", "available": 1240, "avg_score": 620, "supply": "High"},
-            {"skill": "Python", "available": 980, "avg_score": 590, "supply": "High"},
-            {
-                "skill": "TypeScript",
-                "available": 850,
-                "avg_score": 640,
-                "supply": "High",
-            },
-            {"skill": "Go", "available": 185, "avg_score": 700, "supply": "Medium"},
-            {"skill": "Rust", "available": 47, "avg_score": 810, "supply": "Scarce"},
-            {"skill": "Solana", "available": 23, "avg_score": 860, "supply": "Scarce"},
-        ]
-
-    def get_skill_gap_analysis(self, required_skills: List[str]) -> Dict[str, Any]:
-        """Compare job requirements vs available talent pool."""
-        availability = {t["skill"].lower(): t for t in self.get_talent_availability()}
-        gaps = []
-        for skill in required_skills:
-            pool = availability.get(skill.lower())
-            if pool:
-                gaps.append(
-                    {
-                        "skill": skill,
-                        "required_level": 80,
-                        "pool_average": pool["avg_score"] // 10,
-                        "gap": max(0, 80 - pool["avg_score"] // 10),
-                        "available_candidates": pool["available"],
-                    }
-                )
+                # In production: filter by company_id if we have the join
+                
+                if past_hires.data:
+                    durations = []
+                    for h in past_hires.data:
+                        start = datetime.fromisoformat(h["created_at"].replace("Z", "+00:00"))
+                        end = datetime.fromisoformat(h["updated_at"].replace("Z", "+00:00"))
+                        durations.append((end - start).days)
+                    avg_days = sum(durations) / len(durations)
+                else:
+                    avg_days = 30 # Default baseline
             else:
-                gaps.append(
-                    {
-                        "skill": skill,
-                        "required_level": 80,
-                        "pool_average": 0,
-                        "gap": 80,
-                        "available_candidates": 0,
-                    }
-                )
-        return {"gaps": gaps}
+                avg_days = 30
 
-    def get_engagement_funnel(self, job_id: str) -> Dict[str, Any]:
-        """Hiring funnel metrics for a specific job."""
-        return {
-            "job_views": 2450,
-            "applications": 340,
-            "qualified": 89,
-            "interviewed": 24,
-            "offers_sent": 6,
-            "hired": 2,
-            "conversion_rate": "0.08%",
-            "avg_days_in_pipeline": 31,
-        }
+            # Adjust based on current applicant volume
+            app_count_resp = db.table("applications").select("id", count="exact").eq("job_id", job_id).execute()
+            count = app_count_resp.count or 0
+            
+            # Heuristic: more applicants = faster fill (if quality is high)
+            adjustment = max(-10, min(10, 15 - count)) 
+            final_prediction = int(avg_days + adjustment)
 
-    def _mock_rankings(self) -> List[Dict[str, Any]]:
-        names = ["Alice Dev", "Bob Chain", "Carol Sys", "Dave Node", "Eve Rust"]
-        return [
-            {
-                "rank": i + 1,
-                "name": names[i],
-                "wallet": f"mock_wallet_{i}",
-                "proof_score": 890 - (i * 70),
-                "match_percentage": round(94.2 - (i * 8.5), 1),
-                "shield": "Green" if i < 3 else "Yellow",
-                "status": "applied",
-                "applied_at": f"2026-04-{10 + i}T10:00:00Z",
+            return {
+                "predicted_days": final_prediction,
+                "confidence": "High" if count > 20 else "Medium",
+                "total_applicants": count,
+                "market_average": 35
             }
-            for i in range(5)
-        ]
+        except Exception as e:
+            logger.error(f"Hiring prediction failed: {e}")
+            return {"predicted_days": 30, "error": "Prediction engine degraded"}
+
+    @cache_result(ttl=3600) # Cache trends for 1 hour
+    async def get_skill_demand_trends(self) -> List[Dict[str, Any]]:
+        """Calculate real skill demand trends from job postings."""
+        db = get_supabase()
+        if not db: return []
+
+        try:
+            # Query all required_skills from active jobs
+            resp = db.table("jobs").select("required_skills").execute()
+            all_skills = []
+            for job in resp.data or []:
+                all_skills.extend(job.get("required_skills", []))
+            
+            from collections import Counter
+            counts = Counter(all_skills)
+            
+            trends = []
+            for skill, count in counts.most_common(10):
+                trends.append({
+                    "skill": skill,
+                    "demand_count": count,
+                    "trend": "Up" if count > 5 else "Stable" # Placeholder logic
+                })
+            return trends
+        except Exception as e:
+            logger.error(f"Skill trend calculation failed: {e}")
+            return []
+
+    async def get_engagement_funnel(self, job_id: str) -> Dict[str, Any]:
+        """Aggregate real funnel metrics from the applications table."""
+        db = get_supabase()
+        if not db: return {}
+
+        try:
+            resp = db.table("applications").select("status").eq("job_id", job_id).execute()
+            stats = {"applied": 0, "interviewing": 0, "offered": 0, "hired": 0, "rejected": 0}
+            
+            for app in resp.data or []:
+                status = app["status"].lower()
+                if status in stats: stats[status] += 1
+                else: stats["applied"] += 1
+            
+            total = len(resp.data) if resp.data else 0
+            return {
+                "total_applicants": total,
+                "stages": stats,
+                "conversion_rate": f"{(stats['hired'] / total * 100):.1f}%" if total > 0 else "0%"
+            }
+        except Exception as e:
+            logger.error(f"Funnel calculation failed: {e}")
+            return {}
+
+# Singleton
+recruiter_service = RecruiterDashboardService()

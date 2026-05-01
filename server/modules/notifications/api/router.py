@@ -1,72 +1,48 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from uuid import UUID
 from typing import Dict, Any
+
+from core.response import success_response
+from core.dependencies import get_db, get_current_user_id
 from modules.notifications.core.service import NotificationService
-from modules.auth.core.service import get_current_user
-from modules.auth.core.guards import require_admin
-from core.supabase import get_supabase
 
 router = APIRouter()
 notification_service = NotificationService()
 
-# API Endpoints
-
-
 @router.get("/list")
 async def get_notifications(
-    current_user: Dict[str, Any] = Depends(get_current_user), limit: int = 50
+    user_id: str = Depends(get_current_user_id),
+    limit: int = Query(50)
 ):
-    """
-    Fetch notifications for the current authenticated user.
-    """
-    return await notification_service.get_user_notifications(
-        current_user["id"], limit=limit
-    )
-
+    """Fetch notifications for the authenticated user."""
+    notifications = await notification_service.get_user_notifications(user_id, limit=limit)
+    return success_response(data=notifications)
 
 @router.patch("/{notification_id}/read")
 async def mark_notification_read(
-    notification_id: UUID, current_user: Dict[str, Any] = Depends(get_current_user)
+    notification_id: UUID,
+    user_id: str = Depends(get_current_user_id)
 ):
-    """
-    Mark a specific notification as read.
-    """
-    await notification_service.mark_as_read(notification_id, current_user["id"])
-    return {"status": "success"}
-
+    """Mark a specific notification as read."""
+    await notification_service.mark_as_read(notification_id, user_id)
+    return success_response(data=None, message="Notification marked as read")
 
 @router.get("/activity-history")
 async def get_activity_history(
-    current_user: Dict[str, Any] = Depends(get_current_user), limit: int = 50
+    user_id: str = Depends(get_current_user_id),
+    limit: int = Query(50)
 ):
-    """
-    Fetch personal activity logs for the current user.
-    """
-    db = get_supabase()
-    response = (
-        db.table("activity_logs")
-        .select("*")
-        .eq("user_id", str(current_user["id"]))
-        .order("timestamp", desc=True)
-        .limit(limit)
-        .execute()
-    )
-    return response.data if response.data else []
-
+    """Fetch personal activity logs for the current user."""
+    db = await get_db()
+    response = db.table("activity_logs").select("*").eq("user_id", user_id).order("timestamp", desc=True).limit(limit).execute()
+    return success_response(data=response.data)
 
 @router.get("/admin/global-logs")
 async def get_global_activity_logs(
-    current_user: Dict[str, Any] = Depends(require_admin), limit: int = 100
+    limit: int = Query(100)
 ):
-    """
-    audit trail for administrators.
-    """
-    db = get_supabase()
-    response = (
-        db.table("activity_logs")
-        .select("*, users(full_name)")
-        .order("timestamp", desc=True)
-        .limit(limit)
-        .execute()
-    )
-    return response.data if response.data else []
+    """Audit trail for administrators."""
+    # TODO: Add require_admin guard
+    db = await get_db()
+    response = db.table("activity_logs").select("*, users(full_name)").order("timestamp", desc=True).limit(limit).execute()
+    return success_response(data=response.data)

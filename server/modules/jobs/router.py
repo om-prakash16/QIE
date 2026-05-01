@@ -1,199 +1,116 @@
-from fastapi import APIRouter, Depends, Body
-from typing import Dict, Any, Optional
-from modules.auth.core.service import require_permission, get_current_user
-from modules.auth.core.guards import require_company
-from modules.jobs.service import JobService
-from modules.jobs.models import (
-    JobCreate,
-    JobResponse,
-    ApplicationCreate,
-    ApplicationResponse,
-)
-from core.supabase import get_supabase
-from modules.notifications.core.service import NotificationService
-from modules.activity.service import record_event
+from fastapi import APIRouter, Depends, Query, Body
+from typing import List, Optional, Dict, Any
+
+from core.response import success_response
+from core.dependencies import get_db, get_current_user_id, get_company_id
+from core.exceptions import AuthorizationError
+
+from modules.jobs.services.job_service import job_service
+from modules.jobs.services.application_service import application_service
+from modules.jobs.services.discovery_service import discovery_service
 
 router = APIRouter()
-job_service = JobService()
 
-
-@router.post("/parse-jd")
-async def parse_job_description(
-    text: str = Body(..., embed=True), user=Depends(require_company)
-):
-    """
-    AI JD Parser: Extracts title, skills, and description from raw text.
-    """
-    return await job_service.parse_jd_text(text)
-
-# Company Endpoints
-
+# --- Public Endpoints ---
 
 @router.get("/list")
-async def list_jobs(user_id: Optional[str] = None):
-    """
-    Public job board with dynamic AI scores for candidates.
-    """
-    return await job_service.get_jobs_with_scores(user_id)
-
-
-@router.get("/{job_id}/discovery")
-async def get_job_discovery(
-    job_id: str, limit: int = 10, current_user=Depends(get_current_user)
+async def list_all_jobs(
+    user_id: Optional[str] = Query(None, description="Optional user ID for personalized scores")
 ):
-    """
-    AI Candidate Discovery for recruiters.
-    """
-    # Verify recruiter role (simple check for now)
-    if current_user.get("role") not in ["COMPANY", "ADMIN", "staff"]:
-        # Fallback check if role is 'admin' or something else
-        pass
-
-    return await job_service.get_recommended_candidates(job_id, limit)
-
+    """Public job board. Returns jobs with AI scores if user_id is provided."""
+    if user_id:
+        data = await discovery_service.get_jobs_with_user_scores(user_id)
+    else:
+        data = await job_service.list_jobs()
+    return success_response(data=data)
 
 @router.get("/{job_id}")
 async def get_job_details(job_id: str):
-    """
-    Job detail view.
-    """
-    return await job_service.get_job_details(job_id)
+    """Fetch detailed job information."""
+    data = await job_service.get_job_details(job_id)
+    return success_response(data=data)
 
+# --- Recruiter Endpoints ---
 
-# Job Posting Endpoints
-
-
-@router.post("/create", response_model=JobResponse)
-async def create_job(job: JobCreate, user=Depends(require_company)):
-    """
-    Create a job post.
-    """
-    result = await job_service.create_job(job.model_dump())
-
-    # Log the event for the activity feed
-    await record_event(
-        actor_id=user.get("sub", ""),
-        actor_role="company",
-        event_type="created_job",
-        description=f"Posted a new job: {job.title}",
-        entity_type="job",
-        entity_id=result.get("id"),
-    )
-
-    return JobResponse(id=result["id"], **result)
-
-
-@router.post("/apply", response_model=ApplicationResponse)
-async def apply_to_job(data: ApplicationCreate, user=Depends(get_current_user)):
-    """
-    Submits an application and triggers AI matching.
-    """
-    result = await job_service.apply_to_job(data.job_id, data.candidate_id)
-
-    # Notify Candidate
-    try:
-        await NotificationService.create_event_notification(
-            user_id=user.get("id"),
-            type="job_apply",
-            title="Application Submitted",
-            message=f"You successfully applied for the job. AI Match Score: {result.get('ai_match_score', 0)}%",
-        )
-
-        # Log Activity
-        await NotificationService.log_activity(
-            user_id=user.get("id"),
-            action_type="apply_to_job",
-            entity_type="job",
-            entity_id=data.job_id,
-            description=f"Applied with score {result.get('ai_match_score', 0)}%",
-        )
-    except Exception:
-        pass  # Best effort for notifications
-
-    return ApplicationResponse(
-        id=result["id"],
-        status=result.get("status", "applied"),
-        ai_match_score=result.get("ai_match_score", 0),
-        **data.model_dump(),
-    )
-
-
-@router.post("/save")
-async def save_job(job_id: str, user=Depends(get_current_user)):
-    """
-    Save a job for later review.
-    """
-    return await job_service.save_job(job_id, user.get("id"))
-
-
-@router.delete("/unsave/{job_id}")
-async def unsave_job(job_id: str, user=Depends(get_current_user)):
-    """
-    Remove a job from saved list.
-    """
-    return await job_service.unsave_job(job_id, user.get("id"))
-
-
-@router.get("/saved")
-async def get_saved_jobs(user=Depends(get_current_user)):
-    """
-    Get all jobs saved by the current user.
-    """
-    return await job_service.get_saved_jobs(user.get("id"))
-
-
-@router.get("/user")
-async def get_user_applications(user_id: str):
-    """
-    Candidate's application tracking.
-    """
-    db = get_supabase()
-    if not db:
-        return []
-    response = (
-        db.table("applications")
-        .select("*, jobs(title, assessment_questions, companies(company_name))")
-        .eq("candidate_id", user_id)
-        .execute()
-    )
-    return response.data
-
-
-@router.get("/company/{company_id}")
-async def get_company_applications(company_id: str, job_id: Optional[str] = None, user=Depends(require_company)):
-    """
-    Recruiter's applicant list.
-    """
-    return await job_service.get_company_applications(company_id, job_id)
-
-
-@router.get("/company-metrics/{company_id}")
-async def get_company_jobs_metrics(company_id: str, user=Depends(require_company)):
-    """
-    Recruiter's job list with high-level metrics (counts, discovery).
-    """
-    return await job_service.get_company_jobs_with_metrics(company_id)
-
-
-@router.patch("/{app_id}/status")
-async def update_app_status(
-    app_id: str, status: str, recruiter=Depends(require_permission("job.moderate"))
+@router.post("/create")
+async def create_job_posting(
+    data: Dict[str, Any],
+    user_id: str = Depends(get_current_user_id),
+    company_id: str = Depends(get_company_id)
 ):
-    """
-    Step 13: Recruiter Action (Shortlist, Hire, Reject).
-    """
-    return await job_service.update_application_status(
-        application_id=app_id, new_status=status, recruiter_id=recruiter.get("id")
-    )
+    """Post a new job. Requires company ownership."""
+    data["company_id"] = company_id
+    data["created_by"] = user_id
+    result = await job_service.create_job(data)
+    return success_response(data=result, message="Job posted successfully")
 
+@router.get("/{job_id}/discovery")
+async def discover_candidates(
+    job_id: str,
+    limit: int = Query(10),
+    company_id: str = Depends(get_company_id)
+):
+    """AI-powered candidate discovery for a specific job."""
+    # Note: get_company_id acts as an auth guard here
+    candidates = await discovery_service.get_recommended_candidates(job_id, limit)
+    return success_response(data=candidates)
 
-@router.patch("/applications/{app_id}/submit-assessment")
-async def submit_assessment(app_id: str, data: Dict[str, Any], user=Depends(get_current_user)):
-    """
-    Submits candidate's assessment answers and updates score.
-    """
-    return await job_service.submit_assessment_results(
-        application_id=app_id,
-        answers=data.get("answers", []),
-        score=data.get("score", 0),
+@router.get("/company/applications")
+async def get_company_applicants(
+    job_id: Optional[str] = Query(None),
+    company_id: str = Depends(get_company_id)
+):
+    """List all applicants for the company's jobs."""
+    # In a real app, this would be in application_service
+    from modules.jobs.services.application_service import application_service
+    # Re-using the logic but filtering by company
+    db = await get_db()
+    query = db.table("applications").select("*, jobs!inner(title, company_id), users(full_name, profile_data)").eq("jobs.company_id", company_id)
+    if job_id: query = query.eq("job_id", job_id)
+    res = query.order("created_at", desc=True).execute()
+    return success_response(data=res.data)
+
+# --- Candidate Endpoints ---
+
+@router.post("/apply")
+async def apply_to_job(
+    data: Dict[str, Any],
+    user_id: str = Depends(get_current_user_id)
+):
+    """Submit a job application."""
+    job_id = data.get("job_id")
+    result = await application_service.apply_to_job(job_id, user_id)
+    return success_response(data=result, message="Application submitted")
+
+@router.get("/user/applications")
+async def get_my_applications(
+    user_id: str = Depends(get_current_user_id)
+):
+    """Track your own job applications."""
+    apps = await application_service.get_user_applications(user_id)
+    return success_response(data=apps)
+
+@router.patch("/applications/{app_id}/status")
+async def update_application_status(
+    app_id: str,
+    status: str = Body(..., embed=True),
+    user_id: str = Depends(get_current_user_id),
+    company_id: str = Depends(get_company_id)
+):
+    """Update application status (Recruiter action)."""
+    result = await application_service.update_status(app_id, status, user_id)
+    return success_response(data=result)
+
+@router.post("/applications/{app_id}/submit-assessment")
+async def submit_assessment(
+    app_id: str,
+    payload: Dict[str, Any],
+    user_id: str = Depends(get_current_user_id)
+):
+    """Submit answers for a skill assessment."""
+    result = await application_service.submit_assessment(
+        app_id=app_id,
+        score=payload.get("score", 0),
+        answers=payload.get("answers", [])
     )
+    return success_response(data=result)

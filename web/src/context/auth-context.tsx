@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Encode signature as base58 — matches what the backend expects
             const signatureB58 = bs58.encode(signatureBytes)
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
+            const rawResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -130,8 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }),
             })
 
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.detail || "Authentication failed")
+            const json = await rawResponse.json()
+            if (!rawResponse.ok) throw new Error(json.detail || json.message || "Authentication failed")
+
+            // Support the new standardized response envelope
+            const data = (json && json.status === "success" && json.data) ? json.data : json;
 
             localStorage.setItem("auth_token", data.access_token)
             const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
@@ -182,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
             const message = `Sign in to Best Hiring Tool (DEMO MODE)\n\nRole: ${role}\nWallet: ${mockWallet}\nTime: ${Date.now()}`
             
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
+            const rawResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/wallet`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -193,8 +196,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 }),
             })
 
-            const data = await res.json()
-            if (!res.ok) throw new Error(data.detail || "Authentication failed")
+            const json = await rawResponse.json()
+            if (!rawResponse.ok) throw new Error(json.detail || json.message || "Authentication failed")
+
+            // Support the new standardized response envelope
+            const data = (json && json.status === "success" && json.data) ? json.data : json;
 
             localStorage.setItem("auth_token", data.access_token)
             const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")

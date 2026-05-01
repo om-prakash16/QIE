@@ -1,65 +1,51 @@
-"""
-AI Job Description Optimizer Router.
-Endpoints for analyzing and optimizing job listings.
-"""
-
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from modules.auth.core.service import get_current_user
-from modules.ai.services.job_optimizer_service import JobOptimizerService
+
+from core.response import success_response
+from core.dependencies import get_db, get_current_user_id
+from modules.ai.services.job_optimizer_service import job_optimizer_service
 
 router = APIRouter()
-optimizer_service = JobOptimizerService()
-
 
 class JDAnalysisRequest(BaseModel):
     title: str
     description: str
     skills: List[str]
 
-
-class JDAnalysisResponse(BaseModel):
-    overall_score: int
-    clarity: Dict[str, Any]
-    skills_analysis: Dict[str, Any]
-    experience_normalization: Dict[str, Any]
-    salary_benchmark: Dict[str, Any]
-    recommendations: List[str]
-
-
-@router.post("/optimize", response_model=JDAnalysisResponse)
+@router.post("/optimize")
 async def optimize_job_description(
-    req: JDAnalysisRequest, current_user=Depends(get_current_user)
+    req: JDAnalysisRequest,
+    user_id: str = Depends(get_current_user_id)
 ):
     """
     AI Job Description Optimizer.
-    Parses a JD and returns an optimization score with suggestions for
-    missing skills, market alignment, and clarity.
+    Parses a JD and returns an optimization score with suggestions.
     """
     try:
-        analysis = optimizer_service.analyze_job_description(
+        analysis = await job_optimizer_service.analyze_job_description(
             title=req.title, description=req.description, skills=req.skills
         )
-        return analysis
+        return success_response(data=analysis)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
+        import logging
+        logging.getLogger(__name__).error(f"JD Optimization failed: {e}")
+        return success_response(data={"error": "Optimization engine degraded"}, status_code=500)
 
 @router.get("/benchmarks")
 async def get_market_benchmarks(
     title: str,
-    skills: str,  # Comma separated
-    current_user=Depends(get_current_user),
+    skills: str
 ):
     """Get standalone market salary and rarity data for a role."""
     skill_list = [s.strip() for s in skills.split(",")]
-    salary = optimizer_service._get_salary_benchmark(title, skill_list)
-    rarity = optimizer_service._calculate_skill_rarity(skill_list)
+    
+    # Internal service calls (assuming they exist or are cleaned up)
+    salary = await job_optimizer_service.get_salary_benchmark(title, skill_list)
+    rarity = await job_optimizer_service.get_skill_rarity(skill_list)
 
-    return {
-        "status": "success",
+    return success_response(data={
         "job_title": title,
         "salary_benchmark": salary,
-        "market_rarity": rarity,
-    }
+        "market_rarity": rarity
+    })

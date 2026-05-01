@@ -21,18 +21,28 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
         headers: headers as HeadersInit,
     });
 
+    const json = await response.json();
+
     if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.detail || "API Request Failed");
+        throw new Error(json.detail || json.message || "API Request Failed");
     }
 
-    return response.json();
+    // Support the new standardized response envelope {"status": "success", "data": ...}
+    if (json && typeof json === "object" && "status" in json && "data" in json) {
+        return json.data;
+    }
+
+    return json;
 }
 
 // API module bindings
 export const api = {
     auth: {
-        login: (wallet: string, signature: string) => fetchWithAuth("/auth/wallet-login", { method: "POST", body: JSON.stringify({ wallet, signature }) }),
+        login: (wallet: string, signature: string, message: string, requested_role: string = "user") => 
+            fetchWithAuth("/auth/wallet", { 
+                method: "POST", 
+                body: JSON.stringify({ wallet_address: wallet, signature, message, requested_role }) 
+            }),
         me: () => fetchWithAuth("/auth/me")
     },
     profile: {

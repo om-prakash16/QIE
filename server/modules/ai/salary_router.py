@@ -1,56 +1,41 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, Query
 from typing import Optional
-from core.supabase import get_supabase
-from modules.auth.core.service import get_current_user
+
+from core.response import success_response
+from core.dependencies import get_db, get_validated_wallet
 
 router = APIRouter()
 
-
 @router.get("/predict")
 async def predict_salary_fmv(
-    wallet_address: Optional[str] = Query(None, description="Candidate wallet"),
     role: str = Query("Software Engineer", description="Target job role"),
     location: str = Query("Remote", description="Target location"),
-    current_user=Depends(get_current_user),
+    wallet: str = Depends(get_validated_wallet)
 ):
     """
-    AI Salary Prediction Endpoint
+    AI Salary Prediction Endpoint.
     Calculates Fair Market Value (FMV) and premium based on verified Proof-Score.
     """
-    wallet = wallet_address or current_user.get("wallet_address")
-    if not wallet:
-        raise HTTPException(status_code=400, detail="Wallet address required")
-
-    db = get_supabase()
+    db = await get_db()
 
     # 1. Fetch Candidate's Verification Data
-    proof_score = 600  # Default intermediate score
-    skills = ["JavaScript", "React"]
+    proof_score = 500
+    skills = []
 
-    if db:
-        rep_resp = (
-            db.table("reputation_history")
-            .select("total_score")
-            .eq("wallet_address", wallet)
-            .order("recorded_at", desc=True)
-            .limit(1)
-            .execute()
-        )
+    rep_resp = (
+        db.table("users")
+        .select("reputation_score, profile_data")
+        .eq("wallet_address", wallet)
+        .single()
+        .execute()
+    )
 
-        if rep_resp.data:
-            proof_score = rep_resp.data[0].get("total_score", 600)
+    if rep_resp.data:
+        proof_score = rep_resp.data.get("reputation_score", 500)
+        skills = rep_resp.data.get("profile_data", {}).get("skills", [])
 
-        user_resp = (
-            db.table("users")
-            .select("profile_data")
-            .eq("wallet_address", wallet)
-            .single()
-            .execute()
-        )
-        if user_resp.data and user_resp.data.get("profile_data"):
-            skills = user_resp.data["profile_data"].get("skills", skills)
-
-    # 2. Base Market Value Calculation (Simulated Data Logic)
+    # 2. Base Market Value (Production: fetch from market_data table)
+    # For now, keeping the logic but cleaning the response
     base_salaries = {
         "Software Engineer": 110_000,
         "Senior Developer": 140_000,
@@ -58,46 +43,33 @@ async def predict_salary_fmv(
         "Smart Contract Engineer": 150_000,
         "Product Manager": 115_000,
     }
-
     base = base_salaries.get(role, 95_000)
 
-    # 3. AI Premium Calculation (Regression Math)
-    # Average score is ~500. Every 100 points above 500 yields a 4% salary premium.
+    # 3. Premium Calculation
     score_delta = max(0, proof_score - 500)
     premium_percentage = (score_delta / 100) * 0.04
 
-    # Rare skill multiplier (e.g., Rust, Anchor, Web3 usually pay higher)
     rare_skills = [s.lower() for s in ["rust", "solana", "anchor", "go", "zkp"]]
     user_skills_lower = [s.lower() for s in skills]
     if any(rs in user_skills_lower for rs in rare_skills):
-        premium_percentage += 0.08  # Extra 8% bump
+        premium_percentage += 0.08
 
-    # Location adjuster (Remote is baseline 1.0)
-    location_adjuster = 1.0
-    if location.lower() in ["san francisco", "new york", "london"]:
-        location_adjuster = 1.2
+    location_adjuster = 1.2 if location.lower() in ["san francisco", "new york", "london"] else 1.0
 
-    # 4. Final Calculation
     fmv = int((base * (1 + premium_percentage)) * location_adjuster)
-
-    # Create realistic bounds
-    lower_bound = int(fmv * 0.9)
-    upper_bound = int(fmv * 1.15)
-
-    return {
-        "status": "success",
+    
+    return success_response(data={
         "wallet_address": wallet,
-        "query": {"role": role, "location": location},
+        "role": role,
+        "location": location,
         "metrics": {
             "proof_score": proof_score,
-            "verified_skills": len(skills),
-            "calculated_skill_premium": f"+{round(premium_percentage * 100, 1)}%",
+            "skill_premium": f"+{round(premium_percentage * 100, 1)}%",
         },
         "salary_prediction": {
             "currency": "USD",
-            "base_market_rate": base,
             "fair_market_value": fmv,
-            "range": {"low": lower_bound, "high": upper_bound},
-            "insight": f"Due to an exceptionally high verified Proof-Score ({proof_score}), this candidate commands a {round(premium_percentage * 100, 1)}% premium over standard market rates for the {role} position.",
-        },
-    }
+            "range": {"low": int(fmv * 0.9), "high": int(fmv * 1.15)},
+            "insight": f"Based on verified Proof-Score ({proof_score}), this candidate commands a premium of {round(premium_percentage * 100, 1)}%."
+        }
+    })

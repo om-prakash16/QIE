@@ -1,9 +1,14 @@
+import logging
+import uuid
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import ORJSONResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import logging
+
+from core.exceptions import AppException
+from core.response import error_response
 
 from modules.auth.api.router import router as auth_router
 from modules.users.api.router import router as users_router
@@ -34,42 +39,62 @@ from modules.auth.core.handlers import initialize_event_handlers
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("best_hiring")
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize system-wide event handlers (Mailer, Analytics, etc.)
+    logger.info("Initializing Best Hiring Protocol Core...")
+    initialize_event_handlers()
+    yield
+    logger.info("Shutting down Best Hiring Protocol Core...")
+
 app = FastAPI(
     title="Best Hiring Tool Protocol",
     description="Full-stack, enterprise-grade verification engine and talent network.",
     version="4.0.0",
     default_response_class=ORJSONResponse,
+    lifespan=lifespan,
 )
 
 
-@app.on_event("startup")
-async def startup_event():
-    # Initialize system-wide event handlers (Mailer, Analytics, etc.)
-    logger.info("Initializing Best Hiring Protocol Core...")
-    initialize_event_handlers()
+# (Lifespan handles startup now)
 
 
 # Global Exception Handlers (SaaS Standard)
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return error_response(
+        message=exc.message,
+        code=exc.code,
+        details=exc.details,
+        status_code=exc.status_code
+    )
+
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"status": "error", "code": exc.status_code, "message": str(exc.detail)},
+    return error_response(
+        message=str(exc.detail),
+        code="http_error",
+        status_code=exc.status_code
     )
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    return JSONResponse(
-        status_code=422,
-        content={"status": "error", "code": 422, "message": "Validation Error", "details": exc.errors()},
+    return error_response(
+        message="Validation Error",
+        code="validation_error",
+        details=exc.errors(),
+        status_code=422
     )
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    logger.error(f"Unhandled Exception on {request.method} {request.url}: {str(exc)}")
-    return JSONResponse(
-        status_code=500,
-        content={"status": "error", "code": 500, "message": "Internal Server Error"},
+    request_id = getattr(request.state, "request_id", str(uuid.uuid4()))
+    logger.error(f"Unhandled Exception [ID: {request_id}] on {request.method} {request.url}: {str(exc)}", exc_info=True)
+    return error_response(
+        message="Internal Server Error",
+        code="internal_error",
+        details={"request_id": request_id} if logging.getLogger().getEffectiveLevel() <= logging.DEBUG else None,
+        status_code=500
     )
 
 

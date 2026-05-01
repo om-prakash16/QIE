@@ -1,60 +1,46 @@
-"""
-Recruiter Intelligence Dashboard Router.
-Provides analytics endpoints for hiring insights.
-"""
-
 from fastapi import APIRouter, Depends, Query
-from modules.auth.core.service import get_current_user
-from modules.ai.services.recruiter_dashboard_service import RecruiterDashboardService
+from typing import List, Optional
+
+from core.response import success_response
+from core.dependencies import get_db
+from modules.ai.services.recruiter_dashboard_service import recruiter_service
 
 router = APIRouter()
-dashboard_service = RecruiterDashboardService()
 
+# TODO: Add real RBAC dependency here
+# from modules.auth.core.guards import require_company_role
 
-@router.get("/rankings")
-async def get_candidate_rankings(
-    job_id: str = Query(..., description="Job ID to rank candidates for"),
-    current_user=Depends(get_current_user),
+@router.get("/candidates/{job_id}")
+async def get_job_candidates(
+    job_id: str,
+    # _ = Depends(require_company_role)
 ):
-    """AI-ranked candidate list sorted by Match% + Proof-Score."""
-    return {"rankings": dashboard_service.get_candidate_rankings(job_id)}
+    """
+    Get ranked candidate list for a specific job.
+    Includes Proof-Scores and Trust-Shields.
+    """
+    rankings = await recruiter_service.get_candidate_rankings(job_id)
+    return success_response(data=rankings)
 
-
-@router.get("/time-to-fill")
-async def predict_hiring_time(
-    job_id: str = Query(..., description="Job ID"),
-    current_user=Depends(get_current_user),
+@router.get("/insights/{job_id}")
+async def get_job_insights(
+    job_id: str
 ):
-    """Predict time-to-fill based on qualified talent pool."""
-    return dashboard_service.get_hiring_time_prediction(job_id)
+    """
+    Get predictive hiring insights and funnel analytics for a job.
+    """
+    prediction = await recruiter_service.get_hiring_time_prediction(job_id)
+    funnel = await recruiter_service.get_engagement_funnel(job_id)
+    
+    return success_response(data={
+        "hiring_prediction": prediction,
+        "funnel_metrics": funnel
+    })
 
-
-@router.get("/skill-trends")
-async def get_skill_demand_trends(current_user=Depends(get_current_user)):
-    """6-month skill demand trend data for charts."""
-    return {"trends": dashboard_service.get_skill_demand_trends()}
-
-
-@router.get("/talent-availability")
-async def get_talent_availability(current_user=Depends(get_current_user)):
-    """Talent supply breakdown by skill."""
-    return {"availability": dashboard_service.get_talent_availability()}
-
-
-@router.get("/skill-gap")
-async def analyze_skill_gap(
-    skills: str = Query(..., description="Comma-separated required skills"),
-    current_user=Depends(get_current_user),
-):
-    """Compare job requirements vs available talent pool."""
-    skill_list = [s.strip() for s in skills.split(",")]
-    return dashboard_service.get_skill_gap_analysis(skill_list)
-
-
-@router.get("/funnel")
-async def get_engagement_funnel(
-    job_id: str = Query(..., description="Job ID"),
-    current_user=Depends(get_current_user),
-):
-    """Hiring funnel conversion metrics."""
-    return dashboard_service.get_engagement_funnel(job_id)
+@router.get("/market-trends")
+async def get_market_trends():
+    """
+    Get global skill demand trends across the platform.
+    """
+    trends = await recruiter_service.get_skill_demand_trends()
+    return success_response(data=trends)
