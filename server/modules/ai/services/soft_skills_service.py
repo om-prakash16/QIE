@@ -328,3 +328,6 @@ class SoftSkillsService:
             promotion_hint = " Strong potential for tech-lead or senior IC promotion."
 
         return f"Candidate is {trait_str}.{promotion_hint}"
+
+# Singleton instance
+soft_skills_service = SoftSkillsService()

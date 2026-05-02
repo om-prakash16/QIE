@@ -259,3 +259,6 @@ class ResumeService:
         except Exception as e:
             print(f"Ranking Error: {e}")
             return candidates[:limit]
+
+# Singleton instance
+resume_service = ResumeService()

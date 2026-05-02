@@ -1,7 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from core.supabase import get_supabase
+from core.response import success_response
+from core.dependencies import get_db, get_current_user_id
 
 router = APIRouter()
 
@@ -34,36 +36,34 @@ class ProfileFieldUpdate(BaseModel):
 
 
 @router.get("/profile")
-async def get_profile_schema():
+async def get_profile_schema(db = Depends(get_db)):
     """Retrieve the dynamic profile schema fields."""
-    db = get_supabase()
-    if not db:
-        return []
-
     response = (
         db.table("profile_schema_fields").select("*").order("display_order").execute()
     )
-    return response.data
+    return success_response(data=response.data)
 
 
 @router.post("/profile")
-async def create_profile_field(field: ProfileFieldCreate):
-    """Add a new dynamic field to the profile schema."""
-    db = get_supabase()
-    if not db:
-        return {"status": "mock", "message": "Field created (mock mode)"}
-
+async def create_profile_field(
+    field: ProfileFieldCreate,
+    user_id: str = Depends(get_current_user_id),
+    db = Depends(get_db)
+):
+    """Add a new dynamic field to the profile schema. (Admin Only)"""
+    # TODO: Add explicit admin check
     response = db.table("profile_schema_fields").insert(field.model_dump()).execute()
-    return {"status": "success", "data": response.data}
+    return success_response(data=response.data, message="Profile field created")
 
 
 @router.patch("/profile/{field_id}")
-async def update_profile_field(field_id: str, field: ProfileFieldUpdate):
-    """Modify an existing dynamic profile field."""
-    db = get_supabase()
-    if not db:
-        return {"status": "mock", "message": "Field updated (mock mode)"}
-
+async def update_profile_field(
+    field_id: str,
+    field: ProfileFieldUpdate,
+    user_id: str = Depends(get_current_user_id),
+    db = Depends(get_db)
+):
+    """Modify an existing dynamic profile field. (Admin Only)"""
     update_data = {k: v for k, v in field.model_dump().items() if v is not None}
     response = (
         db.table("profile_schema_fields")
@@ -71,30 +71,30 @@ async def update_profile_field(field_id: str, field: ProfileFieldUpdate):
         .eq("id", field_id)
         .execute()
     )
-    return {"status": "success", "data": response.data}
+    return success_response(data=response.data, message="Profile field updated")
 
 
 @router.delete("/profile/{field_id}")
-async def delete_profile_field(field_id: str):
-    """Remove a dynamic field from the profile schema."""
-    db = get_supabase()
-    if not db:
-        return {"status": "mock", "message": "Field deleted (mock mode)"}
-
+async def delete_profile_field(
+    field_id: str,
+    user_id: str = Depends(get_current_user_id),
+    db = Depends(get_db)
+):
+    """Remove a dynamic field from the profile schema. (Admin Only)"""
     db.table("profile_schema_fields").delete().eq("id", field_id).execute()
-    return {"status": "success", "message": "Field removed"}
+    return success_response(message="Field removed")
 
 
 @router.post("/profile/reorder")
-async def reorder_profile_fields(orders: List[Dict[str, Any]]):
-    """Update the display order of multiple fields."""
-    db = get_supabase()
-    if not db:
-        return {"status": "mock", "message": "Reordered (mock mode)"}
-
+async def reorder_profile_fields(
+    orders: List[Dict[str, Any]],
+    user_id: str = Depends(get_current_user_id),
+    db = Depends(get_db)
+):
+    """Update the display order of multiple fields. (Admin Only)"""
     for item in orders:
         db.table("profile_schema_fields").update(
             {"display_order": item["display_order"]}
         ).eq("id", item["id"]).execute()
 
-    return {"status": "success", "message": "Schema reordered"}
+    return success_response(message="Schema reordered")

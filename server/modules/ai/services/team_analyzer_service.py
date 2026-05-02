@@ -33,7 +33,7 @@ class TeamAnalyzerService:
                 pass
 
         if not team_members:
-            return self._get_mock_analysis()
+             raise Exception(f"No team members found for company {company_id}. Cannot perform analysis.")
 
         # 2. Extract and Aggregate Skills
         all_skills = {}
@@ -82,7 +82,6 @@ class TeamAnalyzerService:
                 )
 
         # 5. Recommended Candidate Profile (Gap Filling)
-        # Suggest a role that fills the most critical SPF or adjacent high-proximity skill
         recommended_profile = {
             "suggested_role": "DevOps Engineer"
             if not all_skills.get("kubernetes")
@@ -108,50 +107,16 @@ class TeamAnalyzerService:
                 if all_skills.get(kw):
                     cat_score += all_skills[kw]["score_sum"] / all_skills[kw]["count"]
                     found_count += 1
-            avg_cat_score = cat_score / len(kw_list)  # Simplified max
+            avg_cat_score = cat_score / len(kw_list) if kw_list else 0
             radar_scores.append(
                 {"axis": cat, "value": int(min(100, avg_cat_score / 10))}
             )
 
         return {
-            "vulnerability_shield_score": 100 - (len(vulnerabilities) * 5),
+            "vulnerability_shield_score": max(0, 100 - (len(vulnerabilities) * 5)),
             "vulnerabilities": vulnerabilities,
             "overlaps": overlaps,
             "recommended_profile": recommended_profile,
             "team_radar": radar_scores,
             "summary": f"Your team has {len(vulnerabilities)} high-risk single points of failure. We recommend balancing your {recommended_profile['suggested_role']} hiring to diversify your tech stack.",
-        }
-
-    def _get_mock_analysis(self) -> Dict[str, Any]:
-        """Mock analysis for demo purposes when DB is empty."""
-        return {
-            "vulnerability_shield_score": 72,
-            "vulnerabilities": [
-                {
-                    "skill": "AWS Infrastructure",
-                    "holder": "Alice Dev",
-                    "risk": "High (SPF)",
-                },
-                {
-                    "skill": "Smart Contract Auditing",
-                    "holder": "Bob Chain",
-                    "risk": "High (SPF)",
-                },
-            ],
-            "overlaps": [
-                {"skill": "React.js", "coverage": "8/10", "status": "Highly Redundant"}
-            ],
-            "recommended_profile": {
-                "suggested_role": "DevOps Engineer",
-                "focus_skills": ["Kubernetes", "Terraform", "Docker"],
-                "reasoning": "Fills critical infrastructure single-point-of-failure gaps.",
-            },
-            "team_radar": [
-                {"axis": "Frontend", "value": 92},
-                {"axis": "Backend", "value": 78},
-                {"axis": "Infrastructure", "value": 35},
-                {"axis": "Security", "value": 42},
-                {"axis": "AI/ML", "value": 15},
-            ],
-            "summary": "Team expertise is heavily clustered in Frontend. Urgent need for DevOps redundancy.",
         }

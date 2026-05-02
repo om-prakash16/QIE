@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import Optional
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,11 +19,11 @@ try:
         logger.info(f"Supabase connected successfully! (Privilege: {'System' if os.getenv('SUPABASE_SERVICE_ROLE_KEY') else 'Standard'})")
     else:
         supabase = None
-        logger.warning("Supabase keys not found in .env - running in mock mode")
+        logger.critical("FATAL: Supabase configuration missing (SUPABASE_URL/SUPABASE_KEY). System will fail to persist data.")
 
 except ImportError:
     supabase = None
-    logger.warning("supabase-py not installed - running in mock mode")
+    logger.critical("FATAL: supabase-py not installed. System cannot connect to database.")
 
 
 def get_supabase() -> Optional["Client"]:

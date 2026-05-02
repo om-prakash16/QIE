@@ -7,10 +7,23 @@ from uuid import UUID
 from core.supabase import get_supabase
 from modules.skill_graph.service import SkillGraphService
 
+import os
+import json
+import logging
+import google.generativeai as genai
+
 class ProjectService:
     def __init__(self):
         self.db = get_supabase()
         self.skill_service = SkillGraphService()
+        
+        # Initialize AI for repo analysis
+        self.api_key = os.getenv("GOOGLE_API_KEY")
+        if self.api_key:
+            genai.configure(api_key=self.api_key)
+            self.model = genai.GenerativeModel("gemini-1.5-flash-latest")
+        else:
+            self.model = None
 
     async def list_user_projects(self, user_id: UUID) -> List[Dict[str, Any]]:
         res = self.db.table("project_ledger").select("*").eq("user_id", str(user_id)).execute()
@@ -69,12 +82,38 @@ class ProjectService:
 
     async def analyze_github_repo(self, github_url: str) -> Dict[str, Any]:
         """
-        Extract metadata and suggested skills from a GitHub repo URL.
-        (Future: Use Gemini or GitHub API)
+        Extract metadata and suggested skills from a GitHub repo URL using Gemini.
         """
-        # Mocking for now - will integrate with Gemini in next iteration
-        return {
-            "suggested_skills": ["Git", "GitHub"],
-            "description": "Auto-extracted from GitHub",
-            "repo_metadata": {"url": github_url}
-        }
+        if not self.model:
+            return {
+                "suggested_skills": ["Git", "GitHub"],
+                "description": "Auto-extracted from GitHub (AI disabled)",
+                "repo_metadata": {"url": github_url}
+            }
+
+        prompt = f"""Analyze this GitHub repository URL: {github_url}
+Extract:
+1. A concise, professional project description.
+2. A list of 5-8 primary technical skills or technologies used.
+
+Return ONLY a JSON object:
+{{
+  "description": "string",
+  "suggested_skills": ["string"]
+}}
+"""
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
+            analysis = json.loads(response.text)
+            analysis["repo_metadata"] = {"url": github_url}
+            return analysis
+        except Exception as e:
+            logging.error(f"GitHub analysis error: {e}")
+            return {
+                "suggested_skills": ["Git", "GitHub"],
+                "description": f"Repository found at {github_url}",
+                "repo_metadata": {"url": github_url}
+            }

@@ -12,15 +12,7 @@ class DynamicValidationService:
         """Fetch the current profile schema from the database."""
         db = get_supabase()
         if not db:
-            # Fallback mock schema for local development
-            return [
-                {"field_name": "full_name", "field_type": "text", "required": True},
-                {
-                    "field_name": "years_of_experience",
-                    "field_type": "number",
-                    "required": True,
-                },
-            ]
+            raise Exception("Database connection unavailable for schema fetch")
 
         response = (
             db.table("profile_schema")

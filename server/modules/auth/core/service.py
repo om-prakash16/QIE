@@ -66,11 +66,16 @@ async def verify_solana_signature(wallet: str, message: str, signature: str) -> 
     Verifies a Solana Ed25519 signature.
     - Accepts both hex and base58 encoded signatures.
     - Validates message timestamp to prevent replay attacks.
-    - Allows DEV_ mock wallets for demo mode.
+    - Allows DEV_ mock wallets ONLY if ALLOW_DEV_WALLETS is enabled.
     """
-    # Allow demo/dev wallets through
+    # Allow demo/dev wallets through ONLY if explicitly enabled
     if wallet.startswith("DEV_") and signature == "MOCK_DEMO_SIGNATURE":
-        return True
+        if os.getenv("ALLOW_DEV_WALLETS", "false").lower() == "true":
+            logger.warning(f"Using insecure DEV_ wallet for: {wallet}")
+            return True
+        else:
+            logger.error(f"Blocked DEV_ wallet attempt in production: {wallet}")
+            return False
 
     # Replay attack prevention: check timestamp freshness
     ts = _extract_timestamp_from_message(message)
