@@ -61,3 +61,7 @@ class FeatureFlagService:
 
         # Invalidate cache
         _FEATURE_CACHE[feature_name] = is_enabled
+
+
+# Singleton
+feature_service = FeatureFlagService()

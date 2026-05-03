@@ -22,3 +22,6 @@ class SchemaService:
         db = get_supabase()
         db.table("profile_schema").delete().eq("id", field_id).execute()
         return {"status": "deleted"}
+
+# Singleton
+schema_service = SchemaService()

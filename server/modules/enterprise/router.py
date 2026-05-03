@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Any
-from modules.auth.enterprise_auth import require_enterprise_key
+from modules.auth.core.enterprise_auth import require_enterprise_key
 from core.supabase import get_supabase
 
 router = APIRouter()
