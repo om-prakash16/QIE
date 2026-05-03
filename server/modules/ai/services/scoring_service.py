@@ -40,3 +40,6 @@ class ProofScoreService:
             "level": level,
             "weights_used": self.weights,
         }
+
+
+scoring_service = ProofScoreService()

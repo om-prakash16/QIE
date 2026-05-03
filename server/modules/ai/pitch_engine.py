@@ -221,3 +221,6 @@ if __name__ == "__main__":
     # Print a JSON summary showing it meets the output spec
     print("\n📦 Structured Output (JSON Example):")
     print(json.dumps({k: v[:50] + "..." for k, v in pitch_data.items() if k != 'full_pitch'}, indent=2))
+
+
+pitch_engine = PitchEngine()

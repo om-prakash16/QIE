@@ -201,3 +201,6 @@ class CareerRiskService:
         return (
             "Your career is on a steady upward trajectory with balanced risk metrics."
         )
+
+
+career_service = CareerRiskService()

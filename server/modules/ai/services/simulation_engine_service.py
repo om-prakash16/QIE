@@ -8,7 +8,7 @@ from datetime import datetime
 from core.supabase import get_supabase
 from core.exceptions import ExternalServiceError, NotFoundError
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 
 logger = logging.getLogger(__name__)
 
